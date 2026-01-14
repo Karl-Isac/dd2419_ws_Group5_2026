@@ -488,6 +488,12 @@ environments:
       - conda: https://prefix.dev/conda-forge/linux-64/zlib-1.3.1-hb9d3cd8_2.conda
       - conda: https://prefix.dev/conda-forge/linux-64/zstd-1.5.7-hb78ec9c_6.conda
       - conda: https://prefix.dev/conda-forge/linux-64/zziplib-0.13.69-he45264a_2.conda
+      - conda: src/aruco_ros/aruco
+        build: hb0f4dca_0
+      - conda: src/aruco_ros/aruco_msgs
+        build: hb0f4dca_0
+      - conda: src/aruco_ros/aruco_ros
+        build: hb0f4dca_0
       - conda: src/detection
         build: hb0f4dca_0
       - conda: src/display_markers
@@ -495,12 +501,6 @@ environments:
       - conda: src/learning_tf2_py
         build: hb0f4dca_0
       - conda: src/odometry
-        build: hb0f4dca_0
-      - conda: src/robp_robot/aruco_ros/aruco
-        build: hb0f4dca_0
-      - conda: src/robp_robot/aruco_ros/aruco_msgs
-        build: hb0f4dca_0
-      - conda: src/robp_robot/aruco_ros/aruco_ros
         build: hb0f4dca_0
       - conda: src/robp_robot/robp_boot_camp/robp_boot_camp_launch
         build: hb0f4dca_0
@@ -928,6 +928,12 @@ environments:
       - conda: https://prefix.dev/conda-forge/osx-arm64/zlib-1.3.1-h8359307_2.conda
       - conda: https://prefix.dev/conda-forge/osx-arm64/zstd-1.5.7-hbf9d68e_6.conda
       - conda: https://prefix.dev/conda-forge/osx-arm64/zziplib-0.13.69-h57f5043_2.conda
+      - conda: src/aruco_ros/aruco
+        build: h60d57d3_0
+      - conda: src/aruco_ros/aruco_msgs
+        build: h60d57d3_0
+      - conda: src/aruco_ros/aruco_ros
+        build: h60d57d3_0
       - conda: src/detection
         build: h60d57d3_0
       - conda: src/display_markers
@@ -935,12 +941,6 @@ environments:
       - conda: src/learning_tf2_py
         build: h60d57d3_0
       - conda: src/odometry
-        build: h60d57d3_0
-      - conda: src/robp_robot/aruco_ros/aruco
-        build: h60d57d3_0
-      - conda: src/robp_robot/aruco_ros/aruco_msgs
-        build: h60d57d3_0
-      - conda: src/robp_robot/aruco_ros/aruco_ros
         build: h60d57d3_0
       - conda: src/robp_robot/robp_boot_camp/robp_boot_camp_launch
         build: h60d57d3_0
@@ -1342,6 +1342,12 @@ environments:
       - conda: https://prefix.dev/conda-forge/win-64/zlib-1.3.1-h2466b09_2.conda
       - conda: https://prefix.dev/conda-forge/win-64/zstd-1.5.7-h534d264_6.conda
       - conda: https://prefix.dev/conda-forge/win-64/zziplib-0.13.69-h3ca93ac_2.conda
+      - conda: src/aruco_ros/aruco
+        build: h2433df5_0
+      - conda: src/aruco_ros/aruco_msgs
+        build: h2433df5_0
+      - conda: src/aruco_ros/aruco_ros
+        build: h2433df5_0
       - conda: src/detection
         build: h2433df5_0
       - conda: src/display_markers
@@ -1349,12 +1355,6 @@ environments:
       - conda: src/learning_tf2_py
         build: h2433df5_0
       - conda: src/odometry
-        build: h2433df5_0
-      - conda: src/robp_robot/aruco_ros/aruco
-        build: h2433df5_0
-      - conda: src/robp_robot/aruco_ros/aruco_msgs
-        build: h2433df5_0
-      - conda: src/robp_robot/aruco_ros/aruco_ros
         build: h2433df5_0
       - conda: src/robp_robot/robp_boot_camp/robp_boot_camp_launch
         build: h2433df5_0
@@ -10069,7 +10069,7 @@ packages:
   license: Apache-2.0
   size: 74555
   timestamp: 1762150679310
-- conda: src/robp_robot/aruco_ros/aruco
+- conda: src/aruco_ros/aruco
   name: ros-jazzy-aruco
   version: 5.0.5
   build: h2433df5_0
@@ -10090,7 +10090,7 @@ packages:
   - python_abi 3.12.* *_cp312
   - numpy >=1.26.4,<2.0a0
   license: LicenseRef-MIT
-- conda: src/robp_robot/aruco_ros/aruco
+- conda: src/aruco_ros/aruco
   name: ros-jazzy-aruco
   version: 5.0.5
   build: h60d57d3_0
@@ -10106,7 +10106,7 @@ packages:
   - python_abi 3.12.* *_cp312
   - numpy >=1.26.4,<2.0a0
   license: LicenseRef-MIT
-- conda: src/robp_robot/aruco_ros/aruco
+- conda: src/aruco_ros/aruco
   name: ros-jazzy-aruco
   version: 5.0.5
   build: hb0f4dca_0
@@ -10124,7 +10124,7 @@ packages:
   - python_abi 3.12.* *_cp312
   - numpy >=1.26.4,<2.0a0
   license: LicenseRef-MIT
-- conda: src/robp_robot/aruco_ros/aruco_msgs
+- conda: src/aruco_ros/aruco_msgs
   name: ros-jazzy-aruco-msgs
   version: 5.0.5
   build: h2433df5_0
@@ -10146,7 +10146,7 @@ packages:
   - python_abi 3.12.* *_cp312
   - numpy >=1.26.4,<2.0a0
   license: LicenseRef-MIT
-- conda: src/robp_robot/aruco_ros/aruco_msgs
+- conda: src/aruco_ros/aruco_msgs
   name: ros-jazzy-aruco-msgs
   version: 5.0.5
   build: h60d57d3_0
@@ -10163,7 +10163,7 @@ packages:
   - python_abi 3.12.* *_cp312
   - numpy >=1.26.4,<2.0a0
   license: LicenseRef-MIT
-- conda: src/robp_robot/aruco_ros/aruco_msgs
+- conda: src/aruco_ros/aruco_msgs
   name: ros-jazzy-aruco-msgs
   version: 5.0.5
   build: hb0f4dca_0
@@ -10182,7 +10182,7 @@ packages:
   - python_abi 3.12.* *_cp312
   - numpy >=1.26.4,<2.0a0
   license: LicenseRef-MIT
-- conda: src/robp_robot/aruco_ros/aruco_ros
+- conda: src/aruco_ros/aruco_ros
   name: ros-jazzy-aruco-ros
   version: 5.0.5
   build: h2433df5_0
@@ -10217,7 +10217,7 @@ packages:
       path: ../aruco
     ros-jazzy-aruco-msgs:
       path: ../aruco_msgs
-- conda: src/robp_robot/aruco_ros/aruco_ros
+- conda: src/aruco_ros/aruco_ros
   name: ros-jazzy-aruco-ros
   version: 5.0.5
   build: h60d57d3_0
@@ -10247,7 +10247,7 @@ packages:
       path: ../aruco
     ros-jazzy-aruco-msgs:
       path: ../aruco_msgs
-- conda: src/robp_robot/aruco_ros/aruco_ros
+- conda: src/aruco_ros/aruco_ros
   name: ros-jazzy-aruco-ros
   version: 5.0.5
   build: hb0f4dca_0

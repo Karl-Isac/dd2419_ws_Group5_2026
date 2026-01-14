@@ -19,17 +19,6 @@ executors_1 = { cmd = "ros2 run learning_tf2_py executors" }
 executors_2 = { cmd = "ros2 service call /first_srv example_interfaces/srv/AddTwoInts" }
 executors_3 = { cmd = "ros2 service call /second_srv example_interfaces/srv/AddTwoInts" }
 
-# [tasks.download_rosbags]
-# cmd = '''
-# curl -fSL "https://canvas.kth.se/courses/59505/files/9801928/download?download_frd=1" -O boot_camp.zip
-# && tar -xzf boot_camp.zip -C bags
-# '''
-# outputs = [
-# 	"bags/boot_camp.db3",
-# 	"bags/metadata.yaml",
-# 	"bags/reliability_override.yaml",
-# ]
-
 [dependencies]
 # ROS
 ros-jazzy-ros2run = ">=0.32.6,<0.33"
@@ -52,3 +41,10 @@ ros-jazzy-display-markers = { path = "src/display_markers" }
 
 # Boot camp part 3
 ros-jazzy-detection = { path = "src/detection" }
+
+[activation.env]
+ROS_AUTOMATIC_DISCOVERY_RANGE = "LOCALHOST"
+
+[target.osx.activation.env]
+# Required for the RVIZ2 to properly startup on osx
+RMW_IMPLEMENTATION = "rmw_cyclonedds_cpp"
