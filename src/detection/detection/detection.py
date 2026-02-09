@@ -28,11 +28,11 @@ class Detection(Node):
         super().__init__('detection')
         # Initialize the publisher
         self._pub = self.create_publisher(
-            PointCloud2, '/camera/depth/color/ds_points', 10)
+            PointCloud2, '/realsense/depth/color/ds_points', 10)
 
         # Subscribe to point cloud topic and call callback function on each received message
         self.create_subscription(
-            PointCloud2, '/camera/depth/color/points', self.cloud_callback, 10)
+            PointCloud2, '/realsense/depth/color/points', self.cloud_callback, 10)
         
         self.tf_buffer = Buffer()
         self.tf_listener = TransformListener(self.tf_buffer, self)
@@ -45,20 +45,20 @@ class Detection(Node):
         self.red_available = False
         self.red_timestamp = None
 
-        static_tf = TransformStamped()
-        static_tf.header.stamp = self.get_clock().now().to_msg()
-        static_tf.header.frame_id = 'base_link'
-        static_tf.child_frame_id = 'camera_color_optical_frame'
-        static_tf.transform.translation.x = 0.08987
-        static_tf.transform.translation.y = 0.0175
-        static_tf.transform.translation.z = 0.10456
-        q = quaternion_from_euler(-np.pi/2, 0, -np.pi/2)
-        static_tf.transform.rotation.x = q[0]
-        static_tf.transform.rotation.y = q[1]
-        static_tf.transform.rotation.z = q[2]
-        static_tf.transform.rotation.w = q[3]
+        # static_tf = TransformStamped()
+        # static_tf.header.stamp = self.get_clock().now().to_msg()
+        # static_tf.header.frame_id = 'base_link'
+        # static_tf.child_frame_id = 'camera_color_optical_frame'
+        # static_tf.transform.translation.x = 0.08987
+        # static_tf.transform.translation.y = 0.0175
+        # static_tf.transform.translation.z = 0.10456
+        # q = quaternion_from_euler(-np.pi/2, 0, -np.pi/2)
+        # static_tf.transform.rotation.x = q[0]
+        # static_tf.transform.rotation.y = q[1]
+        # static_tf.transform.rotation.z = q[2]
+        # static_tf.transform.rotation.w = q[3]
 
-        self.static_broadcaster.sendTransform(static_tf)
+        # self.static_broadcaster.sendTransform(static_tf)
 
 
     def cloud_callback(self, msg: PointCloud2):
@@ -100,8 +100,8 @@ class Detection(Node):
 
         for idx in range(points.shape[0]):
             x, y, z = points[idx]
-            if z < 0.9 and y < 0.105:
-                if colors[idx, 0] > 0.6 and colors[idx, 1] < 0.4 and colors[idx, 2] < 0.4:
+            if x < 0.5:
+                if colors[idx, 0] < 0.4 and colors[idx, 1] < 0.4 and colors[idx, 2] > 0.5:
                     counter += 1
                     red_points.append([x,y,z])
                     sum_x += x
@@ -113,8 +113,8 @@ class Detection(Node):
                     # self.get_logger().info('Green object detected.')       
            
         
-        if counter > 40 and not self.red_available:
-            self.get_logger().info('Red object detected.')   
+        if counter > 10 and not self.red_available:
+            self.get_logger().info('Blue object detected.')   
             self.red = tf2_geometry_msgs.PoseStamped()
             self.red.header = msg.header
             self.red.pose.position.x = sum_x / counter
@@ -128,12 +128,10 @@ class Detection(Node):
             self.red_timestamp = msg.header.stamp
             self.red_available = True
 
-        
-
         if self.red_available and not self.red_published:
             msg_time = rclpy.time.Time.from_msg(self.red_timestamp)
             if not self.tf_buffer.can_transform(
-                'map',
+                'realsense_camera_link',
                 self.red.header.frame_id,
                 msg_time,
                 timeout=rclpy.duration.Duration(seconds=1)
@@ -143,7 +141,7 @@ class Detection(Node):
             try:
                 red_map = self.tf_buffer.transform(
                     self.red,
-                    'map',
+                    'realsense_camera_link',
                     timeout=rclpy.duration.Duration(seconds=1)
                 )
             except TransformException as ex:
@@ -155,7 +153,7 @@ class Detection(Node):
             
             tf_red.header.stamp = self.red_timestamp
 
-            tf_red.header.frame_id = 'map'
+            tf_red.header.frame_id = 'realsense_camera_link'
             tf_red.child_frame_id = 'red_object'
 
             tf_red.transform.translation.x = red_map.pose.position.x
@@ -169,6 +167,46 @@ class Detection(Node):
 
             self.static_broadcaster.sendTransform(tf_red)
             self.red_published = True
+
+        # if self.red_available and not self.red_published:
+        #     msg_time = rclpy.time.Time.from_msg(self.red_timestamp)
+        #     if not self.tf_buffer.can_transform(
+        #         'map',
+        #         self.red.header.frame_id,
+        #         msg_time,
+        #         timeout=rclpy.duration.Duration(seconds=1)
+        #     ):
+        #         return
+
+        #     try:
+        #         red_map = self.tf_buffer.transform(
+        #             self.red,
+        #             'map',
+        #             timeout=rclpy.duration.Duration(seconds=1)
+        #         )
+        #     except TransformException as ex:
+        #         self.get_logger().info(
+        #             f'Could not transform red object from '
+        #             f'{self.red.header.frame_id} to map: {ex}'
+        #         )
+        #         return
+            
+        #     tf_red.header.stamp = self.red_timestamp
+
+        #     tf_red.header.frame_id = 'map'
+        #     tf_red.child_frame_id = 'red_object'
+
+        #     tf_red.transform.translation.x = red_map.pose.position.x
+        #     tf_red.transform.translation.y = red_map.pose.position.y
+        #     tf_red.transform.translation.z = red_map.pose.position.z
+
+        #     tf_red.transform.rotation.x = 0.0
+        #     tf_red.transform.rotation.y = 0.0
+        #     tf_red.transform.rotation.z = 0.0
+        #     tf_red.transform.rotation.w = 1.0
+
+        #     self.static_broadcaster.sendTransform(tf_red)
+        #     self.red_published = True
         
         
  
