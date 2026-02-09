@@ -1,0 +1,28 @@
+[0.192s] Invoking command in '/home/grumpy/dd2419_ws_Group5_2026/src/build/aruco': CMAKE_PREFIX_PATH=/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default DEBUGINFOD_URLS=https://debuginfod.ubuntu.com PIXI_PROMPT=(dd2419_ws) PS1=(dd2419_ws) \[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ /home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/bin/cmake /home/grumpy/dd2419_ws_Group5_2026/src/aruco_ros/aruco -DCMAKE_INSTALL_PREFIX=/home/grumpy/dd2419_ws_Group5_2026/src/install/aruco
+[0.202s] [0mCMake Deprecation Warning at CMakeLists.txt:1 (cmake_minimum_required):
+[0.202s]   Compatibility with CMake < 3.10 will be removed from a future version of
+[0.204s]   CMake.
+[0.204s] 
+[0.204s]   Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+[0.204s]   to tell CMake that the project requires at least <min> but has been updated
+[0.204s]   to work with policies introduced by <max> or earlier.
+[0.204s] 
+[0.204s] [0m
+[0.255s] -- The C compiler identification is GNU 13.3.0
+[0.337s] -- The CXX compiler identification is GNU 13.3.0
+[0.348s] -- Detecting C compiler ABI info
+[0.428s] -- Detecting C compiler ABI info - done
+[0.451s] -- Check for working C compiler: /usr/bin/cc - skipped
+[0.451s] -- Detecting C compile features
+[0.452s] -- Detecting C compile features - done
+[0.466s] -- Detecting CXX compiler ABI info
+[0.564s] -- Detecting CXX compiler ABI info - done
+[0.585s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[0.585s] -- Detecting CXX compile features
+[0.588s] -- Detecting CXX compile features - done
+[0.615s] -- Found ament_cmake: 2.5.4 (/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/share/ament_cmake/cmake)
+[0.746s] -- Found Python3: /home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/bin/python3 (found version "3.12.12") found components: Interpreter
+[0.924s] -- Found OpenCV: /home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default (found suitable version "4.12.0", minimum required is "4.2.0")
+[1.045s] -- Configuring done (0.8s)
+[1.054s] -- Generating done (0.0s)
+[1.054s] -- Build files have been written to: /home/grumpy/dd2419_ws_Group5_2026/src/build/aruco

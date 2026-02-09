@@ -1,0 +1,40 @@
+[0.626s] Invoking command in '/home/grumpy/dd2419_ws_Group5_2026/src/keyboard': DEBUGINFOD_URLS=https://debuginfod.ubuntu.com PIXI_PROMPT=(dd2419_ws) PYTHONPATH=/home/grumpy/dd2419_ws_Group5_2026/build/keyboard/prefix_override:/home/grumpy/dd2419_ws_Group5_2026/install/keyboard/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 setup.py egg_info --egg-base ../../build/keyboard build --build-base /home/grumpy/dd2419_ws_Group5_2026/build/keyboard/build install --record /home/grumpy/dd2419_ws_Group5_2026/build/keyboard/install.log --single-version-externally-managed
+[0.810s] running egg_info
+[0.824s] writing ../../build/keyboard/keyboard.egg-info/PKG-INFO
+[0.824s] writing dependency_links to ../../build/keyboard/keyboard.egg-info/dependency_links.txt
+[0.824s] writing entry points to ../../build/keyboard/keyboard.egg-info/entry_points.txt
+[0.824s] writing requirements to ../../build/keyboard/keyboard.egg-info/requires.txt
+[0.824s] writing top-level names to ../../build/keyboard/keyboard.egg-info/top_level.txt
+[0.854s] reading manifest file '../../build/keyboard/keyboard.egg-info/SOURCES.txt'
+[0.855s] writing manifest file '../../build/keyboard/keyboard.egg-info/SOURCES.txt'
+[0.855s] running build
+[0.855s] running build_py
+[0.855s] copying keyboard/__init__.py -> /home/grumpy/dd2419_ws_Group5_2026/build/keyboard/build/lib/keyboard
+[0.855s] copying keyboard/keyboard_node.py -> /home/grumpy/dd2419_ws_Group5_2026/build/keyboard/build/lib/keyboard
+[0.855s] running install
+[0.855s] /home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/lib/python3.12/site-packages/setuptools/_distutils/cmd.py:90: SetuptoolsDeprecationWarning: setup.py install is deprecated.
+[0.855s] !!
+[0.855s] 
+[0.855s]         ********************************************************************************
+[0.855s]         Please avoid running ``setup.py`` directly.
+[0.856s]         Instead, use pypa/build, pypa/installer or other
+[0.856s]         standards-based tools.
+[0.856s] 
+[0.856s]         See https://blog.ganssle.io/articles/2021/10/setup-py-deprecated.html for details.
+[0.856s]         ********************************************************************************
+[0.856s] 
+[0.856s] !!
+[0.856s]   self.initialize_options()
+[0.859s] running install_lib
+[0.873s] copying /home/grumpy/dd2419_ws_Group5_2026/build/keyboard/build/lib/keyboard/keyboard_node.py -> /home/grumpy/dd2419_ws_Group5_2026/install/keyboard/lib/python3.12/site-packages/keyboard
+[0.874s] byte-compiling /home/grumpy/dd2419_ws_Group5_2026/install/keyboard/lib/python3.12/site-packages/keyboard/keyboard_node.py to keyboard_node.cpython-312.pyc
+[0.874s] running install_data
+[0.888s] copying resource/keyboard -> /home/grumpy/dd2419_ws_Group5_2026/install/keyboard/share/ament_index/resource_index/packages
+[0.888s] copying package.xml -> /home/grumpy/dd2419_ws_Group5_2026/install/keyboard/share/keyboard
+[0.888s] running install_egg_info
+[0.902s] removing '/home/grumpy/dd2419_ws_Group5_2026/install/keyboard/lib/python3.12/site-packages/keyboard-0.0.0-py3.12.egg-info' (and everything under it)
+[0.902s] Copying ../../build/keyboard/keyboard.egg-info to /home/grumpy/dd2419_ws_Group5_2026/install/keyboard/lib/python3.12/site-packages/keyboard-0.0.0-py3.12.egg-info
+[0.903s] running install_scripts
+[0.973s] Installing keyboard script to /home/grumpy/dd2419_ws_Group5_2026/install/keyboard/lib/keyboard
+[0.973s] writing list of installed files to '/home/grumpy/dd2419_ws_Group5_2026/build/keyboard/install.log'
+[0.995s] Invoked command in '/home/grumpy/dd2419_ws_Group5_2026/src/keyboard' returned '0': DEBUGINFOD_URLS=https://debuginfod.ubuntu.com PIXI_PROMPT=(dd2419_ws) PYTHONPATH=/home/grumpy/dd2419_ws_Group5_2026/build/keyboard/prefix_override:/home/grumpy/dd2419_ws_Group5_2026/install/keyboard/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 setup.py egg_info --egg-base ../../build/keyboard build --build-base /home/grumpy/dd2419_ws_Group5_2026/build/keyboard/build install --record /home/grumpy/dd2419_ws_Group5_2026/build/keyboard/install.log --single-version-externally-managed

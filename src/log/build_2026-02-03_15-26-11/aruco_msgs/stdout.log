@@ -1,0 +1,8 @@
+-- Found ament_cmake: 2.5.4 (/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/share/ament_cmake/cmake)
+-- Found std_msgs: 5.3.6 (/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/share/std_msgs/cmake)
+-- Found rosidl_generator_c: 4.6.7 (/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/share/rosidl_generator_c/cmake)
+-- Found rosidl_generator_cpp: 4.6.7 (/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/share/rosidl_generator_cpp/cmake)
+-- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+-- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+-- Found geometry_msgs: 5.3.6 (/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/share/geometry_msgs/cmake)
+-- Configuring incomplete, errors occurred!

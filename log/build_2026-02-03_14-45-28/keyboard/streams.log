@@ -1,0 +1,51 @@
+[0.675s] Invoking command in '/home/grumpy/dd2419_ws_Group5_2026/src/keyboard': CONDA_ENV_SHLVL_2_PIXI_PROMPT=(dd2419_ws) DEBUGINFOD_URLS=https://debuginfod.ubuntu.com PIXI_PROMPT=(dd2419_ws) PYTHONPATH=/home/grumpy/dd2419_ws_Group5_2026/build/keyboard/prefix_override:/home/grumpy/dd2419_ws_Group5_2026/install/keyboard/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 setup.py egg_info --egg-base ../../build/keyboard build --build-base /home/grumpy/dd2419_ws_Group5_2026/build/keyboard/build install --record /home/grumpy/dd2419_ws_Group5_2026/build/keyboard/install.log --single-version-externally-managed
+[0.871s] running egg_info
+[0.885s] creating ../../build/keyboard/keyboard.egg-info
+[0.885s] writing ../../build/keyboard/keyboard.egg-info/PKG-INFO
+[0.885s] writing dependency_links to ../../build/keyboard/keyboard.egg-info/dependency_links.txt
+[0.885s] writing entry points to ../../build/keyboard/keyboard.egg-info/entry_points.txt
+[0.885s] writing requirements to ../../build/keyboard/keyboard.egg-info/requires.txt
+[0.885s] writing top-level names to ../../build/keyboard/keyboard.egg-info/top_level.txt
+[0.885s] writing manifest file '../../build/keyboard/keyboard.egg-info/SOURCES.txt'
+[0.916s] reading manifest file '../../build/keyboard/keyboard.egg-info/SOURCES.txt'
+[0.917s] writing manifest file '../../build/keyboard/keyboard.egg-info/SOURCES.txt'
+[0.917s] running build
+[0.917s] running build_py
+[0.917s] creating /home/grumpy/dd2419_ws_Group5_2026/build/keyboard/build/lib/keyboard
+[0.917s] copying keyboard/__init__.py -> /home/grumpy/dd2419_ws_Group5_2026/build/keyboard/build/lib/keyboard
+[0.917s] copying keyboard/keyboard_node.py -> /home/grumpy/dd2419_ws_Group5_2026/build/keyboard/build/lib/keyboard
+[0.917s] running install
+[0.918s] /home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/lib/python3.12/site-packages/setuptools/_distutils/cmd.py:90: SetuptoolsDeprecationWarning: setup.py install is deprecated.
+[0.918s] !!
+[0.918s] 
+[0.918s]         ********************************************************************************
+[0.918s]         Please avoid running ``setup.py`` directly.
+[0.918s]         Instead, use pypa/build, pypa/installer or other
+[0.918s]         standards-based tools.
+[0.918s] 
+[0.918s]         See https://blog.ganssle.io/articles/2021/10/setup-py-deprecated.html for details.
+[0.918s]         ********************************************************************************
+[0.918s] 
+[0.918s] !!
+[0.918s]   self.initialize_options()
+[0.922s] running install_lib
+[0.938s] creating /home/grumpy/dd2419_ws_Group5_2026/install/keyboard/lib/python3.12/site-packages/keyboard
+[0.938s] copying /home/grumpy/dd2419_ws_Group5_2026/build/keyboard/build/lib/keyboard/__init__.py -> /home/grumpy/dd2419_ws_Group5_2026/install/keyboard/lib/python3.12/site-packages/keyboard
+[0.938s] copying /home/grumpy/dd2419_ws_Group5_2026/build/keyboard/build/lib/keyboard/keyboard_node.py -> /home/grumpy/dd2419_ws_Group5_2026/install/keyboard/lib/python3.12/site-packages/keyboard
+[0.938s] byte-compiling /home/grumpy/dd2419_ws_Group5_2026/install/keyboard/lib/python3.12/site-packages/keyboard/__init__.py to __init__.cpython-312.pyc
+[0.939s] byte-compiling /home/grumpy/dd2419_ws_Group5_2026/install/keyboard/lib/python3.12/site-packages/keyboard/keyboard_node.py to keyboard_node.cpython-312.pyc
+[0.939s]   File "/home/grumpy/dd2419_ws_Group5_2026/install/keyboard/lib/python3.12/site-packages/keyboard/keyboard_node.py", line 8
+[0.939s]     def__init__(self):
+[0.939s]                      ^
+[0.939s] SyntaxError: invalid syntax
+[0.939s] 
+[0.939s] running install_data
+[0.955s] creating /home/grumpy/dd2419_ws_Group5_2026/install/keyboard/share/ament_index/resource_index/packages
+[0.955s] copying resource/keyboard -> /home/grumpy/dd2419_ws_Group5_2026/install/keyboard/share/ament_index/resource_index/packages
+[0.955s] copying package.xml -> /home/grumpy/dd2419_ws_Group5_2026/install/keyboard/share/keyboard
+[0.955s] running install_egg_info
+[0.970s] Copying ../../build/keyboard/keyboard.egg-info to /home/grumpy/dd2419_ws_Group5_2026/install/keyboard/lib/python3.12/site-packages/keyboard-0.0.0-py3.12.egg-info
+[0.971s] running install_scripts
+[1.049s] Installing keyboard script to /home/grumpy/dd2419_ws_Group5_2026/install/keyboard/lib/keyboard
+[1.049s] writing list of installed files to '/home/grumpy/dd2419_ws_Group5_2026/build/keyboard/install.log'
+[1.071s] Invoked command in '/home/grumpy/dd2419_ws_Group5_2026/src/keyboard' returned '0': CONDA_ENV_SHLVL_2_PIXI_PROMPT=(dd2419_ws) DEBUGINFOD_URLS=https://debuginfod.ubuntu.com PIXI_PROMPT=(dd2419_ws) PYTHONPATH=/home/grumpy/dd2419_ws_Group5_2026/build/keyboard/prefix_override:/home/grumpy/dd2419_ws_Group5_2026/install/keyboard/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 setup.py egg_info --egg-base ../../build/keyboard build --build-base /home/grumpy/dd2419_ws_Group5_2026/build/keyboard/build install --record /home/grumpy/dd2419_ws_Group5_2026/build/keyboard/install.log --single-version-externally-managed
