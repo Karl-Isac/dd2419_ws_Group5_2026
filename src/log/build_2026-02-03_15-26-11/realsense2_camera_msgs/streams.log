@@ -1,0 +1,30 @@
+[0.282s] Invoking command in '/home/grumpy/dd2419_ws_Group5_2026/src/build/realsense2_camera_msgs': CMAKE_PREFIX_PATH=/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default DEBUGINFOD_URLS=https://debuginfod.ubuntu.com PIXI_PROMPT=(dd2419_ws) /home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/bin/cmake /home/grumpy/dd2419_ws_Group5_2026/src/realsense-ros/realsense2_camera_msgs -DCMAKE_INSTALL_PREFIX=/home/grumpy/dd2419_ws_Group5_2026/src/install/realsense2_camera_msgs
+[0.307s] -- Found ament_cmake: 2.5.4 (/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/share/ament_cmake/cmake)
+[0.308s] [0mCMake Deprecation Warning at CMakeLists.txt:15 (cmake_minimum_required):
+[0.308s]   Compatibility with CMake < 3.10 will be removed from a future version of
+[0.308s]   CMake.
+[0.308s] 
+[0.308s]   Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+[0.308s]   to tell CMake that the project requires at least <min> but has been updated
+[0.308s]   to work with policies introduced by <max> or earlier.
+[0.308s] 
+[0.309s] [0m
+[0.663s] [31mCMake Error at CMakeLists.txt:32 (find_package):
+[0.668s]   By not providing "Findrosidl_default_generators.cmake" in CMAKE_MODULE_PATH
+[0.668s]   this project has asked CMake to find a package configuration file provided
+[0.668s]   by "rosidl_default_generators", but CMake did not find one.
+[0.668s] 
+[0.668s]   Could not find a package configuration file provided by
+[0.669s]   "rosidl_default_generators" with any of the following names:
+[0.669s] 
+[0.669s]     rosidl_default_generatorsConfig.cmake
+[0.669s]     rosidl_default_generators-config.cmake
+[0.669s] 
+[0.669s]   Add the installation prefix of "rosidl_default_generators" to
+[0.669s]   CMAKE_PREFIX_PATH or set "rosidl_default_generators_DIR" to a directory
+[0.669s]   containing one of the above files.  If "rosidl_default_generators" provides
+[0.669s]   a separate development package or SDK, be sure it has been installed.
+[0.669s] 
+[0.669s] [0m
+[0.669s] -- Configuring incomplete, errors occurred!
+[0.949s] Invoked command in '/home/grumpy/dd2419_ws_Group5_2026/src/build/realsense2_camera_msgs' returned '1': CMAKE_PREFIX_PATH=/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default DEBUGINFOD_URLS=https://debuginfod.ubuntu.com PIXI_PROMPT=(dd2419_ws) /home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/bin/cmake /home/grumpy/dd2419_ws_Group5_2026/src/realsense-ros/realsense2_camera_msgs -DCMAKE_INSTALL_PREFIX=/home/grumpy/dd2419_ws_Group5_2026/src/install/realsense2_camera_msgs

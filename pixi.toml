@@ -63,6 +63,7 @@ ros-jazzy-rqt-common-plugins = ">=1.2.0,<2"
 ros-jazzy-ros2cli = ">=0.32.7,<0.33"
 ros-jazzy-ros2cli-common-extensions = ">=0.3.1,<0.4"
 ros-jazzy-rosidl-cli = ">=4.6.7,<5"
+ros-jazzy-teleop-twist-keyboard = "*"
 
 # Workspace
 ros-jazzy-aruco-ros = { path = "src/aruco_ros/aruco_ros" }
@@ -103,4 +104,4 @@ platformio = ">=6.1.18,<7"
 # Works with Linux and macOS
 RMW_IMPLEMENTATION = "rmw_cyclonedds_cpp"
 ROS_AUTOMATIC_DISCOVERY_RANGE = "SUBNET"  # LOCALHOST, SUBNET
-ROS_DOMAIN_ID = "0"                       # Change to group number
+ROS_DOMAIN_ID = "5"                       # Change to group number

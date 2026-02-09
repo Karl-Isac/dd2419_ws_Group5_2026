@@ -1,0 +1,35 @@
+[0.240s] Invoking command in '/home/grumpy/dd2419_ws_Group5_2026/src/build/aruco_msgs': CMAKE_PREFIX_PATH=/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default DEBUGINFOD_URLS=https://debuginfod.ubuntu.com PIXI_PROMPT=(dd2419_ws) /home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/bin/cmake /home/grumpy/dd2419_ws_Group5_2026/src/aruco_ros/aruco_msgs -DCMAKE_INSTALL_PREFIX=/home/grumpy/dd2419_ws_Group5_2026/src/install/aruco_msgs
+[0.267s] -- Found ament_cmake: 2.5.4 (/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/share/ament_cmake/cmake)
+[0.270s] [0mCMake Deprecation Warning at CMakeLists.txt:1 (cmake_minimum_required):
+[0.270s]   Compatibility with CMake < 3.10 will be removed from a future version of
+[0.270s]   CMake.
+[0.270s] 
+[0.270s]   Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+[0.270s]   to tell CMake that the project requires at least <min> but has been updated
+[0.271s]   to work with policies introduced by <max> or earlier.
+[0.271s] 
+[0.271s] [0m
+[0.947s] -- Found std_msgs: 5.3.6 (/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/share/std_msgs/cmake)
+[0.995s] -- Found rosidl_generator_c: 4.6.7 (/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/share/rosidl_generator_c/cmake)
+[1.014s] -- Found rosidl_generator_cpp: 4.6.7 (/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/share/rosidl_generator_cpp/cmake)
+[1.057s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[1.109s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[1.220s] -- Found geometry_msgs: 5.3.6 (/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/share/geometry_msgs/cmake)
+[1.283s] [31mCMake Error at CMakeLists.txt:12 (find_package):
+[1.283s]   By not providing "Findrosidl_default_generators.cmake" in CMAKE_MODULE_PATH
+[1.283s]   this project has asked CMake to find a package configuration file provided
+[1.283s]   by "rosidl_default_generators", but CMake did not find one.
+[1.283s] 
+[1.283s]   Could not find a package configuration file provided by
+[1.283s]   "rosidl_default_generators" with any of the following names:
+[1.283s] 
+[1.284s]     rosidl_default_generatorsConfig.cmake
+[1.284s]     rosidl_default_generators-config.cmake
+[1.284s] 
+[1.284s]   Add the installation prefix of "rosidl_default_generators" to
+[1.284s]   CMAKE_PREFIX_PATH or set "rosidl_default_generators_DIR" to a directory
+[1.284s]   containing one of the above files.  If "rosidl_default_generators" provides
+[1.284s]   a separate development package or SDK, be sure it has been installed.
+[1.284s] 
+[1.284s] [0m
+[1.290s] -- Configuring incomplete, errors occurred!

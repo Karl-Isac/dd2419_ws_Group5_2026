@@ -1,0 +1,185 @@
+[0.367s] Invoking command in '/home/grumpy/dd2419_ws_Group5_2026/src/build/libphidget22': CMAKE_PREFIX_PATH=/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default DEBUGINFOD_URLS=https://debuginfod.ubuntu.com PIXI_PROMPT=(dd2419_ws) /home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/bin/cmake --build /home/grumpy/dd2419_ws_Group5_2026/src/build/libphidget22 -- -j8 -l8
+[0.395s] [ 12%] [1m[34mCreating directories for 'EP_libphidget22'[0m
+[0.419s] [ 25%] [1m[34mPerforming download step (download, verify and extract) for 'EP_libphidget22'[0m
+[0.426s] -- Downloading...
+[0.426s]    dst='/home/grumpy/dd2419_ws_Group5_2026/src/build/libphidget22/EP_libphidget22-prefix/src/libphidget22-1.19.20240304.tar.gz'
+[0.426s]    timeout='none'
+[0.426s]    inactivity timeout='none'
+[0.427s] -- Using src='https://www.phidgets.com/downloads/phidget22/libraries/linux/libphidget22/libphidget22-1.19.20240304.tar.gz'
+[1.108s] -- [download 1% complete]
+[1.108s] -- [download 3% complete]
+[1.109s] -- [download 4% complete]
+[1.109s] -- [download 5% complete]
+[1.307s] -- [download 6% complete]
+[1.307s] -- [download 7% complete]
+[1.503s] -- [download 9% complete]
+[1.503s] -- [download 10% complete]
+[1.706s] -- [download 11% complete]
+[1.706s] -- [download 13% complete]
+[1.707s] -- [download 14% complete]
+[1.707s] -- [download 16% complete]
+[1.917s] -- [download 17% complete]
+[1.917s] -- [download 18% complete]
+[1.917s] -- [download 20% complete]
+[1.917s] -- [download 21% complete]
+[1.918s] -- [download 22% complete]
+[1.918s] -- [download 23% complete]
+[1.923s] -- [download 24% complete]
+[1.923s] -- [download 26% complete]
+[2.115s] -- [download 28% complete]
+[2.116s] -- [download 29% complete]
+[2.116s] -- [download 30% complete]
+[2.126s] -- [download 31% complete]
+[2.126s] -- [download 32% complete]
+[2.126s] -- [download 34% complete]
+[2.126s] -- [download 35% complete]
+[2.126s] -- [download 36% complete]
+[2.126s] -- [download 38% complete]
+[2.126s] -- [download 39% complete]
+[2.126s] -- [download 41% complete]
+[2.128s] -- [download 43% complete]
+[2.324s] -- [download 44% complete]
+[2.324s] -- [download 45% complete]
+[2.324s] -- [download 47% complete]
+[2.324s] -- [download 48% complete]
+[2.325s] -- [download 49% complete]
+[2.336s] -- [download 50% complete]
+[2.336s] -- [download 51% complete]
+[2.338s] -- [download 53% complete]
+[2.339s] -- [download 54% complete]
+[2.339s] -- [download 55% complete]
+[2.339s] -- [download 57% complete]
+[2.339s] -- [download 58% complete]
+[2.339s] -- [download 59% complete]
+[2.344s] -- [download 60% complete]
+[2.344s] -- [download 61% complete]
+[2.344s] -- [download 63% complete]
+[2.344s] -- [download 64% complete]
+[2.344s] -- [download 66% complete]
+[2.344s] -- [download 67% complete]
+[2.356s] -- [download 68% complete]
+[2.357s] -- [download 70% complete]
+[2.357s] -- [download 71% complete]
+[2.357s] -- [download 72% complete]
+[2.529s] -- [download 73% complete]
+[2.529s] -- [download 74% complete]
+[2.529s] -- [download 76% complete]
+[2.529s] -- [download 77% complete]
+[2.529s] -- [download 78% complete]
+[2.530s] -- [download 79% complete]
+[2.539s] -- [download 80% complete]
+[2.539s] -- [download 82% complete]
+[2.539s] -- [download 83% complete]
+[2.540s] -- [download 84% complete]
+[2.540s] -- [download 86% complete]
+[2.540s] -- [download 87% complete]
+[2.541s] -- [download 88% complete]
+[2.541s] -- [download 90% complete]
+[2.541s] -- [download 91% complete]
+[2.541s] -- [download 93% complete]
+[2.541s] -- [download 94% complete]
+[2.541s] -- [download 95% complete]
+[2.541s] -- [download 97% complete]
+[2.541s] -- [download 98% complete]
+[2.541s] -- [download 99% complete]
+[2.542s] -- [download 100% complete]
+[2.542s] -- verifying file...
+[2.542s]        file='/home/grumpy/dd2419_ws_Group5_2026/src/build/libphidget22/EP_libphidget22-prefix/src/libphidget22-1.19.20240304.tar.gz'
+[2.543s] -- Downloading... done
+[2.593s] -- extracting...
+[2.593s]      src='/home/grumpy/dd2419_ws_Group5_2026/src/build/libphidget22/EP_libphidget22-prefix/src/libphidget22-1.19.20240304.tar.gz'
+[2.593s]      dst='/home/grumpy/dd2419_ws_Group5_2026/src/build/libphidget22/libphidget22-src'
+[2.593s] -- extracting... [tar xf]
+[2.715s] -- extracting... [analysis]
+[2.715s] -- extracting... [rename]
+[2.717s] -- extracting... [clean up]
+[2.717s] -- extracting... done
+[2.747s] [ 37%] [1m[34mNo update step for 'EP_libphidget22'[0m
+[2.792s] [ 50%] [1m[34mNo patch step for 'EP_libphidget22'[0m
+[2.827s] [ 62%] [1m[34mPerforming configure step for 'EP_libphidget22'[0m
+[3.172s] checking for a BSD-compatible install... /usr/bin/install -c
+[3.192s] checking whether build environment is sane... yes
+[3.235s] checking for a race-free mkdir -p... /usr/bin/mkdir -p
+[3.235s] checking for gawk... no
+[3.235s] checking for mawk... mawk
+[3.257s] checking whether make sets $(MAKE)... yes
+[3.279s] checking whether make supports nested variables... yes
+[3.316s] checking whether make supports the include directive... yes (GNU style)
+[3.318s] checking for gcc... gcc
+[3.510s] checking whether the C compiler works... yes
+[3.510s] checking for C compiler default output file name... a.out
+[3.615s] checking for suffix of executables... 
+[3.776s] checking whether we are cross compiling... no
+[3.848s] checking for suffix of object files... o
+[3.917s] checking whether the compiler supports GNU C... yes
+[3.988s] checking whether gcc accepts -g... yes
+[4.138s] checking for gcc option to enable C11 features... none needed
+[4.222s] checking whether gcc understands -c and -o together... yes
+[4.304s] checking dependency style of gcc... gcc3
+[4.304s] checking for ar... ar
+[4.361s] checking the archiver (ar) interface... ar
+[4.509s] checking build system type... x86_64-pc-linux-gnu
+[4.509s] checking host system type... x86_64-pc-linux-gnu
+[4.516s] checking how to print strings... printf
+[4.528s] checking for a sed that does not truncate output... /usr/bin/sed
+[4.539s] checking for grep that handles long lines and -e... /usr/bin/grep
+[4.542s] checking for egrep... /usr/bin/grep -E
+[4.547s] checking for fgrep... /usr/bin/grep -F
+[4.567s] checking for ld used by gcc... /usr/bin/ld
+[4.579s] checking if the linker (/usr/bin/ld) is GNU ld... yes
+[4.590s] checking for BSD- or MS-compatible name lister (nm)... /usr/bin/nm -B
+[4.659s] checking the name lister (/usr/bin/nm -B) interface... BSD nm
+[4.659s] checking whether ln -s works... yes
+[4.687s] checking the maximum length of command line arguments... 1572864
+[4.705s] checking how to convert x86_64-pc-linux-gnu file names to x86_64-pc-linux-gnu format... func_convert_file_noop
+[4.705s] checking how to convert x86_64-pc-linux-gnu file names to toolchain format... func_convert_file_noop
+[4.706s] checking for /usr/bin/ld option to reload object files... -r
+[4.706s] checking for objdump... objdump
+[4.706s] checking how to recognize dependent libraries... pass_all
+[4.706s] checking for dlltool... no
+[4.706s] checking how to associate runtime and link libraries... printf %s\n
+[4.813s] checking for archiver @FILE support... @
+[4.813s] checking for strip... strip
+[4.813s] checking for ranlib... ranlib
+[5.029s] checking command to parse /usr/bin/nm -B output from gcc object... ok
+[5.037s] checking for sysroot... no
+[5.049s] checking for a working dd... /usr/bin/dd
+[5.061s] checking how to truncate binary pipes... /usr/bin/dd bs=4096 count=1
+[5.129s] checking for mt... mt
+[5.144s] checking if mt is a manifest tool... no
+[5.198s] checking for stdio.h... yes
+[5.271s] checking for stdlib.h... yes
+[5.346s] checking for string.h... yes
+[5.428s] checking for inttypes.h... yes
+[5.504s] checking for stdint.h... yes
+[5.577s] checking for strings.h... yes
+[5.676s] checking for sys/stat.h... yes
+[5.786s] checking for sys/types.h... yes
+[5.879s] checking for unistd.h... yes
+[5.985s] checking for dlfcn.h... yes
+[5.988s] checking for objdir... .libs
+[6.224s] checking if gcc supports -fno-rtti -fno-exceptions... no
+[6.225s] checking for gcc option to produce PIC... -fPIC -DPIC
+[6.267s] checking if gcc PIC flag -fPIC -DPIC works... yes
+[6.506s] checking if gcc static flag -static works... yes
+[6.592s] checking if gcc supports -c -o file.o... yes
+[6.592s] checking if gcc supports -c -o file.o... (cached) yes
+[6.635s] checking whether the gcc linker (/usr/bin/ld -m elf_x86_64) supports shared libraries... yes
+[6.719s] checking whether -lc should be explicitly linked in... no
+[6.908s] checking dynamic linker characteristics... GNU/Linux ld.so
+[6.908s] checking how to hardcode library paths into programs... immediate
+[6.915s] checking whether stripping libraries is possible... yes
+[6.915s] checking if libtool supports shared libraries... yes
+[6.915s] checking whether to build shared libraries... yes
+[6.915s] checking whether to build static libraries... yes
+[6.922s] checking whether make supports nested variables... (cached) yes
+[7.174s] checking whether byte ordering is bigendian... no
+[7.174s] checking for ldconfig... /sbin/ldconfig
+[7.290s] checking for library containing dlopen... none required
+[7.535s] checking for library containing sqrt... -lm
+[7.644s] checking for library containing pthread_create... none required
+[7.850s] configure: error: Missing libusb!
+[7.850s] checking for library containing libusb_init... no
+[7.941s] gmake[2]: *** [CMakeFiles/EP_libphidget22.dir/build.make:92: EP_libphidget22-prefix/src/EP_libphidget22-stamp/EP_libphidget22-configure] Error 1
+[7.941s] gmake[1]: *** [CMakeFiles/Makefile2:153: CMakeFiles/EP_libphidget22.dir/all] Error 2
+[7.941s] gmake: *** [Makefile:146: all] Error 2

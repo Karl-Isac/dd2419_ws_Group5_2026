@@ -1,0 +1,1 @@
+ros2 bag record -o myrosbag /realsense/color/image_raw /realsense/depth/image_rect_raw realsense/depth/color/points /arm/camera/image_raw /lidar/scan /phidgets/motor/encoders /phidgets/imu/data_raw /arm/feedback

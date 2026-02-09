@@ -523,6 +523,7 @@ environments:
       - conda: https://prefix.dev/robostack-jazzy/linux-64/ros-jazzy-std-msgs-5.3.6-np2py312h2ed9cc7_14.conda
       - conda: https://prefix.dev/robostack-jazzy/linux-64/ros-jazzy-std-srvs-5.3.6-np2py312h2ed9cc7_14.conda
       - conda: https://prefix.dev/robostack-jazzy/linux-64/ros-jazzy-tango-icons-vendor-0.3.0-np2py312h2ed9cc7_14.conda
+      - conda: https://prefix.dev/robostack-jazzy/linux-64/ros-jazzy-teleop-twist-keyboard-2.4.1-np2py312h2ed9cc7_14.conda
       - conda: https://prefix.dev/robostack-jazzy/linux-64/ros-jazzy-tf-transformations-1.1.0-np2py312h2ed9cc7_14.conda
       - conda: https://prefix.dev/robostack-jazzy/linux-64/ros-jazzy-tf2-0.36.18-np2py312h2ed9cc7_14.conda
       - conda: https://prefix.dev/robostack-jazzy/linux-64/ros-jazzy-tf2-geometry-msgs-0.36.18-np2py312h2ed9cc7_14.conda
@@ -1101,6 +1102,7 @@ environments:
       - conda: https://prefix.dev/robostack-jazzy/osx-arm64/ros-jazzy-std-msgs-5.3.6-np2py312h50b1e4c_14.conda
       - conda: https://prefix.dev/robostack-jazzy/osx-arm64/ros-jazzy-std-srvs-5.3.6-np2py312h50b1e4c_14.conda
       - conda: https://prefix.dev/robostack-jazzy/osx-arm64/ros-jazzy-tango-icons-vendor-0.3.0-np2py312h50b1e4c_14.conda
+      - conda: https://prefix.dev/robostack-jazzy/osx-arm64/ros-jazzy-teleop-twist-keyboard-2.4.1-np2py312h50b1e4c_14.conda
       - conda: https://prefix.dev/robostack-jazzy/osx-arm64/ros-jazzy-tf-transformations-1.1.0-np2py312h50b1e4c_14.conda
       - conda: https://prefix.dev/robostack-jazzy/osx-arm64/ros-jazzy-tf2-0.36.18-np2py312h50b1e4c_14.conda
       - conda: https://prefix.dev/robostack-jazzy/osx-arm64/ros-jazzy-tf2-geometry-msgs-0.36.18-np2py312h50b1e4c_14.conda
@@ -1616,6 +1618,7 @@ environments:
       - conda: https://prefix.dev/robostack-jazzy/win-64/ros-jazzy-std-msgs-5.3.6-np2py312hf80f32c_14.conda
       - conda: https://prefix.dev/robostack-jazzy/win-64/ros-jazzy-std-srvs-5.3.6-np2py312hf80f32c_14.conda
       - conda: https://prefix.dev/robostack-jazzy/win-64/ros-jazzy-tango-icons-vendor-0.3.0-np2py312hf80f32c_14.conda
+      - conda: https://prefix.dev/robostack-jazzy/win-64/ros-jazzy-teleop-twist-keyboard-2.4.1-np2py312hf80f32c_14.conda
       - conda: https://prefix.dev/robostack-jazzy/win-64/ros-jazzy-tf-transformations-1.1.0-np2py312hf80f32c_14.conda
       - conda: https://prefix.dev/robostack-jazzy/win-64/ros-jazzy-tf2-0.36.18-np2py312hf80f32c_14.conda
       - conda: https://prefix.dev/robostack-jazzy/win-64/ros-jazzy-tf2-geometry-msgs-0.36.18-np2py312hf80f32c_14.conda
@@ -24878,6 +24881,65 @@ packages:
   license: Apache-2.0 OR Unlicense
   size: 536380
   timestamp: 1768981666036
+- conda: https://prefix.dev/robostack-jazzy/linux-64/ros-jazzy-teleop-twist-keyboard-2.4.1-np2py312h2ed9cc7_14.conda
+  sha256: 2d835575ce4219566144d3fe79f7b47551da7044df5e3bad848ec9320f9fb0f8
+  md5: 8f44b961d89de42755409f6f5b070b73
+  depends:
+  - python
+  - ros-jazzy-geometry-msgs
+  - ros-jazzy-rcl-interfaces
+  - ros-jazzy-rclpy
+  - ros-jazzy-ros-workspace
+  - ros2-distro-mutex 0.13.* jazzy_*
+  - libstdcxx >=14
+  - libgcc >=14
+  - __glibc >=2.17,<3.0.a0
+  - ros2-distro-mutex >=0.13.0,<0.14.0a0
+  - numpy >=1.23,<3
+  - python_abi 3.12.* *_cp312
+  license: BSD-2-Clause
+  size: 24384
+  timestamp: 1768978506990
+- conda: https://prefix.dev/robostack-jazzy/osx-arm64/ros-jazzy-teleop-twist-keyboard-2.4.1-np2py312h50b1e4c_14.conda
+  sha256: ad4d0898c5d2faea9863624e21c3b404b6617fb464f7149357e731bb48a61123
+  md5: 5c2222eb7f4ee52586ae94cbb47af681
+  depends:
+  - python
+  - ros-jazzy-geometry-msgs
+  - ros-jazzy-rcl-interfaces
+  - ros-jazzy-rclpy
+  - ros-jazzy-ros-workspace
+  - ros2-distro-mutex 0.13.* jazzy_*
+  - libcxx >=18
+  - __osx >=11.0
+  - numpy >=1.23,<3
+  - ros2-distro-mutex >=0.13.0,<0.14.0a0
+  - python_abi 3.12.* *_cp312
+  license: BSD-2-Clause
+  size: 24743
+  timestamp: 1769004184064
+- conda: https://prefix.dev/robostack-jazzy/win-64/ros-jazzy-teleop-twist-keyboard-2.4.1-np2py312hf80f32c_14.conda
+  sha256: e33db91d24a92fde69c770a9ada5b8f9de3f39d8a6486701847bdf26f4e5adf4
+  md5: 8b729263384abcde5dd8cf1847b71f0c
+  depends:
+  - python
+  - ros-jazzy-geometry-msgs
+  - ros-jazzy-rcl-interfaces
+  - ros-jazzy-rclpy
+  - ros-jazzy-ros-workspace
+  - ros2-distro-mutex 0.13.* jazzy_*
+  - vc >=14.3,<15
+  - vc14_runtime >=14.44.35208
+  - ucrt >=10.0.20348.0
+  - vc >=14.3,<15
+  - vc14_runtime >=14.44.35208
+  - ucrt >=10.0.20348.0
+  - numpy >=1.23,<3
+  - python_abi 3.12.* *_cp312
+  - ros2-distro-mutex >=0.13.0,<0.14.0a0
+  license: BSD-2-Clause
+  size: 30022
+  timestamp: 1768996368044
 - conda: https://prefix.dev/robostack-jazzy/linux-64/ros-jazzy-tf-transformations-1.1.0-np2py312h2ed9cc7_14.conda
   sha256: 238bb9073c3f447c3f24c5a57e8007006473027f334bd327f83047637fd6c981
   md5: 98613df3c49e3d49af8fb1fc9d064a5e

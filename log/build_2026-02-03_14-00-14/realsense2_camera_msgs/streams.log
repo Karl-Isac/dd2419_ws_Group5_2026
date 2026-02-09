@@ -1,0 +1,43 @@
+[0.284s] Invoking command in '/home/grumpy/dd2419_ws_Group5_2026/build/realsense2_camera_msgs': CMAKE_PREFIX_PATH=/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default DEBUGINFOD_URLS=https://debuginfod.ubuntu.com PIXI_PROMPT=(dd2419_ws) PS1=(dd2419_ws) \[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ /home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/bin/cmake /home/grumpy/dd2419_ws_Group5_2026/src/realsense-ros/realsense2_camera_msgs -DCMAKE_INSTALL_PREFIX=/home/grumpy/dd2419_ws_Group5_2026/install/realsense2_camera_msgs
+[0.338s] [0mCMake Deprecation Warning at CMakeLists.txt:15 (cmake_minimum_required):
+[0.338s]   Compatibility with CMake < 3.10 will be removed from a future version of
+[0.338s]   CMake.
+[0.338s] 
+[0.338s]   Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+[0.338s]   to tell CMake that the project requires at least <min> but has been updated
+[0.338s]   to work with policies introduced by <max> or earlier.
+[0.338s] 
+[0.338s] [0m
+[0.567s] -- The C compiler identification is GNU 13.3.0
+[0.654s] -- The CXX compiler identification is GNU 13.3.0
+[0.664s] -- Detecting C compiler ABI info
+[0.759s] -- Detecting C compiler ABI info - done
+[0.781s] -- Check for working C compiler: /usr/bin/cc - skipped
+[0.781s] -- Detecting C compile features
+[0.781s] -- Detecting C compile features - done
+[0.802s] -- Detecting CXX compiler ABI info
+[0.895s] -- Detecting CXX compiler ABI info - done
+[0.921s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[0.922s] -- Detecting CXX compile features
+[0.923s] -- Detecting CXX compile features - done
+[0.933s] -- Found ament_cmake: 2.5.4 (/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/share/ament_cmake/cmake)
+[1.067s] -- Found Python3: /home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/bin/python3 (found version "3.12.12") found components: Interpreter
+[1.239s] [31mCMake Error at CMakeLists.txt:32 (find_package):
+[1.239s]   By not providing "Findrosidl_default_generators.cmake" in CMAKE_MODULE_PATH
+[1.239s]   this project has asked CMake to find a package configuration file provided
+[1.239s]   by "rosidl_default_generators", but CMake did not find one.
+[1.240s] 
+[1.240s]   Could not find a package configuration file provided by
+[1.240s]   "rosidl_default_generators" with any of the following names:
+[1.240s] 
+[1.240s]     rosidl_default_generatorsConfig.cmake
+[1.240s]     rosidl_default_generators-config.cmake
+[1.240s] 
+[1.241s]   Add the installation prefix of "rosidl_default_generators" to
+[1.243s]   CMAKE_PREFIX_PATH or set "rosidl_default_generators_DIR" to a directory
+[1.244s]   containing one of the above files.  If "rosidl_default_generators" provides
+[1.244s]   a separate development package or SDK, be sure it has been installed.
+[1.244s] 
+[1.245s] [0m
+[1.245s] -- Configuring incomplete, errors occurred!
+[1.251s] Invoked command in '/home/grumpy/dd2419_ws_Group5_2026/build/realsense2_camera_msgs' returned '1': CMAKE_PREFIX_PATH=/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default DEBUGINFOD_URLS=https://debuginfod.ubuntu.com PIXI_PROMPT=(dd2419_ws) PS1=(dd2419_ws) \[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ /home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/bin/cmake /home/grumpy/dd2419_ws_Group5_2026/src/realsense-ros/realsense2_camera_msgs -DCMAKE_INSTALL_PREFIX=/home/grumpy/dd2419_ws_Group5_2026/install/realsense2_camera_msgs
