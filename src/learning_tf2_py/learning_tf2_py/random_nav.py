@@ -8,7 +8,6 @@ from rclpy.node import Node
 
 import tf2_ros
 
-# CHANGE THIS IMPORT IF YOUR DutyCycles MESSAGE LIVES ELSEWHERE:
 from robp_interfaces.msg import DutyCycles
 
 
@@ -28,10 +27,10 @@ class RandomNavNode(Node):
         super().__init__("random_nav_node")
 
         # Rectangle bounds (in the same frame you use for pose, e.g. "odom" or "map")
-        self.declare_parameter("xmin", 0.0)
-        self.declare_parameter("xmax", 3.0)
-        self.declare_parameter("ymin", 0.0)
-        self.declare_parameter("ymax", 2.0)
+        self.declare_parameter("xmin", -0.5)
+        self.declare_parameter("xmax", 0.5)
+        self.declare_parameter("ymin", -0.5)
+        self.declare_parameter("ymax", 0.5)
 
         # Frames: choose what pose frame you want to navigate in
         # For MS1, "odom" is usually fine (no localization needed).
@@ -44,10 +43,9 @@ class RandomNavNode(Node):
         self.declare_parameter("rate_hz", 20.0)
 
         # Duty-cycle commands (keep it simple)
-        self.declare_parameter("duty_forward", 0.1)  # 0..1 typical (confirm for your robot)
-        self.declare_parameter("duty_turn", 0.10)     # turning duty
+        self.declare_parameter("duty_forward", 0.2)  # 0..1 typical (confirm for your robot)
+        self.declare_parameter("duty_turn", 0.15)     # turning duty
 
-        # Publisher: a single message with both wheels (typical)
         # self.cmd_pub = self.create_publisher(DutyCycles, "/wheel_duty_cycles", 10)
         self.cmd_pub = self.create_publisher(DutyCycles, "/phidgets/motor/duty_cycles", 10)
 
@@ -57,6 +55,8 @@ class RandomNavNode(Node):
 
         # State
         self.goal = None
+
+        rclpy.get_default_context().on_shutdown(self.stop)
 
         dt = 1.0 / float(self.get_parameter("rate_hz").value)
         self.timer = self.create_timer(dt, self.step)
@@ -88,12 +88,13 @@ class RandomNavNode(Node):
 
     def publish_duty(self, left: float, right: float):
         msg = DutyCycles()
-        # Common field names are left/right. If yours differ, change these.
         msg.duty_cycle_left = float(left)
         msg.duty_cycle_right = float(right)
         self.cmd_pub.publish(msg)
 
     def stop(self):
+        #print("stop function")
+        self.get_logger().info("stop function")
         self.publish_duty(0.0, 0.0)
 
     def step(self):
@@ -106,6 +107,13 @@ class RandomNavNode(Node):
             return
 
         x, y, yaw = pose
+
+        #self.get_logger().info(
+        #    f"{self.get_parameter('world_frame').value} -> {self.get_parameter('base_frame').value}" + "\n" +
+        #    f"x:{x}, y:{y}, yaw{yaw}",
+        #    throttle_duration_sec=1.0,
+        #)
+
         gx, gy = self.goal
 
         dx, dy = gx - x, gy - y
@@ -139,8 +147,11 @@ class RandomNavNode(Node):
 def main():
     rclpy.init()
     node = RandomNavNode()
+    #print("hello")
     try:
         rclpy.spin(node)
+    #except KeyboardInterrupt as ki:
+    #    node.stop()
     finally:
         node.stop()
         node.destroy_node()

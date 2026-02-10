@@ -23,6 +23,8 @@ arm_camera = { cmd = "ros2 launch robp_launch arm_camera_launch.yaml" }
 lidar = { cmd = "ros2 launch robp_launch lidar_launch.yaml" }
 phidgets = { cmd = "ros2 launch robp_launch phidgets_launch.yaml" }
 realsense = { cmd = "ros2 launch robp_launch realsense_launch.yaml" }
+keyboard = { cmd = "ros2 run learning_tf2_py keyboard" }
+rviz = { cmd = "ros2 run rviz2 rviz2"}
 
 [tasks.install_udev_rules]
 cmd = '''
