@@ -41,9 +41,22 @@ class Detection(Node):
 
         # Static TF broadcaster
         self.static_broadcaster = StaticTransformBroadcaster(self)
+
         self.red_published = False
         self.red_available = False
         self.red_timestamp = None
+
+        self.blue_published = False
+        self.blue_available = False
+        self.blue_timestamp = None
+
+        self.green_published = False
+        self.green_available = False
+        self.green_timestamp = None
+        
+        self.wood_published = False
+        self.wood_available = False
+        self.wood_timestamp = None
 
         # static_tf = TransformStamped()
         # static_tf.header.stamp = self.get_clock().now().to_msg()
