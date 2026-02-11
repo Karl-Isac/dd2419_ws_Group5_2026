@@ -134,7 +134,7 @@ class Detection(Node):
 
         for idx in range(points.shape[0]):
             x, y, z = points[idx]
-            if x < 0:
+            if y > 0.05 and z < 1.0 and z > 0.05:
                 # red
                 if colors[idx, 0] > 0.5 and colors[idx, 1] < 0.4 and colors[idx, 2] < 0.4:
                     red_counter += 1
