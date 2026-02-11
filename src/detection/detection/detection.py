@@ -223,7 +223,8 @@ class Detection(Node):
         # blue
         if blue_counter > 10 and not self.blue_available:
             self.get_logger().info('Blue object detected.')
-            self.get_logger().info(f'coordinates: x={blue_sum_x / blue_counter}, y={blue_sum_y / blue_counter}, z={blue_sum_z / blue_counter}')   
+            self.get_logger().info(f'coordinates: x={blue_sum_x / blue_counter}, y={blue_sum_y / blue_counter}, z={blue_sum_z / blue_counter}')  
+            self.get_logger().info(f'color: r={colors[idx, 0]}, g={colors[idx, 1]}, b={colors[idx, 2]}') 
             self.blue = tf2_geometry_msgs.PoseStamped()
             self.blue.header = msg.header
             self.blue.pose.position.x = blue_sum_x / blue_counter
