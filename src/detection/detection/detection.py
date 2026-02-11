@@ -134,7 +134,9 @@ class Detection(Node):
 
         for idx in range(points.shape[0]):
             x, y, z = points[idx]
-            r, g, b = colors[idx]
+            r = colors[idx, 0]
+            g = colors[idx, 1]
+            b = colors[idx, 2]
             h, s, v = self.rgb_to_hsv(r, g, b)
             if y > 0 and z > 0 and z < 0.5:
                 # red
