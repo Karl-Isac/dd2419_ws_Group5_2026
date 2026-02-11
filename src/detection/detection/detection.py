@@ -434,7 +434,7 @@ class Detection(Node):
         #     self.static_broadcaster.sendTransform(tf_red)
         #     self.red_published = True
     
-    def rgb_to_hsv(r, g, b):
+    def rgb_to_hsv(self, r, g, b):
         c_max = max(r, g, b)
         c_min = min(r, g, b)
         delta = c_max - c_min
