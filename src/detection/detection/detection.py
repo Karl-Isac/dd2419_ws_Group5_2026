@@ -53,8 +53,9 @@ class Detection(Node):
         self.green_published = False
         self.green_available = False
         self.green_timestamp = None
-        
+
         self.wood_published = False
+
         self.wood_available = False
         self.wood_timestamp = None
 
@@ -221,7 +222,8 @@ class Detection(Node):
 
         # blue
         if blue_counter > 10 and not self.blue_available:
-            self.get_logger().info('Blue object detected.')   
+            self.get_logger().info('Blue object detected.')
+            self.get_logger().info(f'coordinates: x={blue_sum_x / blue_counter}, y={blue_sum_y / blue_counter}, z={blue_sum_z / blue_counter}')   
             self.blue = tf2_geometry_msgs.PoseStamped()
             self.blue.header = msg.header
             self.blue.pose.position.x = blue_sum_x / blue_counter
