@@ -140,28 +140,28 @@ class Detection(Node):
             h, s, v = self.rgb_to_hsv(r, g, b)
             if y > 0 and z > 0 and z < 0.5:
                 # red
-                if (h <= 10 or h >= 160) and s > 0.5 and v > 0.4:
+                if is_red(h, s, v):
                     red_counter += 1
                     red_points.append([x,y,z])
                     red_sum_x += x
                     red_sum_y += y
                     red_sum_z += z
                 # blue
-                if (h >= 180 and h <= 240) and s > 0.5 and v > 0.4:
+                elif is_blue(h,s,v):
                     blue_counter += 1
                     blue_points.append([x,y,z])
                     blue_sum_x += x
                     blue_sum_y += y
                     blue_sum_z += z
                 # green
-                if 80 <= h <= 140 and s > 0.5 and v > 0.4:
+                elif is_green(h,s,v):
                     green_counter += 1
                     green_points.append([x,y,z])
                     green_sum_x += x
                     green_sum_y += y
                     green_sum_z += z
                 # wood
-                if 20 <= h <= 40 and s > 0.3 and v > 0.5:
+                elif is_wood(h,s,v):
                     wood_counter += 1
                     wood_points.append([x,y,z])
                     wood_sum_x += x
@@ -227,8 +227,6 @@ class Detection(Node):
         # blue
         if blue_counter > 15 and not self.blue_available:
             self.get_logger().info('Blue object detected.')
-            self.get_logger().info(f'coordinates: x={blue_sum_x / blue_counter}, y={blue_sum_y / blue_counter}, z={blue_sum_z / blue_counter}')  
-            self.get_logger().info(f'color: r={colors[idx, 0]}, g={colors[idx, 1]}, b={colors[idx, 2]}') 
             self.blue = tf2_geometry_msgs.PoseStamped()
             self.blue.header = msg.header
             self.blue.pose.position.x = blue_sum_x / blue_counter
@@ -283,7 +281,7 @@ class Detection(Node):
             self.blue_published = True
         
         # green
-        if green_counter > 5 and not self.green_available:
+        if green_counter > 15 and not self.green_available:
             self.get_logger().info('Green object detected.')   
             self.green = tf2_geometry_msgs.PoseStamped()
             self.green.header = msg.header
@@ -339,7 +337,7 @@ class Detection(Node):
             self.green_published = True
 
         # wood
-        if wood_counter > 5 and not self.wood_available:
+        if wood_counter > 15 and not self.wood_available:
             self.get_logger().info('Wood object detected.')   
             self.wood = tf2_geometry_msgs.PoseStamped()
             self.wood.header = msg.header
@@ -454,6 +452,7 @@ class Detection(Node):
 
         return h, s, v
         
+    
  
 def main():
     rclpy.init()
@@ -465,6 +464,17 @@ def main():
 
     rclpy.shutdown()
 
+def is_red(h,s,v):
+    return True if (h <= 20 or h >= 340) and s > 0.5 and v > 0.4 else False
+
+def is_blue(h,s,v):
+    return True if (h >= 200 and h <= 260) and s > 0.55 and v > 0.45 else False
+
+def is_green(h,s,v):
+    return True if 120 <= h <= 190 and s > 0.4 and v > 0.4 else False
+
+def is_wood(h,s,v):
+    return True if 20 <= h <= 60 and 0 < s < 0.6 and v > 0.4 else False
 
 if __name__ == '__main__':
     main()
