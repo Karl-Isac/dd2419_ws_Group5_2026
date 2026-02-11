@@ -97,11 +97,12 @@ class Detection(Node):
             colors[idx, 2] = np.asarray(pack & 255, dtype=np.uint8)
 
         colors = colors.astype(np.float32) / 255
+        HSV_colors = self.color_converter(colors)
 
         for idx in range(points.shape[0]):
             x, y, z = points[idx]
-            if x < 0.5:
-                if colors[idx, 0] < 0.4 and colors[idx, 1] < 0.4 and colors[idx, 2] > 0.5:
+            if x < 0.5 and z < 0:
+                if HSV_colors[idx, 0] > 200 and HSV_colors[idx, 0] < 260 and HSV_colors[idx, 1] > 40 and HSV_colors[idx, 2] > 20:
                     counter += 1
                     red_points.append([x,y,z])
                     sum_x += x
@@ -114,7 +115,7 @@ class Detection(Node):
            
         
         if counter > 10 and not self.red_available:
-            self.get_logger().info('Blue object detected.')   
+            self.get_logger().info('HSV_Blue object detected.')   
             self.red = tf2_geometry_msgs.PoseStamped()
             self.red.header = msg.header
             self.red.pose.position.x = sum_x / counter
