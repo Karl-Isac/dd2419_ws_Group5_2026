@@ -208,7 +208,31 @@ class Detection(Node):
         #     self.static_broadcaster.sendTransform(tf_red)
         #     self.red_published = True
         
-        
+    def color_converter(self, RGB_colors):
+        RGB_colors = RGB_colors.astype(np.float32) / 255.0
+        HSV_colors = np.empty(RGB_colors.shape, dtype=np.float32)
+        for idx in range(RGB_colors.shape[0]):
+            r, g, b = RGB_colors[idx]
+            mx = max(r, g, b)
+            mn = min(r, g, b)
+            h = 0
+            s = 0
+            v = mx
+
+            if mx != 0:
+                s = (mx - mn) / mx
+                if r == mx:
+                    h = (g - b) / (mx - mn)
+                elif g == mx:
+                    h = 2 + (b - r) / (mx - mn)
+                else:
+                    h = 4 + (r - g) / (mx - mn)
+            
+            if h < 0:
+                h += 6
+
+            HSV_colors[idx] = np.array([h * 60, s * 100, v * 100], dtype=np.float32)
+        return HSV_colors
  
 def main():
     rclpy.init()
