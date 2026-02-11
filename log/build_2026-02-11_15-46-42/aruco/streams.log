@@ -1,0 +1,20 @@
+[0.174s] Invoking command in '/home/grumpy/dd2419_ws_Group5_2026/build/aruco': CMAKE_PREFIX_PATH=/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default DEBUGINFOD_URLS=https://debuginfod.ubuntu.com PIXI_PROMPT=(dd2419_ws) /home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/bin/cmake --build /home/grumpy/dd2419_ws_Group5_2026/build/aruco -- -j8 -l8
+[0.233s] [  5%] [32mBuilding CXX object CMakeFiles/aruco.dir/src/aruco/cvdrawingutils.cpp.o[0m
+[0.235s] [ 11%] [32mBuilding CXX object CMakeFiles/aruco.dir/src/aruco/dictionary_based.cpp.o[0m
+[0.238s] [ 16%] [32mBuilding CXX object CMakeFiles/aruco.dir/src/aruco/cameraparameters.cpp.o[0m
+[0.242s] [ 22%] [32mBuilding CXX object CMakeFiles/aruco.dir/src/aruco/debug.cpp.o[0m
+[0.245s] [ 27%] [32mBuilding CXX object CMakeFiles/aruco.dir/src/aruco/dictionary.cpp.o[0m
+[0.248s] [ 33%] [32mBuilding CXX object CMakeFiles/aruco.dir/src/aruco/fractaldetector.cpp.o[0m
+[0.248s] [ 38%] [32mBuilding CXX object CMakeFiles/aruco.dir/src/aruco/ippe.cpp.o[0m
+[0.253s] [ 44%] [32mBuilding CXX object CMakeFiles/aruco.dir/src/aruco/marker.cpp.o[0m
+[1.449s] [ 50%] [32mBuilding CXX object CMakeFiles/aruco.dir/src/aruco/markerdetector_impl.cpp.o[0m
+[2.859s] [ 55%] [32mBuilding CXX object CMakeFiles/aruco.dir/src/aruco/markerdetector.cpp.o[0m
+[3.397s] [ 61%] [32mBuilding CXX object CMakeFiles/aruco.dir/src/aruco/markerlabeler.cpp.o[0m
+[3.481s] [ 66%] [32mBuilding CXX object CMakeFiles/aruco.dir/src/aruco/markermap.cpp.o[0m
+[3.670s] [ 72%] [32mBuilding CXX object CMakeFiles/aruco.dir/src/aruco/posetracker.cpp.o[0m
+[4.259s] [ 77%] [32mBuilding CXX object CMakeFiles/aruco.dir/src/aruco/fractallabelers/fractallabeler.cpp.o[0m
+[4.405s] [ 83%] [32mBuilding CXX object CMakeFiles/aruco.dir/src/aruco/fractallabelers/fractalmarker.cpp.o[0m
+[5.075s] [ 88%] [32mBuilding CXX object CMakeFiles/aruco.dir/src/aruco/fractallabelers/fractalmarkerset.cpp.o[0m
+[5.433s] [ 94%] [32mBuilding CXX object CMakeFiles/aruco.dir/src/aruco/fractallabelers/fractalposetracker.cpp.o[0m
+[12.206s] [100%] [1m[32mLinking CXX shared library libaruco.so[0m
+[12.911s] [100%] Built target aruco

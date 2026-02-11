@@ -1,0 +1,253 @@
+[0.131s] Invoking command in '/home/grumpy/dd2419_ws_Group5_2026/build/librealsense2': CMAKE_PREFIX_PATH=/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default DEBUGINFOD_URLS=https://debuginfod.ubuntu.com PIXI_PROMPT=(dd2419_ws) /home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/bin/cmake --build /home/grumpy/dd2419_ws_Group5_2026/build/librealsense2 -- -j8 -l8
+[0.747s] [  0%] [32mBuilding C object common/fw/CMakeFiles/fw.dir/empty.c.o[0m
+[0.747s] [  0%] [32mBuilding C object common/fw/CMakeFiles/fw.dir/D4XX_FW_Image.c.o[0m
+[0.747s] [  0%] [32mBuilding CXX object tools/embed/CMakeFiles/rs-embed.dir/rs-embed.cpp.o[0m
+[0.747s] [  0%] [32mBuilding C object tools/embed/CMakeFiles/rs-embed.dir/__/__/third-party/realsense-file/lz4/lz4.c.o[0m
+[0.747s] [  0%] [32mBuilding CXX object third-party/realsense-file/CMakeFiles/realsense-file.dir/rosbag/console_bridge/src/console.cpp.o[0m
+[0.747s] [  0%] [32mBuilding CXX object third-party/realsense-file/CMakeFiles/realsense-file.dir/rosbag/cpp_common/src/debug.cpp.o[0m
+[0.747s] [  0%] [32mBuilding CXX object third-party/rsutils/CMakeFiles/rsutils.dir/__/easyloggingpp/src/easylogging++.cc.o[0m
+[0.747s] [  1%] [32mBuilding CXX object third-party/realsense-file/CMakeFiles/realsense-file.dir/rosbag/cpp_common/src/header.cpp.o[0m
+[0.747s] [  1%] [32mBuilding CXX object third-party/rsutils/CMakeFiles/rsutils.dir/src/byte-manipulation.cpp.o[0m
+[0.747s] [  1%] [1m[32mLinking C static library ../../Release/libfw.a[0m
+[0.748s] [  1%] Built target fw
+[0.748s] [  1%] [32mBuilding CXX object third-party/realsense-file/CMakeFiles/realsense-file.dir/rosbag/rosbag_storage/src/bag.cpp.o[0m
+[0.748s] [  1%] [32mBuilding CXX object third-party/rsutils/CMakeFiles/rsutils.dir/src/configure-elpp-logger.cpp.o[0m
+[1.716s] [  1%] [32mBuilding CXX object third-party/realsense-file/CMakeFiles/realsense-file.dir/rosbag/rosbag_storage/src/bag_player.cpp.o[0m
+[1.904s] [  1%] [32mBuilding CXX object third-party/realsense-file/CMakeFiles/realsense-file.dir/rosbag/rosbag_storage/src/buffer.cpp.o[0m
+[1.933s] [  1%] [32mBuilding CXX object third-party/rsutils/CMakeFiles/rsutils.dir/src/control-c-handler.cpp.o[0m
+[2.092s] [  2%] [32mBuilding CXX object third-party/rsutils/CMakeFiles/rsutils.dir/src/crc32.cpp.o[0m
+[2.208s] [  2%] [32mBuilding CXX object third-party/rsutils/CMakeFiles/rsutils.dir/src/dispatcher.cpp.o[0m
+[3.210s] [  2%] [32mBuilding CXX object third-party/rsutils/CMakeFiles/rsutils.dir/src/ensure-console.cpp.o[0m
+[3.280s] [  2%] [32mBuilding CXX object third-party/rsutils/CMakeFiles/rsutils.dir/src/eth-config.cpp.o[0m
+[4.168s] [  2%] [32mBuilding CXX object third-party/realsense-file/CMakeFiles/realsense-file.dir/rosbag/rosbag_storage/src/chunked_file.cpp.o[0m
+[5.160s] [  2%] [32mBuilding CXX object third-party/rsutils/CMakeFiles/rsutils.dir/src/executable-name.cpp.o[0m
+[5.317s] [  2%] [32mBuilding CXX object third-party/rsutils/CMakeFiles/rsutils.dir/src/float3.cpp.o[0m
+[5.589s] [  3%] [32mBuilding CXX object third-party/realsense-file/CMakeFiles/realsense-file.dir/rosbag/rosbag_storage/src/lz4_stream.cpp.o[0m
+[5.937s] [  3%] [32mBuilding CXX object third-party/realsense-file/CMakeFiles/realsense-file.dir/rosbag/rosbag_storage/src/message_instance.cpp.o[0m
+[6.275s] [  4%] [32mBuilding CXX object third-party/rsutils/CMakeFiles/rsutils.dir/src/fourcc.cpp.o[0m
+[6.698s] [  4%] [32mBuilding CXX object third-party/realsense-file/CMakeFiles/realsense-file.dir/rosbag/rosbag_storage/src/query.cpp.o[0m
+[7.026s] [  4%] [32mBuilding CXX object third-party/rsutils/CMakeFiles/rsutils.dir/src/from.cpp.o[0m
+[7.941s] [  4%] [32mBuilding CXX object third-party/realsense-file/CMakeFiles/realsense-file.dir/rosbag/rosbag_storage/src/stream.cpp.o[0m
+[7.990s] [  4%] [32mBuilding CXX object third-party/realsense-file/CMakeFiles/realsense-file.dir/rosbag/rosbag_storage/src/uncompressed_stream.cpp.o[0m
+[8.288s] In file included from [01m[K/usr/include/features.h:502[m[K,
+[8.288s]                  from [01m[K/usr/include/x86_64-linux-gnu/c++/13/bits/os_defines.h:39[m[K,
+[8.288s]                  from [01m[K/usr/include/x86_64-linux-gnu/c++/13/bits/c++config.h:679[m[K,
+[8.288s]                  from [01m[K/usr/include/c++/13/ctime:41[m[K,
+[8.288s]                  from [01m[K/home/grumpy/dd2419_ws_Group5_2026/src/librealsense/third-party/easyloggingpp/src/easylogging++.h:354[m[K,
+[8.289s]                  from [01m[K/home/grumpy/dd2419_ws_Group5_2026/src/librealsense/third-party/easyloggingpp/src/easylogging++.cc:17[m[K:
+[8.289s] In function ‘[01m[Ksize_t[01;32m[K wcstombs[m[K(char*, const wchar_t*, size_t)[m[K’,
+[8.289s]     inlined from ‘[01m[Kstatic char* el::base::utils::Str::[01;32m[KwcharPtrToCharPtr[m[K(const wchar_t*)[m[K’ at [01m[K/home/grumpy/dd2419_ws_Group5_2026/src/librealsense/third-party/easyloggingpp/src/easylogging++.cc:1022:16[m[K:
+[8.289s] [01m[K/usr/include/x86_64-linux-gnu/bits/stdlib.h:146:10:[m[K [01;35m[Kwarning: [m[K‘[01m[Ksize_t[01;32m[K __wcstombs_alias[m[K(char*, const wchar_t*, size_t)[m[K’ specified size 18446744073709551614 exceeds maximum object size 9223372036854775807 [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wstringop-overflow=-Wstringop-overflow=]8;;[m[K]
+[8.289s]   146 |   return [01;35m[K__glibc_fortify[m[K (wcstombs, __len, sizeof (char),
+[8.289s]       |          [01;35m[K^~~~~~~~~~~~~~~[m[K
+[8.289s] [01m[K/usr/include/x86_64-linux-gnu/bits/stdlib.h:[m[K In static member function ‘[01m[Kstatic char* el::base::utils::Str::[01;32m[KwcharPtrToCharPtr[m[K(const wchar_t*)[m[K’:
+[8.289s] [01m[K/usr/include/x86_64-linux-gnu/bits/stdlib.h:131:15:[m[K [01;36m[Knote: [m[Kin a call to function ‘[01m[Ksize_t[01;32m[K __wcstombs_alias[m[K(char*, const wchar_t*, size_t)[m[K’ declared with attribute ‘[01m[Kaccess (read_only, 2)[m[K’
+[8.289s]   131 | extern size_t [01;36m[K__REDIRECT_NTH[m[K (__wcstombs_alias,
+[8.289s]       |               [01;36m[K^~~~~~~~~~~~~~[m[K
+[8.587s] [  5%] [32mBuilding CXX object third-party/realsense-file/CMakeFiles/realsense-file.dir/rosbag/rosbag_storage/src/view.cpp.o[0m
+[8.697s] [  5%] [32mBuilding CXX object third-party/realsense-file/CMakeFiles/realsense-file.dir/rosbag/roscpp_serialization/src/serialization.cpp.o[0m
+[8.724s] [  5%] [32mBuilding CXX object third-party/rsutils/CMakeFiles/rsutils.dir/src/hexarray.cpp.o[0m
+[8.925s] [  5%] [32mBuilding C object third-party/realsense-file/CMakeFiles/realsense-file.dir/rosbag/roslz4/src/lz4s.c.o[0m
+[9.285s] [  5%] [32mBuilding CXX object third-party/rsutils/CMakeFiles/rsutils.dir/src/hexdump.cpp.o[0m
+[9.651s] [  5%] [32mBuilding CXX object third-party/rsutils/CMakeFiles/rsutils.dir/src/ios.cpp.o[0m
+[9.891s] [  6%] [32mBuilding CXX object third-party/rsutils/CMakeFiles/rsutils.dir/src/ip-address.cpp.o[0m
+[10.123s] [  6%] [32mBuilding C object third-party/realsense-file/CMakeFiles/realsense-file.dir/rosbag/roslz4/src/xxhash.c.o[0m
+[10.210s] [  6%] [32mBuilding CXX object third-party/realsense-file/CMakeFiles/realsense-file.dir/rosbag/rostime/src/duration.cpp.o[0m
+[10.222s] [  6%] [32mBuilding CXX object third-party/rsutils/CMakeFiles/rsutils.dir/src/json.cpp.o[0m
+[10.310s] [  6%] [32mBuilding CXX object third-party/realsense-file/CMakeFiles/realsense-file.dir/rosbag/rostime/src/rate.cpp.o[0m
+[10.391s] [  7%] [32mBuilding CXX object third-party/realsense-file/CMakeFiles/realsense-file.dir/rosbag/rostime/src/time.cpp.o[0m
+[10.966s] [  7%] [32mBuilding CXX object third-party/rsutils/CMakeFiles/rsutils.dir/src/network-adapter-watcher.cpp.o[0m
+[10.992s] [  7%] [32mBuilding CXX object third-party/rsutils/CMakeFiles/rsutils.dir/src/os.cpp.o[0m
+[11.324s] [  7%] [32mBuilding C object third-party/realsense-file/CMakeFiles/realsense-file.dir/lz4/lz4.c.o[0m
+[11.521s] [  7%] [32mBuilding CXX object third-party/rsutils/CMakeFiles/rsutils.dir/src/rsutilgpu.cpp.o[0m
+[11.650s] [  8%] [32mBuilding CXX object third-party/rsutils/CMakeFiles/rsutils.dir/src/shorten-json-string.cpp.o[0m
+[12.120s] [  8%] [32mBuilding CXX object third-party/rsutils/CMakeFiles/rsutils.dir/src/special-folder.cpp.o[0m
+[12.303s] [  8%] [32mBuilding CXX object third-party/rsutils/CMakeFiles/rsutils.dir/src/version.cpp.o[0m
+[12.716s] [  8%] [32mBuilding CXX object third-party/rsutils/CMakeFiles/rsutils.dir/src/word-format.cpp.o[0m
+[12.899s] [  8%] [32mBuilding CXX object third-party/rsutils/CMakeFiles/rsutils.dir/src/work-week.cpp.o[0m
+[13.702s] [  8%] [1m[32mLinking CXX executable ../../Release/rs-embed[0m
+[13.769s] [  8%] Built target rs-embed
+[14.995s] [  8%] [1m[32mLinking CXX static library ../../Release/librealsense-file.a[0m
+[15.022s] [  8%] Built target realsense-file
+[15.198s] [  9%] [1m[32mLinking CXX static library ../../Release/librsutils.a[0m
+[15.223s] [  9%] Built target rsutils
+[15.243s] [  9%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/core/matcher-factory.cpp.o[0m
+[15.244s] [  9%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/core/options-container.cpp.o[0m
+[15.244s] [ 10%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/core/options-registry.cpp.o[0m
+[15.244s] [ 10%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/core/options-watcher.cpp.o[0m
+[15.244s] [  9%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/core/notification.cpp.o[0m
+[15.244s] [ 10%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/d400/d400-options.cpp.o[0m
+[15.244s] [ 10%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/d400/d400-private.cpp.o[0m
+[15.244s] [ 10%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/d400/d400-motion.cpp.o[0m
+[16.727s] [ 11%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/d400/d400-nonmonochrome.cpp.o[0m
+[16.842s] [ 11%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/d400/d400-device.cpp.o[0m
+[17.360s] [ 11%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/d400/d400-color.cpp.o[0m
+[17.419s] [ 11%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/d400/d400-active.cpp.o[0m
+[19.728s] [ 11%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/d400/d400-factory.cpp.o[0m
+[20.340s] [ 12%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/d400/d400-fw-update-device.cpp.o[0m
+[20.954s] [ 12%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/d400/d400-auto-calibration.cpp.o[0m
+[22.800s] [ 12%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/d400/d400-mipi-device.cpp.o[0m
+[22.828s] [ 12%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/d500/d500-device.cpp.o[0m
+[22.898s] [ 12%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/d500/d500-color.cpp.o[0m
+[24.880s] [ 12%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/d500/d500-motion.cpp.o[0m
+[26.491s] [ 13%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/d500/d500-active.cpp.o[0m
+[29.137s] [ 13%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/d500/d500-private.cpp.o[0m
+[30.089s] [ 13%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/d500/d500-factory.cpp.o[0m
+[30.778s] [ 13%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/d500/d500-safety.cpp.o[0m
+[31.126s] [ 13%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/d500/d500-depth-mapping.cpp.o[0m
+[31.458s] [ 14%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/d500/hw_monitor_extended_buffers.cpp.o[0m
+[32.811s] [ 14%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/d500/d500-options.cpp.o[0m
+[34.513s] [ 14%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/d500/d500-fw-update-device.cpp.o[0m
+[34.668s] [ 14%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/d500/d500-auto-calibration.cpp.o[0m
+[35.445s] [ 14%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/d500/d500-debug-protocol-calibration-engine.cpp.o[0m
+[37.459s] [ 15%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/ds-device-common.cpp.o[0m
+[37.734s] [ 15%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/ds-motion-common.cpp.o[0m
+[38.196s] [ 15%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/ds-color-common.cpp.o[0m
+[39.072s] [ 15%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/ds-active-common.cpp.o[0m
+[42.031s] [ 15%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/ds-private.cpp.o[0m
+[43.507s] [ 16%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/ds-timestamp.cpp.o[0m
+[44.154s] [ 16%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/ds-options.cpp.o[0m
+[45.402s] [ 16%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/advanced_mode/rs_advanced_mode.cpp.o[0m
+[45.812s] [ 16%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/advanced_mode/presets.cpp.o[0m
+[45.932s] [ 16%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/advanced_mode/advanced_mode.cpp.o[0m
+[46.542s] [ 16%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/ds-calib-parsers.cpp.o[0m
+[46.595s] [ 17%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/ds-calib-common.cpp.o[0m
+[49.065s] [ 17%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/ds-thermal-monitor.cpp.o[0m
+[49.491s] [ 17%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/features/amplitude-factor-feature.cpp.o[0m
+[49.817s] [ 17%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/features/emitter-frequency-feature.cpp.o[0m
+[50.763s] [ 17%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/features/auto-exposure-roi-feature.cpp.o[0m
+[51.044s] [ 18%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/features/remove-ir-pattern-feature.cpp.o[0m
+[51.234s] [ 18%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/features/auto-exposure-limit-feature.cpp.o[0m
+[51.362s] [ 18%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/features/gain-limit-feature.cpp.o[0m
+[52.343s] [ 18%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/features/gyro-sensitivity-feature.cpp.o[0m
+[53.160s] [ 18%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/media/record/record_device.cpp.o[0m
+[53.779s] [ 19%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/media/record/record_sensor.cpp.o[0m
+[54.391s] [ 19%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/media/playback/playback_device.cpp.o[0m
+[54.465s] [ 19%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/media/playback/playback_sensor.cpp.o[0m
+[56.472s] [ 19%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/media/ros/ros_reader.cpp.o[0m
+[56.805s] [ 19%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/media/ros/ros_writer.cpp.o[0m
+[57.384s] [ 19%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/sse/sse-align.cpp.o[0m
+[58.085s] [ 20%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/sse/sse-pointcloud.cpp.o[0m
+[60.402s] [ 20%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/neon/image-neon.cpp.o[0m
+[61.213s] [ 20%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/neon/neon-pointcloud.cpp.o[0m
+[61.722s] [ 20%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/neon/neon-align.cpp.o[0m
+[61.856s] [ 20%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/processing-blocks-factory.cpp.o[0m
+[63.498s] [ 21%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/align.cpp.o[0m
+[63.612s] [ 21%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/colorizer.cpp.o[0m
+[63.669s] [ 21%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/pointcloud.cpp.o[0m
+[63.669s] [ 21%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/occlusion-filter.cpp.o[0m
+[64.503s] [ 21%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/synthetic-stream.cpp.o[0m
+[65.000s] [ 22%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/syncer-processing-block.cpp.o[0m
+[66.289s] [ 22%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/decimation-filter.cpp.o[0m
+[67.727s] [ 22%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/rotation-filter.cpp.o[0m
+[67.765s] [ 22%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/spatial-filter.cpp.o[0m
+[69.193s] [ 22%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/hdr-merge.cpp.o[0m
+[69.194s] [ 22%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/temporal-filter.cpp.o[0m
+[69.577s] [ 23%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/sequence-id-filter.cpp.o[0m
+[70.605s] [ 23%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/hole-filling-filter.cpp.o[0m
+[71.244s] [ 23%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/disparity-transform.cpp.o[0m
+[72.154s] [ 23%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/y8i-to-y8y8.cpp.o[0m
+[72.658s] [ 23%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/y8i-to-y8y8-mipi.cpp.o[0m
+[73.423s] [ 24%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/y12i-to-y16y16.cpp.o[0m
+[73.553s] [ 24%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/y12i-to-y16y16-mipi.cpp.o[0m
+[73.706s] [ 24%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/y16i-10msb-to-y16y16.cpp.o[0m
+[75.230s] [ 24%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/y16-10msb-to-y16.cpp.o[0m
+[75.439s] [ 24%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/identity-processing-block.cpp.o[0m
+[75.718s] [ 25%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/threshold.cpp.o[0m
+[76.496s] [ 25%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/rates-printer.cpp.o[0m
+[76.825s] [ 25%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/units-transform.cpp.o[0m
+[76.887s] [ 25%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/rotation-transform.cpp.o[0m
+[77.255s] [ 25%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/color-formats-converter.cpp.o[0m
+[78.331s] [ 26%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/depth-formats-converter.cpp.o[0m
+[78.449s] [ 26%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/motion-transform.cpp.o[0m
+[79.925s] [ 26%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/auto-exposure-processor.cpp.o[0m
+[80.164s] [ 26%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/y411-converter.cpp.o[0m
+[81.489s] [ 26%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/formats-converter.cpp.o[0m
+[82.196s] [ 26%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/decimation-embedded-filter.cpp.o[0m
+[82.245s] [ 27%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/temporal-embedded-filter.cpp.o[0m
+[82.979s] [ 27%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/pipeline/pipeline.cpp.o[0m
+[83.877s] [ 27%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/pipeline/config.cpp.o[0m
+[84.043s] [ 27%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/pipeline/profile.cpp.o[0m
+[84.077s] [ 27%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/pipeline/aggregator.cpp.o[0m
+[85.057s] [ 28%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/fw-logs/fw-log-data.cpp.o[0m
+[85.546s] [ 28%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/fw-logs/fw-logs-formatting-options.cpp.o[0m
+[86.216s] [ 28%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/fw-logs/fw-logs-parser.cpp.o[0m
+[86.701s] [ 28%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/fw-logs/fw-logs-xml-helper.cpp.o[0m
+[87.067s] [ 28%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/fw-logs/fw-string-formatter.cpp.o[0m
+[87.282s] [ 29%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/fw-update/fw-update-device.cpp.o[0m
+[88.132s] [ 29%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/fw-update/fw-update-factory.cpp.o[0m
+[90.134s] [ 29%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/fw-update/fw-update-unsigned.cpp.o[0m
+[90.803s] [ 29%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/libusb/context-libusb.cpp.o[0m
+[90.952s] [ 29%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/libusb/interface-libusb.cpp.o[0m
+[91.913s] [ 29%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/libusb/device-libusb.cpp.o[0m
+[92.895s] [ 30%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/libusb/messenger-libusb.cpp.o[0m
+[92.993s] [ 30%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/libusb/request-libusb.cpp.o[0m
+[93.443s] [ 30%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/libusb/enumerator-libusb.cpp.o[0m
+[93.495s] [ 30%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/linux/backend-v4l2.cpp.o[0m
+[94.199s] [ 30%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/linux/backend-hid.cpp.o[0m
+[94.463s] [ 31%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/linux/udev-device-watcher.cpp.o[0m
+[95.475s] [ 31%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/algo.cpp.o[0m
+[95.556s] [ 31%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/archive.cpp.o[0m
+[95.702s] [ 31%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/backend.cpp.o[0m
+[95.739s] [ 31%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/backend-device-factory.cpp.o[0m
+[96.568s] [ 32%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/context.cpp.o[0m
+[97.265s] [ 32%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/device.cpp.o[0m
+[98.482s] [ 32%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/device-info.cpp.o[0m
+[98.939s] [ 32%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/device_hub.cpp.o[0m
+[99.651s] [ 32%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/environment.cpp.o[0m
+[100.883s] [ 32%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/error-handling.cpp.o[0m
+[101.498s] [ 33%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/firmware_logger_device.cpp.o[0m
+[101.916s] [ 33%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/global_timestamp_reader.cpp.o[0m
+[102.367s] [ 33%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/hdr-config.cpp.o[0m
+[102.793s] [ 33%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/hw-monitor.cpp.o[0m
+[102.951s] [ 33%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/image.cpp.o[0m
+[103.254s] [ 34%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/image-avx.cpp.o[0m
+[104.090s] [ 34%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/log.cpp.o[0m
+[104.485s] [ 34%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/option.cpp.o[0m
+[104.754s] [ 34%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/platform-camera.cpp.o[0m
+[105.276s] [ 34%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/rs.cpp.o[0m
+[105.725s] [ 35%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/sensor.cpp.o[0m
+[106.584s] [ 35%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/hid-sensor.cpp.o[0m
+[106.676s] [ 35%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/uvc-sensor.cpp.o[0m
+[108.205s] [ 35%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/rscore-pp-block-factory.cpp.o[0m
+[109.283s] [ 35%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/software-device.cpp.o[0m
+[109.645s] [ 36%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/software-device-info.cpp.o[0m
+[111.315s] [ 36%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/software-sensor.cpp.o[0m
+[112.371s] [ 36%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/source.cpp.o[0m
+[112.408s] [ 36%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/stream.cpp.o[0m
+[112.485s] [ 36%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/sync.cpp.o[0m
+[113.797s] [ 36%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/terminal-parser.cpp.o[0m
+[113.855s] [ 37%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/types.cpp.o[0m
+[114.183s] [ 37%] [32mBuilding C object CMakeFiles/realsense2.dir/src/verify.c.o[0m
+[114.255s] [ 37%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/serialized-utilities.cpp.o[0m
+[114.688s] [ 37%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/frame.cpp.o[0m
+[115.306s] [ 37%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/points.cpp.o[0m
+[115.637s] [ 38%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/labeled-points.cpp.o[0m
+[117.209s] [ 38%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/to-string.cpp.o[0m
+[117.400s] [ 38%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/eth-config-device.cpp.o[0m
+[117.501s] [ 38%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/platform/platform-utils.cpp.o[0m
+[117.660s] [ 38%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/platform/uvc-option.cpp.o[0m
+[118.159s] [ 39%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/auto-calibrated-proxy.cpp.o[0m
+[118.476s] [ 39%] [32mBuilding CXX object CMakeFiles/realsense2.dir/src/synthetic-options-watcher.cpp.o[0m
+[119.253s] [ 39%] [32mBuilding CXX object CMakeFiles/realsense2.dir/third-party/easyloggingpp/src/easylogging++.cc.o[0m
+[122.090s] In file included from [01m[K/usr/include/features.h:502[m[K,
+[122.090s]                  from [01m[K/usr/include/x86_64-linux-gnu/c++/13/bits/os_defines.h:39[m[K,
+[122.090s]                  from [01m[K/usr/include/x86_64-linux-gnu/c++/13/bits/c++config.h:679[m[K,
+[122.090s]                  from [01m[K/usr/include/c++/13/ctime:41[m[K,
+[122.090s]                  from [01m[K/home/grumpy/dd2419_ws_Group5_2026/src/librealsense/third-party/easyloggingpp/src/easylogging++.h:354[m[K,
+[122.090s]                  from [01m[K/home/grumpy/dd2419_ws_Group5_2026/src/librealsense/third-party/easyloggingpp/src/easylogging++.cc:17[m[K:
+[122.090s] In function ‘[01m[Ksize_t[01;32m[K wcstombs[m[K(char*, const wchar_t*, size_t)[m[K’,
+[122.090s]     inlined from ‘[01m[Kstatic char* el::base::utils::Str::[01;32m[KwcharPtrToCharPtr[m[K(const wchar_t*)[m[K’ at [01m[K/home/grumpy/dd2419_ws_Group5_2026/src/librealsense/third-party/easyloggingpp/src/easylogging++.cc:1022:16[m[K:
+[122.091s] [01m[K/usr/include/x86_64-linux-gnu/bits/stdlib.h:146:10:[m[K [01;35m[Kwarning: [m[K‘[01m[Ksize_t[01;32m[K __wcstombs_alias[m[K(char*, const wchar_t*, size_t)[m[K’ specified size 18446744073709551614 exceeds maximum object size 9223372036854775807 [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wstringop-overflow=-Wstringop-overflow=]8;;[m[K]
+[122.091s]   146 |   return [01;35m[K__glibc_fortify[m[K (wcstombs, __len, sizeof (char),
+[122.091s]       |          [01;35m[K^~~~~~~~~~~~~~~[m[K
+[122.091s] [01m[K/usr/include/x86_64-linux-gnu/bits/stdlib.h:[m[K In static member function ‘[01m[Kstatic char* el::base::utils::Str::[01;32m[KwcharPtrToCharPtr[m[K(const wchar_t*)[m[K’:
+[122.091s] [01m[K/usr/include/x86_64-linux-gnu/bits/stdlib.h:131:15:[m[K [01;36m[Knote: [m[Kin a call to function ‘[01m[Ksize_t[01;32m[K __wcstombs_alias[m[K(char*, const wchar_t*, size_t)[m[K’ declared with attribute ‘[01m[Kaccess (read_only, 2)[m[K’
+[122.091s]   131 | extern size_t [01;36m[K__REDIRECT_NTH[m[K (__wcstombs_alias,
+[122.091s]       |               [01;36m[K^~~~~~~~~~~~~~[m[K
+[128.582s] [ 39%] [1m[32mLinking CXX shared library Release/librealsense2.so[0m
+[128.662s] /usr/bin/ld: cannot find -ludev: No such file or directory
+[128.689s] collect2: error: ld returned 1 exit status
+[128.690s] gmake[2]: *** [CMakeFiles/realsense2.dir/build.make:2633: Release/librealsense2.so.2.57.5] Error 1
+[128.690s] gmake[1]: *** [CMakeFiles/Makefile2:1115: CMakeFiles/realsense2.dir/all] Error 2
+[128.690s] gmake: *** [Makefile:136: all] Error 2

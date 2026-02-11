@@ -134,9 +134,9 @@ class Detection(Node):
 
         for idx in range(points.shape[0]):
             x, y, z = points[idx]
-            if y > 0.05 and z < 1.0 and z > 0.05:
+            if y > 0 and z > 0 and z < 0.5:
                 # red
-                if colors[idx, 0] > 0.5 and colors[idx, 1] < 0.4 and colors[idx, 2] < 0.4:
+                if colors[idx, 0] > 0.6 and colors[idx, 1] < 0.3 and colors[idx, 2] < 0.3:
                     red_counter += 1
                     red_points.append([x,y,z])
                     red_sum_x += x
@@ -165,8 +165,8 @@ class Detection(Node):
                     wood_sum_z += z
 
         # red 
-        if red_counter > 10 and not self.red_available:
-            self.get_logger().info('Red object detected.')   
+        if red_counter > 15 and not self.red_available:
+            self.get_logger().info('Red object detected.')
             self.red = tf2_geometry_msgs.PoseStamped()
             self.red.header = msg.header
             self.red.pose.position.x = red_sum_x / red_counter
@@ -221,7 +221,7 @@ class Detection(Node):
             self.red_published = True
 
         # blue
-        if blue_counter > 10 and not self.blue_available:
+        if blue_counter > 15 and not self.blue_available:
             self.get_logger().info('Blue object detected.')
             self.get_logger().info(f'coordinates: x={blue_sum_x / blue_counter}, y={blue_sum_y / blue_counter}, z={blue_sum_z / blue_counter}')  
             self.get_logger().info(f'color: r={colors[idx, 0]}, g={colors[idx, 1]}, b={colors[idx, 2]}') 
@@ -279,7 +279,7 @@ class Detection(Node):
             self.blue_published = True
         
         # green
-        if green_counter > 10 and not self.green_available:
+        if green_counter > 5 and not self.green_available:
             self.get_logger().info('Green object detected.')   
             self.green = tf2_geometry_msgs.PoseStamped()
             self.green.header = msg.header
@@ -335,7 +335,7 @@ class Detection(Node):
             self.green_published = True
 
         # wood
-        if wood_counter > 10 and not self.wood_available:
+        if wood_counter > 5 and not self.wood_available:
             self.get_logger().info('Wood object detected.')   
             self.wood = tf2_geometry_msgs.PoseStamped()
             self.wood.header = msg.header
