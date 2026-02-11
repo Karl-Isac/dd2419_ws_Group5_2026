@@ -134,30 +134,32 @@ class Detection(Node):
 
         for idx in range(points.shape[0]):
             x, y, z = points[idx]
+            r, g, b = colors[idx]
+            h, s, v = self.rgb_to_hsv(r, g, b)
             if y > 0 and z > 0 and z < 0.5:
                 # red
-                if colors[idx, 0] > 0.6 and colors[idx, 1] < 0.3 and colors[idx, 2] < 0.3:
+                if (h <= 10 or h >= 160) and s > 0.5 and v > 0.4:
                     red_counter += 1
                     red_points.append([x,y,z])
                     red_sum_x += x
                     red_sum_y += y
                     red_sum_z += z
                 # blue
-                if colors[idx, 0] < 0.4 and colors[idx, 1] < 0.4 and colors[idx, 2] > 0.5:
+                if (h >= 180 and h <= 240) and s > 0.5 and v > 0.4:
                     blue_counter += 1
                     blue_points.append([x,y,z])
                     blue_sum_x += x
                     blue_sum_y += y
                     blue_sum_z += z
                 # green
-                if colors[idx, 0] < 0.4 and colors[idx, 1] > 0.5 and colors[idx, 2] < 0.4:
+                if 80 <= h <= 140 and s > 0.5 and v > 0.4:
                     green_counter += 1
                     green_points.append([x,y,z])
                     green_sum_x += x
                     green_sum_y += y
                     green_sum_z += z
                 # wood
-                if colors[idx, 0] > 0.5 and colors[idx, 1] > 0.5 and colors[idx, 2] < 0.4:
+                if 20 <= h <= 40 and s > 0.3 and v > 0.5:
                     wood_counter += 1
                     wood_points.append([x,y,z])
                     wood_sum_x += x
@@ -429,7 +431,26 @@ class Detection(Node):
 
         #     self.static_broadcaster.sendTransform(tf_red)
         #     self.red_published = True
-        
+    
+    def rgb_to_hsv(r, g, b):
+        c_max = max(r, g, b)
+        c_min = min(r, g, b)
+        delta = c_max - c_min
+
+        if delta == 0:
+            h = 0.0
+        elif c_max == r:
+            h = 60.0 * (((g - b) / delta) % 6)
+        elif c_max == g:
+            h = 60.0 * (((b - r) / delta) + 2)
+        elif c_max == b:
+            h = 60.0 * (((r - g) / delta) + 4)
+
+        s = 0.0 if c_max == 0 else delta / c_max
+
+        v = c_max
+
+        return h, s, v
         
  
 def main():
