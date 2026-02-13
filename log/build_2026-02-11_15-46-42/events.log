@@ -1,0 +1,1969 @@
+[0.000000] (-) TimerEvent: {}
+[0.000550] (aruco) JobQueued: {'identifier': 'aruco', 'dependencies': OrderedDict()}
+[0.000575] (aruco_msgs) JobQueued: {'identifier': 'aruco_msgs', 'dependencies': OrderedDict()}
+[0.000589] (detection) JobQueued: {'identifier': 'detection', 'dependencies': OrderedDict()}
+[0.000600] (keyboard) JobQueued: {'identifier': 'keyboard', 'dependencies': OrderedDict()}
+[0.000610] (learning_tf2_py) JobQueued: {'identifier': 'learning_tf2_py', 'dependencies': OrderedDict()}
+[0.000620] (libphidget22) JobQueued: {'identifier': 'libphidget22', 'dependencies': OrderedDict()}
+[0.000629] (librealsense2) JobQueued: {'identifier': 'librealsense2', 'dependencies': OrderedDict()}
+[0.000638] (phidgets_msgs) JobQueued: {'identifier': 'phidgets_msgs', 'dependencies': OrderedDict()}
+[0.000647] (realsense2_camera_msgs) JobQueued: {'identifier': 'realsense2_camera_msgs', 'dependencies': OrderedDict()}
+[0.000656] (realsense2_ros_mqtt_bridge) JobQueued: {'identifier': 'realsense2_ros_mqtt_bridge', 'dependencies': OrderedDict()}
+[0.000665] (robp_autocomplete) JobQueued: {'identifier': 'robp_autocomplete', 'dependencies': OrderedDict()}
+[0.000674] (robp_interfaces) JobQueued: {'identifier': 'robp_interfaces', 'dependencies': OrderedDict()}
+[0.000682] (robp_launch) JobQueued: {'identifier': 'robp_launch', 'dependencies': OrderedDict()}
+[0.000691] (rplidar_ros) JobQueued: {'identifier': 'rplidar_ros', 'dependencies': OrderedDict()}
+[0.000700] (aruco_ros) JobQueued: {'identifier': 'aruco_ros', 'dependencies': OrderedDict({'aruco': '/home/grumpy/dd2419_ws_Group5_2026/install/aruco', 'aruco_msgs': '/home/grumpy/dd2419_ws_Group5_2026/install/aruco_msgs'})}
+[0.000713] (display_markers) JobQueued: {'identifier': 'display_markers', 'dependencies': OrderedDict({'aruco_msgs': '/home/grumpy/dd2419_ws_Group5_2026/install/aruco_msgs'})}
+[0.000724] (odometry) JobQueued: {'identifier': 'odometry', 'dependencies': OrderedDict({'robp_interfaces': '/home/grumpy/dd2419_ws_Group5_2026/install/robp_interfaces'})}
+[0.000734] (phidgets_api) JobQueued: {'identifier': 'phidgets_api', 'dependencies': OrderedDict({'libphidget22': '/home/grumpy/dd2419_ws_Group5_2026/install/libphidget22'})}
+[0.000744] (realsense2_camera) JobQueued: {'identifier': 'realsense2_camera', 'dependencies': OrderedDict({'librealsense2': '/home/grumpy/dd2419_ws_Group5_2026/install/librealsense2', 'realsense2_camera_msgs': '/home/grumpy/dd2419_ws_Group5_2026/install/realsense2_camera_msgs'})}
+[0.000759] (realsense2_description) JobQueued: {'identifier': 'realsense2_description', 'dependencies': OrderedDict({'realsense2_camera_msgs': '/home/grumpy/dd2419_ws_Group5_2026/install/realsense2_camera_msgs'})}
+[0.000770] (realsense2_rviz_plugin) JobQueued: {'identifier': 'realsense2_rviz_plugin', 'dependencies': OrderedDict({'realsense2_camera_msgs': '/home/grumpy/dd2419_ws_Group5_2026/install/realsense2_camera_msgs'})}
+[0.000780] (robp_arm) JobQueued: {'identifier': 'robp_arm', 'dependencies': OrderedDict({'robp_interfaces': '/home/grumpy/dd2419_ws_Group5_2026/install/robp_interfaces'})}
+[0.000789] (phidgets_accelerometer) JobQueued: {'identifier': 'phidgets_accelerometer', 'dependencies': OrderedDict({'libphidget22': '/home/grumpy/dd2419_ws_Group5_2026/install/libphidget22', 'phidgets_api': '/home/grumpy/dd2419_ws_Group5_2026/install/phidgets_api'})}
+[0.000800] (phidgets_analog_inputs) JobQueued: {'identifier': 'phidgets_analog_inputs', 'dependencies': OrderedDict({'libphidget22': '/home/grumpy/dd2419_ws_Group5_2026/install/libphidget22', 'phidgets_api': '/home/grumpy/dd2419_ws_Group5_2026/install/phidgets_api'})}
+[0.000811] (phidgets_analog_outputs) JobQueued: {'identifier': 'phidgets_analog_outputs', 'dependencies': OrderedDict({'libphidget22': '/home/grumpy/dd2419_ws_Group5_2026/install/libphidget22', 'phidgets_msgs': '/home/grumpy/dd2419_ws_Group5_2026/install/phidgets_msgs', 'phidgets_api': '/home/grumpy/dd2419_ws_Group5_2026/install/phidgets_api'})}
+[0.000822] (phidgets_digital_inputs) JobQueued: {'identifier': 'phidgets_digital_inputs', 'dependencies': OrderedDict({'libphidget22': '/home/grumpy/dd2419_ws_Group5_2026/install/libphidget22', 'phidgets_api': '/home/grumpy/dd2419_ws_Group5_2026/install/phidgets_api'})}
+[0.000944] (phidgets_digital_outputs) JobQueued: {'identifier': 'phidgets_digital_outputs', 'dependencies': OrderedDict({'libphidget22': '/home/grumpy/dd2419_ws_Group5_2026/install/libphidget22', 'phidgets_msgs': '/home/grumpy/dd2419_ws_Group5_2026/install/phidgets_msgs', 'phidgets_api': '/home/grumpy/dd2419_ws_Group5_2026/install/phidgets_api'})}
+[0.000957] (phidgets_gyroscope) JobQueued: {'identifier': 'phidgets_gyroscope', 'dependencies': OrderedDict({'libphidget22': '/home/grumpy/dd2419_ws_Group5_2026/install/libphidget22', 'phidgets_api': '/home/grumpy/dd2419_ws_Group5_2026/install/phidgets_api'})}
+[0.000968] (phidgets_high_speed_encoder) JobQueued: {'identifier': 'phidgets_high_speed_encoder', 'dependencies': OrderedDict({'libphidget22': '/home/grumpy/dd2419_ws_Group5_2026/install/libphidget22', 'phidgets_msgs': '/home/grumpy/dd2419_ws_Group5_2026/install/phidgets_msgs', 'phidgets_api': '/home/grumpy/dd2419_ws_Group5_2026/install/phidgets_api'})}
+[0.000979] (phidgets_magnetometer) JobQueued: {'identifier': 'phidgets_magnetometer', 'dependencies': OrderedDict({'libphidget22': '/home/grumpy/dd2419_ws_Group5_2026/install/libphidget22', 'phidgets_api': '/home/grumpy/dd2419_ws_Group5_2026/install/phidgets_api'})}
+[0.000990] (phidgets_motors) JobQueued: {'identifier': 'phidgets_motors', 'dependencies': OrderedDict({'libphidget22': '/home/grumpy/dd2419_ws_Group5_2026/install/libphidget22', 'phidgets_msgs': '/home/grumpy/dd2419_ws_Group5_2026/install/phidgets_msgs', 'phidgets_api': '/home/grumpy/dd2419_ws_Group5_2026/install/phidgets_api'})}
+[0.001001] (phidgets_spatial) JobQueued: {'identifier': 'phidgets_spatial', 'dependencies': OrderedDict({'libphidget22': '/home/grumpy/dd2419_ws_Group5_2026/install/libphidget22', 'phidgets_api': '/home/grumpy/dd2419_ws_Group5_2026/install/phidgets_api'})}
+[0.001017] (phidgets_stepper) JobQueued: {'identifier': 'phidgets_stepper', 'dependencies': OrderedDict({'libphidget22': '/home/grumpy/dd2419_ws_Group5_2026/install/libphidget22', 'phidgets_msgs': '/home/grumpy/dd2419_ws_Group5_2026/install/phidgets_msgs', 'phidgets_api': '/home/grumpy/dd2419_ws_Group5_2026/install/phidgets_api'})}
+[0.001033] (phidgets_temperature) JobQueued: {'identifier': 'phidgets_temperature', 'dependencies': OrderedDict({'libphidget22': '/home/grumpy/dd2419_ws_Group5_2026/install/libphidget22', 'phidgets_api': '/home/grumpy/dd2419_ws_Group5_2026/install/phidgets_api'})}
+[0.001046] (robp_boot_camp_launch) JobQueued: {'identifier': 'robp_boot_camp_launch', 'dependencies': OrderedDict({'aruco': '/home/grumpy/dd2419_ws_Group5_2026/install/aruco', 'aruco_msgs': '/home/grumpy/dd2419_ws_Group5_2026/install/aruco_msgs', 'realsense2_camera_msgs': '/home/grumpy/dd2419_ws_Group5_2026/install/realsense2_camera_msgs', 'aruco_ros': '/home/grumpy/dd2419_ws_Group5_2026/install/aruco_ros', 'realsense2_description': '/home/grumpy/dd2419_ws_Group5_2026/install/realsense2_description'})}
+[0.001061] (robp_phidgets) JobQueued: {'identifier': 'robp_phidgets', 'dependencies': OrderedDict({'libphidget22': '/home/grumpy/dd2419_ws_Group5_2026/install/libphidget22', 'phidgets_msgs': '/home/grumpy/dd2419_ws_Group5_2026/install/phidgets_msgs', 'robp_interfaces': '/home/grumpy/dd2419_ws_Group5_2026/install/robp_interfaces', 'phidgets_api': '/home/grumpy/dd2419_ws_Group5_2026/install/phidgets_api'})}
+[0.001080] (phidgets_ik) JobQueued: {'identifier': 'phidgets_ik', 'dependencies': OrderedDict({'libphidget22': '/home/grumpy/dd2419_ws_Group5_2026/install/libphidget22', 'phidgets_msgs': '/home/grumpy/dd2419_ws_Group5_2026/install/phidgets_msgs', 'phidgets_api': '/home/grumpy/dd2419_ws_Group5_2026/install/phidgets_api', 'phidgets_analog_inputs': '/home/grumpy/dd2419_ws_Group5_2026/install/phidgets_analog_inputs', 'phidgets_digital_inputs': '/home/grumpy/dd2419_ws_Group5_2026/install/phidgets_digital_inputs', 'phidgets_digital_outputs': '/home/grumpy/dd2419_ws_Group5_2026/install/phidgets_digital_outputs'})}
+[0.001111] (phidgets_drivers) JobQueued: {'identifier': 'phidgets_drivers', 'dependencies': OrderedDict({'libphidget22': '/home/grumpy/dd2419_ws_Group5_2026/install/libphidget22', 'phidgets_msgs': '/home/grumpy/dd2419_ws_Group5_2026/install/phidgets_msgs', 'phidgets_api': '/home/grumpy/dd2419_ws_Group5_2026/install/phidgets_api', 'phidgets_accelerometer': '/home/grumpy/dd2419_ws_Group5_2026/install/phidgets_accelerometer', 'phidgets_analog_inputs': '/home/grumpy/dd2419_ws_Group5_2026/install/phidgets_analog_inputs', 'phidgets_digital_inputs': '/home/grumpy/dd2419_ws_Group5_2026/install/phidgets_digital_inputs', 'phidgets_digital_outputs': '/home/grumpy/dd2419_ws_Group5_2026/install/phidgets_digital_outputs', 'phidgets_gyroscope': '/home/grumpy/dd2419_ws_Group5_2026/install/phidgets_gyroscope', 'phidgets_high_speed_encoder': '/home/grumpy/dd2419_ws_Group5_2026/install/phidgets_high_speed_encoder', 'phidgets_magnetometer': '/home/grumpy/dd2419_ws_Group5_2026/install/phidgets_magnetometer', 'phidgets_motors': '/home/grumpy/dd2419_ws_Group5_2026/install/phidgets_motors', 'phidgets_spatial': '/home/grumpy/dd2419_ws_Group5_2026/install/phidgets_spatial', 'phidgets_temperature': '/home/grumpy/dd2419_ws_Group5_2026/install/phidgets_temperature', 'phidgets_ik': '/home/grumpy/dd2419_ws_Group5_2026/install/phidgets_ik'})}
+[0.001129] (libphidget22) JobStarted: {'identifier': 'libphidget22'}
+[0.053930] (phidgets_msgs) JobStarted: {'identifier': 'phidgets_msgs'}
+[0.099422] (realsense2_camera_msgs) JobStarted: {'identifier': 'realsense2_camera_msgs'}
+[0.099865] (-) TimerEvent: {}
+[0.144768] (aruco_msgs) JobStarted: {'identifier': 'aruco_msgs'}
+[0.187503] (robp_interfaces) JobStarted: {'identifier': 'robp_interfaces'}
+[0.199997] (-) TimerEvent: {}
+[0.234296] (aruco) JobStarted: {'identifier': 'aruco'}
+[0.278767] (librealsense2) JobStarted: {'identifier': 'librealsense2'}
+[0.300403] (-) TimerEvent: {}
+[0.323497] (detection) JobStarted: {'identifier': 'detection'}
+[0.383909] (libphidget22) JobProgress: {'identifier': 'libphidget22', 'progress': 'cmake'}
+[0.386214] (libphidget22) JobProgress: {'identifier': 'libphidget22', 'progress': 'build'}
+[0.386236] (libphidget22) Command: {'cmd': ['/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/bin/cmake', '--build', '/home/grumpy/dd2419_ws_Group5_2026/build/libphidget22', '--', '-j8', '-l8'], 'cwd': '/home/grumpy/dd2419_ws_Group5_2026/build/libphidget22', 'env': OrderedDict({'LESSOPEN': '| /usr/bin/lesspipe %s', 'PIXI_ENVIRONMENT_NAME': 'default', 'USER': 'grumpy', 'PIXI_EXE': '/home/grumpy/.pixi/bin/pixi', 'XDG_SESSION_TYPE': 'x11', 'CLUTTER_DISABLE_MIPMAPPED_TEXT': '1', 'LD_LIBRARY_PATH': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/opt/rviz_ogre_vendor/lib:/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/opt/libphidget22/lib:/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/lib', 'ROS_ETC_DIR': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/etc/ros', 'SHLVL': '1', 'CONDA_SHLVL': '1', 'HOME': '/home/grumpy', 'OLDPWD': '/home/grumpy', 'DESKTOP_SESSION': 'ubuntu', 'GNOME_SHELL_SESSION_MODE': 'ubuntu', 'GTK_MODULES': 'gail:atk-bridge', 'ROS_PYTHON_VERSION': '3', 'PIXI_IN_SHELL': '1', 'DBUS_SESSION_BUS_ADDRESS': 'unix:path=/run/user/1000/bus', 'GSM_SKIP_SSH_AGENT_WORKAROUND': 'true', 'SYSTEMD_EXEC_PID': '1662', 'COLORTERM': 'truecolor', 'DEBUGINFOD_URLS': 'https://debuginfod.ubuntu.com', 'ROS_DISTRO': 'jazzy', 'LOGNAME': 'grumpy', '_': '/home/grumpy/.pixi/bin/pixi', 'MEMORY_PRESSURE_WATCH': '/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/session.slice/org.gnome.Shell@x11.service/memory.pressure', 'ROS_VERSION': '2', 'XDG_SESSION_CLASS': 'user', 'PIXI_ENVIRONMENT_PLATFORMS': 'linux-64,win-64,osx-arm64', 'TERM': 'xterm-256color', 'USERNAME': 'grumpy', 'GNOME_DESKTOP_SESSION_ID': 'this-is-deprecated', 'ROS_OS_OVERRIDE': 'conda:linux', 'WINDOWPATH': '2', 'PATH': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/bin:/home/grumpy/.pixi/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin', 'SESSION_MANAGER': 'local/grumpy:@/tmp/.ICE-unix/1631,unix/grumpy:/tmp/.ICE-unix/1631', 'GNOME_TERMINAL_SCREEN': '/org/gnome/Terminal/screen/7a63c77b_0be4_438f_9cd1_b3690b9682cf', 'PIXI_PROJECT_VERSION': '1.0.0', 'XDG_MENU_PREFIX': 'gnome-', 'XDG_RUNTIME_DIR': '/run/user/1000', 'DISPLAY': ':0', 'LANG': 'en_US.UTF-8', 'RMW_IMPLEMENTATION': 'rmw_cyclonedds_cpp', 'XDG_CURRENT_DESKTOP': 'ubuntu:GNOME', 'GNOME_TERMINAL_SERVICE': ':1.95', 'LS_COLORS': 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=00:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.avif=01;35:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:*~=00;90:*#=00;90:*.bak=00;90:*.crdownload=00;90:*.dpkg-dist=00;90:*.dpkg-new=00;90:*.dpkg-old=00;90:*.dpkg-tmp=00;90:*.old=00;90:*.orig=00;90:*.part=00;90:*.rej=00;90:*.rpmnew=00;90:*.rpmorig=00;90:*.rpmsave=00;90:*.swp=00;90:*.tmp=00;90:*.ucf-dist=00;90:*.ucf-new=00;90:*.ucf-old=00;90:', 'XAUTHORITY': '/run/user/1000/gdm/Xauthority', 'XDG_SESSION_DESKTOP': 'ubuntu', 'XMODIFIERS': '@im=ibus', 'AMENT_PREFIX_PATH': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default', 'GSETTINGS_SCHEMA_DIR': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/share/glib-2.0/schemas', 'PIXI_PROMPT': '(dd2419_ws)', 'ROS_DOMAIN_ID': '5', 'SSH_AUTH_SOCK': '/run/user/1000/keyring/ssh', 'XML_CATALOG_FILES': 'file:///home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/etc/xml/catalog file:///etc/xml/catalog', 'SHELL': '/bin/bash', 'GDMSESSION': 'ubuntu', 'QT_ACCESSIBILITY': '1', 'CONDA_DEFAULT_ENV': 'dd2419_ws', 'LESSCLOSE': '/usr/bin/lesspipe %s %s', 'PIXI_PROJECT_ROOT': '/home/grumpy/dd2419_ws_Group5_2026', 'GPG_AGENT_INFO': '/run/user/1000/gnupg/S.gpg-agent:0:1', 'PIXI_PROJECT_MANIFEST': '/home/grumpy/dd2419_ws_Group5_2026/pixi.toml', 'QT_IM_MODULE': 'ibus', 'ROS_AUTOMATIC_DISCOVERY_RANGE': 'SUBNET', 'PWD': '/home/grumpy/dd2419_ws_Group5_2026/build/libphidget22', 'PIXI_PROJECT_NAME': 'dd2419_ws', 'XDG_CONFIG_DIRS': '/etc/xdg/xdg-ubuntu:/etc/xdg', 'XDG_DATA_DIRS': '/usr/share/ubuntu:/usr/share/gnome:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop', 'PYTHONPATH': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/lib/python/site-packages:/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/lib/python3.12/site-packages', 'CONDA_PREFIX': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default', 'GSETTINGS_SCHEMA_DIR_CONDA_BACKUP': '', 'COLCON': '1', 'MEMORY_PRESSURE_WRITE': 'c29tZSAyMDAwMDAgMjAwMDAwMAA=', 'VTE_VERSION': '7600', 'INIT_CWD': '/home/grumpy/dd2419_ws_Group5_2026', 'CMAKE_PREFIX_PATH': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default'}), 'shell': False}
+[0.388540] (phidgets_msgs) JobProgress: {'identifier': 'phidgets_msgs', 'progress': 'cmake'}
+[0.389366] (phidgets_msgs) Command: {'cmd': ['/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/bin/cmake', '/home/grumpy/dd2419_ws_Group5_2026/src/phidgets_drivers/phidgets_msgs', '-DCMAKE_INSTALL_PREFIX=/home/grumpy/dd2419_ws_Group5_2026/install/phidgets_msgs'], 'cwd': '/home/grumpy/dd2419_ws_Group5_2026/build/phidgets_msgs', 'env': OrderedDict({'LESSOPEN': '| /usr/bin/lesspipe %s', 'PIXI_ENVIRONMENT_NAME': 'default', 'USER': 'grumpy', 'PIXI_EXE': '/home/grumpy/.pixi/bin/pixi', 'XDG_SESSION_TYPE': 'x11', 'CLUTTER_DISABLE_MIPMAPPED_TEXT': '1', 'LD_LIBRARY_PATH': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/opt/rviz_ogre_vendor/lib:/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/opt/libphidget22/lib:/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/lib', 'ROS_ETC_DIR': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/etc/ros', 'SHLVL': '1', 'CONDA_SHLVL': '1', 'HOME': '/home/grumpy', 'OLDPWD': '/home/grumpy', 'DESKTOP_SESSION': 'ubuntu', 'GNOME_SHELL_SESSION_MODE': 'ubuntu', 'GTK_MODULES': 'gail:atk-bridge', 'ROS_PYTHON_VERSION': '3', 'PIXI_IN_SHELL': '1', 'DBUS_SESSION_BUS_ADDRESS': 'unix:path=/run/user/1000/bus', 'GSM_SKIP_SSH_AGENT_WORKAROUND': 'true', 'SYSTEMD_EXEC_PID': '1662', 'COLORTERM': 'truecolor', 'DEBUGINFOD_URLS': 'https://debuginfod.ubuntu.com', 'ROS_DISTRO': 'jazzy', 'LOGNAME': 'grumpy', '_': '/home/grumpy/.pixi/bin/pixi', 'MEMORY_PRESSURE_WATCH': '/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/session.slice/org.gnome.Shell@x11.service/memory.pressure', 'ROS_VERSION': '2', 'XDG_SESSION_CLASS': 'user', 'PIXI_ENVIRONMENT_PLATFORMS': 'linux-64,win-64,osx-arm64', 'TERM': 'xterm-256color', 'USERNAME': 'grumpy', 'GNOME_DESKTOP_SESSION_ID': 'this-is-deprecated', 'ROS_OS_OVERRIDE': 'conda:linux', 'WINDOWPATH': '2', 'PATH': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/bin:/home/grumpy/.pixi/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin', 'SESSION_MANAGER': 'local/grumpy:@/tmp/.ICE-unix/1631,unix/grumpy:/tmp/.ICE-unix/1631', 'GNOME_TERMINAL_SCREEN': '/org/gnome/Terminal/screen/7a63c77b_0be4_438f_9cd1_b3690b9682cf', 'PIXI_PROJECT_VERSION': '1.0.0', 'XDG_MENU_PREFIX': 'gnome-', 'XDG_RUNTIME_DIR': '/run/user/1000', 'DISPLAY': ':0', 'LANG': 'en_US.UTF-8', 'RMW_IMPLEMENTATION': 'rmw_cyclonedds_cpp', 'XDG_CURRENT_DESKTOP': 'ubuntu:GNOME', 'GNOME_TERMINAL_SERVICE': ':1.95', 'LS_COLORS': 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=00:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.avif=01;35:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:*~=00;90:*#=00;90:*.bak=00;90:*.crdownload=00;90:*.dpkg-dist=00;90:*.dpkg-new=00;90:*.dpkg-old=00;90:*.dpkg-tmp=00;90:*.old=00;90:*.orig=00;90:*.part=00;90:*.rej=00;90:*.rpmnew=00;90:*.rpmorig=00;90:*.rpmsave=00;90:*.swp=00;90:*.tmp=00;90:*.ucf-dist=00;90:*.ucf-new=00;90:*.ucf-old=00;90:', 'XAUTHORITY': '/run/user/1000/gdm/Xauthority', 'XDG_SESSION_DESKTOP': 'ubuntu', 'XMODIFIERS': '@im=ibus', 'AMENT_PREFIX_PATH': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default', 'GSETTINGS_SCHEMA_DIR': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/share/glib-2.0/schemas', 'PIXI_PROMPT': '(dd2419_ws)', 'ROS_DOMAIN_ID': '5', 'SSH_AUTH_SOCK': '/run/user/1000/keyring/ssh', 'XML_CATALOG_FILES': 'file:///home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/etc/xml/catalog file:///etc/xml/catalog', 'SHELL': '/bin/bash', 'GDMSESSION': 'ubuntu', 'QT_ACCESSIBILITY': '1', 'CONDA_DEFAULT_ENV': 'dd2419_ws', 'LESSCLOSE': '/usr/bin/lesspipe %s %s', 'PIXI_PROJECT_ROOT': '/home/grumpy/dd2419_ws_Group5_2026', 'GPG_AGENT_INFO': '/run/user/1000/gnupg/S.gpg-agent:0:1', 'PIXI_PROJECT_MANIFEST': '/home/grumpy/dd2419_ws_Group5_2026/pixi.toml', 'QT_IM_MODULE': 'ibus', 'ROS_AUTOMATIC_DISCOVERY_RANGE': 'SUBNET', 'PWD': '/home/grumpy/dd2419_ws_Group5_2026/build/phidgets_msgs', 'PIXI_PROJECT_NAME': 'dd2419_ws', 'XDG_CONFIG_DIRS': '/etc/xdg/xdg-ubuntu:/etc/xdg', 'XDG_DATA_DIRS': '/usr/share/ubuntu:/usr/share/gnome:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop', 'PYTHONPATH': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/lib/python/site-packages:/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/lib/python3.12/site-packages', 'CONDA_PREFIX': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default', 'GSETTINGS_SCHEMA_DIR_CONDA_BACKUP': '', 'COLCON': '1', 'MEMORY_PRESSURE_WRITE': 'c29tZSAyMDAwMDAgMjAwMDAwMAA=', 'VTE_VERSION': '7600', 'INIT_CWD': '/home/grumpy/dd2419_ws_Group5_2026', 'CMAKE_PREFIX_PATH': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default'}), 'shell': False}
+[0.390259] (realsense2_camera_msgs) JobProgress: {'identifier': 'realsense2_camera_msgs', 'progress': 'cmake'}
+[0.390950] (realsense2_camera_msgs) Command: {'cmd': ['/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/bin/cmake', '/home/grumpy/dd2419_ws_Group5_2026/src/realsense-ros/realsense2_camera_msgs', '-DCMAKE_INSTALL_PREFIX=/home/grumpy/dd2419_ws_Group5_2026/install/realsense2_camera_msgs'], 'cwd': '/home/grumpy/dd2419_ws_Group5_2026/build/realsense2_camera_msgs', 'env': OrderedDict({'LESSOPEN': '| /usr/bin/lesspipe %s', 'PIXI_ENVIRONMENT_NAME': 'default', 'USER': 'grumpy', 'PIXI_EXE': '/home/grumpy/.pixi/bin/pixi', 'XDG_SESSION_TYPE': 'x11', 'CLUTTER_DISABLE_MIPMAPPED_TEXT': '1', 'LD_LIBRARY_PATH': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/opt/rviz_ogre_vendor/lib:/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/opt/libphidget22/lib:/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/lib', 'ROS_ETC_DIR': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/etc/ros', 'SHLVL': '1', 'CONDA_SHLVL': '1', 'HOME': '/home/grumpy', 'OLDPWD': '/home/grumpy', 'DESKTOP_SESSION': 'ubuntu', 'GNOME_SHELL_SESSION_MODE': 'ubuntu', 'GTK_MODULES': 'gail:atk-bridge', 'ROS_PYTHON_VERSION': '3', 'PIXI_IN_SHELL': '1', 'DBUS_SESSION_BUS_ADDRESS': 'unix:path=/run/user/1000/bus', 'GSM_SKIP_SSH_AGENT_WORKAROUND': 'true', 'SYSTEMD_EXEC_PID': '1662', 'COLORTERM': 'truecolor', 'DEBUGINFOD_URLS': 'https://debuginfod.ubuntu.com', 'ROS_DISTRO': 'jazzy', 'LOGNAME': 'grumpy', '_': '/home/grumpy/.pixi/bin/pixi', 'MEMORY_PRESSURE_WATCH': '/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/session.slice/org.gnome.Shell@x11.service/memory.pressure', 'ROS_VERSION': '2', 'XDG_SESSION_CLASS': 'user', 'PIXI_ENVIRONMENT_PLATFORMS': 'linux-64,win-64,osx-arm64', 'TERM': 'xterm-256color', 'USERNAME': 'grumpy', 'GNOME_DESKTOP_SESSION_ID': 'this-is-deprecated', 'ROS_OS_OVERRIDE': 'conda:linux', 'WINDOWPATH': '2', 'PATH': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/bin:/home/grumpy/.pixi/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin', 'SESSION_MANAGER': 'local/grumpy:@/tmp/.ICE-unix/1631,unix/grumpy:/tmp/.ICE-unix/1631', 'GNOME_TERMINAL_SCREEN': '/org/gnome/Terminal/screen/7a63c77b_0be4_438f_9cd1_b3690b9682cf', 'PIXI_PROJECT_VERSION': '1.0.0', 'XDG_MENU_PREFIX': 'gnome-', 'XDG_RUNTIME_DIR': '/run/user/1000', 'DISPLAY': ':0', 'LANG': 'en_US.UTF-8', 'RMW_IMPLEMENTATION': 'rmw_cyclonedds_cpp', 'XDG_CURRENT_DESKTOP': 'ubuntu:GNOME', 'GNOME_TERMINAL_SERVICE': ':1.95', 'LS_COLORS': 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=00:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.avif=01;35:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:*~=00;90:*#=00;90:*.bak=00;90:*.crdownload=00;90:*.dpkg-dist=00;90:*.dpkg-new=00;90:*.dpkg-old=00;90:*.dpkg-tmp=00;90:*.old=00;90:*.orig=00;90:*.part=00;90:*.rej=00;90:*.rpmnew=00;90:*.rpmorig=00;90:*.rpmsave=00;90:*.swp=00;90:*.tmp=00;90:*.ucf-dist=00;90:*.ucf-new=00;90:*.ucf-old=00;90:', 'XAUTHORITY': '/run/user/1000/gdm/Xauthority', 'XDG_SESSION_DESKTOP': 'ubuntu', 'XMODIFIERS': '@im=ibus', 'AMENT_PREFIX_PATH': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default', 'GSETTINGS_SCHEMA_DIR': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/share/glib-2.0/schemas', 'PIXI_PROMPT': '(dd2419_ws)', 'ROS_DOMAIN_ID': '5', 'SSH_AUTH_SOCK': '/run/user/1000/keyring/ssh', 'XML_CATALOG_FILES': 'file:///home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/etc/xml/catalog file:///etc/xml/catalog', 'SHELL': '/bin/bash', 'GDMSESSION': 'ubuntu', 'QT_ACCESSIBILITY': '1', 'CONDA_DEFAULT_ENV': 'dd2419_ws', 'LESSCLOSE': '/usr/bin/lesspipe %s %s', 'PIXI_PROJECT_ROOT': '/home/grumpy/dd2419_ws_Group5_2026', 'GPG_AGENT_INFO': '/run/user/1000/gnupg/S.gpg-agent:0:1', 'PIXI_PROJECT_MANIFEST': '/home/grumpy/dd2419_ws_Group5_2026/pixi.toml', 'QT_IM_MODULE': 'ibus', 'ROS_AUTOMATIC_DISCOVERY_RANGE': 'SUBNET', 'PWD': '/home/grumpy/dd2419_ws_Group5_2026/build/realsense2_camera_msgs', 'PIXI_PROJECT_NAME': 'dd2419_ws', 'XDG_CONFIG_DIRS': '/etc/xdg/xdg-ubuntu:/etc/xdg', 'XDG_DATA_DIRS': '/usr/share/ubuntu:/usr/share/gnome:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop', 'PYTHONPATH': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/lib/python/site-packages:/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/lib/python3.12/site-packages', 'CONDA_PREFIX': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default', 'GSETTINGS_SCHEMA_DIR_CONDA_BACKUP': '', 'COLCON': '1', 'MEMORY_PRESSURE_WRITE': 'c29tZSAyMDAwMDAgMjAwMDAwMAA=', 'VTE_VERSION': '7600', 'INIT_CWD': '/home/grumpy/dd2419_ws_Group5_2026', 'CMAKE_PREFIX_PATH': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default'}), 'shell': False}
+[0.391770] (aruco_msgs) JobProgress: {'identifier': 'aruco_msgs', 'progress': 'cmake'}
+[0.393115] (aruco_msgs) Command: {'cmd': ['/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/bin/cmake', '/home/grumpy/dd2419_ws_Group5_2026/src/aruco_ros/aruco_msgs', '-DCMAKE_INSTALL_PREFIX=/home/grumpy/dd2419_ws_Group5_2026/install/aruco_msgs'], 'cwd': '/home/grumpy/dd2419_ws_Group5_2026/build/aruco_msgs', 'env': OrderedDict({'LESSOPEN': '| /usr/bin/lesspipe %s', 'PIXI_ENVIRONMENT_NAME': 'default', 'USER': 'grumpy', 'PIXI_EXE': '/home/grumpy/.pixi/bin/pixi', 'XDG_SESSION_TYPE': 'x11', 'CLUTTER_DISABLE_MIPMAPPED_TEXT': '1', 'LD_LIBRARY_PATH': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/opt/rviz_ogre_vendor/lib:/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/opt/libphidget22/lib:/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/lib', 'ROS_ETC_DIR': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/etc/ros', 'SHLVL': '1', 'CONDA_SHLVL': '1', 'HOME': '/home/grumpy', 'OLDPWD': '/home/grumpy', 'DESKTOP_SESSION': 'ubuntu', 'GNOME_SHELL_SESSION_MODE': 'ubuntu', 'GTK_MODULES': 'gail:atk-bridge', 'ROS_PYTHON_VERSION': '3', 'PIXI_IN_SHELL': '1', 'DBUS_SESSION_BUS_ADDRESS': 'unix:path=/run/user/1000/bus', 'GSM_SKIP_SSH_AGENT_WORKAROUND': 'true', 'SYSTEMD_EXEC_PID': '1662', 'COLORTERM': 'truecolor', 'DEBUGINFOD_URLS': 'https://debuginfod.ubuntu.com', 'ROS_DISTRO': 'jazzy', 'LOGNAME': 'grumpy', '_': '/home/grumpy/.pixi/bin/pixi', 'MEMORY_PRESSURE_WATCH': '/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/session.slice/org.gnome.Shell@x11.service/memory.pressure', 'ROS_VERSION': '2', 'XDG_SESSION_CLASS': 'user', 'PIXI_ENVIRONMENT_PLATFORMS': 'linux-64,win-64,osx-arm64', 'TERM': 'xterm-256color', 'USERNAME': 'grumpy', 'GNOME_DESKTOP_SESSION_ID': 'this-is-deprecated', 'ROS_OS_OVERRIDE': 'conda:linux', 'WINDOWPATH': '2', 'PATH': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/bin:/home/grumpy/.pixi/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin', 'SESSION_MANAGER': 'local/grumpy:@/tmp/.ICE-unix/1631,unix/grumpy:/tmp/.ICE-unix/1631', 'GNOME_TERMINAL_SCREEN': '/org/gnome/Terminal/screen/7a63c77b_0be4_438f_9cd1_b3690b9682cf', 'PIXI_PROJECT_VERSION': '1.0.0', 'XDG_MENU_PREFIX': 'gnome-', 'XDG_RUNTIME_DIR': '/run/user/1000', 'DISPLAY': ':0', 'LANG': 'en_US.UTF-8', 'RMW_IMPLEMENTATION': 'rmw_cyclonedds_cpp', 'XDG_CURRENT_DESKTOP': 'ubuntu:GNOME', 'GNOME_TERMINAL_SERVICE': ':1.95', 'LS_COLORS': 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=00:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.avif=01;35:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:*~=00;90:*#=00;90:*.bak=00;90:*.crdownload=00;90:*.dpkg-dist=00;90:*.dpkg-new=00;90:*.dpkg-old=00;90:*.dpkg-tmp=00;90:*.old=00;90:*.orig=00;90:*.part=00;90:*.rej=00;90:*.rpmnew=00;90:*.rpmorig=00;90:*.rpmsave=00;90:*.swp=00;90:*.tmp=00;90:*.ucf-dist=00;90:*.ucf-new=00;90:*.ucf-old=00;90:', 'XAUTHORITY': '/run/user/1000/gdm/Xauthority', 'XDG_SESSION_DESKTOP': 'ubuntu', 'XMODIFIERS': '@im=ibus', 'AMENT_PREFIX_PATH': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default', 'GSETTINGS_SCHEMA_DIR': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/share/glib-2.0/schemas', 'PIXI_PROMPT': '(dd2419_ws)', 'ROS_DOMAIN_ID': '5', 'SSH_AUTH_SOCK': '/run/user/1000/keyring/ssh', 'XML_CATALOG_FILES': 'file:///home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/etc/xml/catalog file:///etc/xml/catalog', 'SHELL': '/bin/bash', 'GDMSESSION': 'ubuntu', 'QT_ACCESSIBILITY': '1', 'CONDA_DEFAULT_ENV': 'dd2419_ws', 'LESSCLOSE': '/usr/bin/lesspipe %s %s', 'PIXI_PROJECT_ROOT': '/home/grumpy/dd2419_ws_Group5_2026', 'GPG_AGENT_INFO': '/run/user/1000/gnupg/S.gpg-agent:0:1', 'PIXI_PROJECT_MANIFEST': '/home/grumpy/dd2419_ws_Group5_2026/pixi.toml', 'QT_IM_MODULE': 'ibus', 'ROS_AUTOMATIC_DISCOVERY_RANGE': 'SUBNET', 'PWD': '/home/grumpy/dd2419_ws_Group5_2026/build/aruco_msgs', 'PIXI_PROJECT_NAME': 'dd2419_ws', 'XDG_CONFIG_DIRS': '/etc/xdg/xdg-ubuntu:/etc/xdg', 'XDG_DATA_DIRS': '/usr/share/ubuntu:/usr/share/gnome:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop', 'PYTHONPATH': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/lib/python/site-packages:/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/lib/python3.12/site-packages', 'CONDA_PREFIX': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default', 'GSETTINGS_SCHEMA_DIR_CONDA_BACKUP': '', 'COLCON': '1', 'MEMORY_PRESSURE_WRITE': 'c29tZSAyMDAwMDAgMjAwMDAwMAA=', 'VTE_VERSION': '7600', 'INIT_CWD': '/home/grumpy/dd2419_ws_Group5_2026', 'CMAKE_PREFIX_PATH': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default'}), 'shell': False}
+[0.394636] (robp_interfaces) JobProgress: {'identifier': 'robp_interfaces', 'progress': 'cmake'}
+[0.395405] (robp_interfaces) Command: {'cmd': ['/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/bin/cmake', '/home/grumpy/dd2419_ws_Group5_2026/src/robp_interfaces', '-DCMAKE_INSTALL_PREFIX=/home/grumpy/dd2419_ws_Group5_2026/install/robp_interfaces'], 'cwd': '/home/grumpy/dd2419_ws_Group5_2026/build/robp_interfaces', 'env': OrderedDict({'LESSOPEN': '| /usr/bin/lesspipe %s', 'PIXI_ENVIRONMENT_NAME': 'default', 'USER': 'grumpy', 'PIXI_EXE': '/home/grumpy/.pixi/bin/pixi', 'XDG_SESSION_TYPE': 'x11', 'CLUTTER_DISABLE_MIPMAPPED_TEXT': '1', 'LD_LIBRARY_PATH': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/opt/rviz_ogre_vendor/lib:/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/opt/libphidget22/lib:/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/lib', 'ROS_ETC_DIR': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/etc/ros', 'SHLVL': '1', 'CONDA_SHLVL': '1', 'HOME': '/home/grumpy', 'OLDPWD': '/home/grumpy', 'DESKTOP_SESSION': 'ubuntu', 'GNOME_SHELL_SESSION_MODE': 'ubuntu', 'GTK_MODULES': 'gail:atk-bridge', 'ROS_PYTHON_VERSION': '3', 'PIXI_IN_SHELL': '1', 'DBUS_SESSION_BUS_ADDRESS': 'unix:path=/run/user/1000/bus', 'GSM_SKIP_SSH_AGENT_WORKAROUND': 'true', 'SYSTEMD_EXEC_PID': '1662', 'COLORTERM': 'truecolor', 'DEBUGINFOD_URLS': 'https://debuginfod.ubuntu.com', 'ROS_DISTRO': 'jazzy', 'LOGNAME': 'grumpy', '_': '/home/grumpy/.pixi/bin/pixi', 'MEMORY_PRESSURE_WATCH': '/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/session.slice/org.gnome.Shell@x11.service/memory.pressure', 'ROS_VERSION': '2', 'XDG_SESSION_CLASS': 'user', 'PIXI_ENVIRONMENT_PLATFORMS': 'linux-64,win-64,osx-arm64', 'TERM': 'xterm-256color', 'USERNAME': 'grumpy', 'GNOME_DESKTOP_SESSION_ID': 'this-is-deprecated', 'ROS_OS_OVERRIDE': 'conda:linux', 'WINDOWPATH': '2', 'PATH': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/bin:/home/grumpy/.pixi/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin', 'SESSION_MANAGER': 'local/grumpy:@/tmp/.ICE-unix/1631,unix/grumpy:/tmp/.ICE-unix/1631', 'GNOME_TERMINAL_SCREEN': '/org/gnome/Terminal/screen/7a63c77b_0be4_438f_9cd1_b3690b9682cf', 'PIXI_PROJECT_VERSION': '1.0.0', 'XDG_MENU_PREFIX': 'gnome-', 'XDG_RUNTIME_DIR': '/run/user/1000', 'DISPLAY': ':0', 'LANG': 'en_US.UTF-8', 'RMW_IMPLEMENTATION': 'rmw_cyclonedds_cpp', 'XDG_CURRENT_DESKTOP': 'ubuntu:GNOME', 'GNOME_TERMINAL_SERVICE': ':1.95', 'LS_COLORS': 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=00:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.avif=01;35:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:*~=00;90:*#=00;90:*.bak=00;90:*.crdownload=00;90:*.dpkg-dist=00;90:*.dpkg-new=00;90:*.dpkg-old=00;90:*.dpkg-tmp=00;90:*.old=00;90:*.orig=00;90:*.part=00;90:*.rej=00;90:*.rpmnew=00;90:*.rpmorig=00;90:*.rpmsave=00;90:*.swp=00;90:*.tmp=00;90:*.ucf-dist=00;90:*.ucf-new=00;90:*.ucf-old=00;90:', 'XAUTHORITY': '/run/user/1000/gdm/Xauthority', 'XDG_SESSION_DESKTOP': 'ubuntu', 'XMODIFIERS': '@im=ibus', 'AMENT_PREFIX_PATH': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default', 'GSETTINGS_SCHEMA_DIR': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/share/glib-2.0/schemas', 'PIXI_PROMPT': '(dd2419_ws)', 'ROS_DOMAIN_ID': '5', 'SSH_AUTH_SOCK': '/run/user/1000/keyring/ssh', 'XML_CATALOG_FILES': 'file:///home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/etc/xml/catalog file:///etc/xml/catalog', 'SHELL': '/bin/bash', 'GDMSESSION': 'ubuntu', 'QT_ACCESSIBILITY': '1', 'CONDA_DEFAULT_ENV': 'dd2419_ws', 'LESSCLOSE': '/usr/bin/lesspipe %s %s', 'PIXI_PROJECT_ROOT': '/home/grumpy/dd2419_ws_Group5_2026', 'GPG_AGENT_INFO': '/run/user/1000/gnupg/S.gpg-agent:0:1', 'PIXI_PROJECT_MANIFEST': '/home/grumpy/dd2419_ws_Group5_2026/pixi.toml', 'QT_IM_MODULE': 'ibus', 'ROS_AUTOMATIC_DISCOVERY_RANGE': 'SUBNET', 'PWD': '/home/grumpy/dd2419_ws_Group5_2026/build/robp_interfaces', 'PIXI_PROJECT_NAME': 'dd2419_ws', 'XDG_CONFIG_DIRS': '/etc/xdg/xdg-ubuntu:/etc/xdg', 'XDG_DATA_DIRS': '/usr/share/ubuntu:/usr/share/gnome:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop', 'PYTHONPATH': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/lib/python/site-packages:/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/lib/python3.12/site-packages', 'CONDA_PREFIX': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default', 'GSETTINGS_SCHEMA_DIR_CONDA_BACKUP': '', 'COLCON': '1', 'MEMORY_PRESSURE_WRITE': 'c29tZSAyMDAwMDAgMjAwMDAwMAA=', 'VTE_VERSION': '7600', 'INIT_CWD': '/home/grumpy/dd2419_ws_Group5_2026', 'CMAKE_PREFIX_PATH': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default'}), 'shell': False}
+[0.396653] (aruco) JobProgress: {'identifier': 'aruco', 'progress': 'cmake'}
+[0.397854] (aruco) JobProgress: {'identifier': 'aruco', 'progress': 'build'}
+[0.398235] (aruco) Command: {'cmd': ['/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/bin/cmake', '--build', '/home/grumpy/dd2419_ws_Group5_2026/build/aruco', '--', '-j8', '-l8'], 'cwd': '/home/grumpy/dd2419_ws_Group5_2026/build/aruco', 'env': OrderedDict({'LESSOPEN': '| /usr/bin/lesspipe %s', 'PIXI_ENVIRONMENT_NAME': 'default', 'USER': 'grumpy', 'PIXI_EXE': '/home/grumpy/.pixi/bin/pixi', 'XDG_SESSION_TYPE': 'x11', 'CLUTTER_DISABLE_MIPMAPPED_TEXT': '1', 'LD_LIBRARY_PATH': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/opt/rviz_ogre_vendor/lib:/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/opt/libphidget22/lib:/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/lib', 'ROS_ETC_DIR': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/etc/ros', 'SHLVL': '1', 'CONDA_SHLVL': '1', 'HOME': '/home/grumpy', 'OLDPWD': '/home/grumpy', 'DESKTOP_SESSION': 'ubuntu', 'GNOME_SHELL_SESSION_MODE': 'ubuntu', 'GTK_MODULES': 'gail:atk-bridge', 'ROS_PYTHON_VERSION': '3', 'PIXI_IN_SHELL': '1', 'DBUS_SESSION_BUS_ADDRESS': 'unix:path=/run/user/1000/bus', 'GSM_SKIP_SSH_AGENT_WORKAROUND': 'true', 'SYSTEMD_EXEC_PID': '1662', 'COLORTERM': 'truecolor', 'DEBUGINFOD_URLS': 'https://debuginfod.ubuntu.com', 'ROS_DISTRO': 'jazzy', 'LOGNAME': 'grumpy', '_': '/home/grumpy/.pixi/bin/pixi', 'MEMORY_PRESSURE_WATCH': '/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/session.slice/org.gnome.Shell@x11.service/memory.pressure', 'ROS_VERSION': '2', 'XDG_SESSION_CLASS': 'user', 'PIXI_ENVIRONMENT_PLATFORMS': 'linux-64,win-64,osx-arm64', 'TERM': 'xterm-256color', 'USERNAME': 'grumpy', 'GNOME_DESKTOP_SESSION_ID': 'this-is-deprecated', 'ROS_OS_OVERRIDE': 'conda:linux', 'WINDOWPATH': '2', 'PATH': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/bin:/home/grumpy/.pixi/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin', 'SESSION_MANAGER': 'local/grumpy:@/tmp/.ICE-unix/1631,unix/grumpy:/tmp/.ICE-unix/1631', 'GNOME_TERMINAL_SCREEN': '/org/gnome/Terminal/screen/7a63c77b_0be4_438f_9cd1_b3690b9682cf', 'PIXI_PROJECT_VERSION': '1.0.0', 'XDG_MENU_PREFIX': 'gnome-', 'XDG_RUNTIME_DIR': '/run/user/1000', 'DISPLAY': ':0', 'LANG': 'en_US.UTF-8', 'RMW_IMPLEMENTATION': 'rmw_cyclonedds_cpp', 'XDG_CURRENT_DESKTOP': 'ubuntu:GNOME', 'GNOME_TERMINAL_SERVICE': ':1.95', 'LS_COLORS': 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=00:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.avif=01;35:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:*~=00;90:*#=00;90:*.bak=00;90:*.crdownload=00;90:*.dpkg-dist=00;90:*.dpkg-new=00;90:*.dpkg-old=00;90:*.dpkg-tmp=00;90:*.old=00;90:*.orig=00;90:*.part=00;90:*.rej=00;90:*.rpmnew=00;90:*.rpmorig=00;90:*.rpmsave=00;90:*.swp=00;90:*.tmp=00;90:*.ucf-dist=00;90:*.ucf-new=00;90:*.ucf-old=00;90:', 'XAUTHORITY': '/run/user/1000/gdm/Xauthority', 'XDG_SESSION_DESKTOP': 'ubuntu', 'XMODIFIERS': '@im=ibus', 'AMENT_PREFIX_PATH': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default', 'GSETTINGS_SCHEMA_DIR': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/share/glib-2.0/schemas', 'PIXI_PROMPT': '(dd2419_ws)', 'ROS_DOMAIN_ID': '5', 'SSH_AUTH_SOCK': '/run/user/1000/keyring/ssh', 'XML_CATALOG_FILES': 'file:///home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/etc/xml/catalog file:///etc/xml/catalog', 'SHELL': '/bin/bash', 'GDMSESSION': 'ubuntu', 'QT_ACCESSIBILITY': '1', 'CONDA_DEFAULT_ENV': 'dd2419_ws', 'LESSCLOSE': '/usr/bin/lesspipe %s %s', 'PIXI_PROJECT_ROOT': '/home/grumpy/dd2419_ws_Group5_2026', 'GPG_AGENT_INFO': '/run/user/1000/gnupg/S.gpg-agent:0:1', 'PIXI_PROJECT_MANIFEST': '/home/grumpy/dd2419_ws_Group5_2026/pixi.toml', 'QT_IM_MODULE': 'ibus', 'ROS_AUTOMATIC_DISCOVERY_RANGE': 'SUBNET', 'PWD': '/home/grumpy/dd2419_ws_Group5_2026/build/aruco', 'PIXI_PROJECT_NAME': 'dd2419_ws', 'XDG_CONFIG_DIRS': '/etc/xdg/xdg-ubuntu:/etc/xdg', 'XDG_DATA_DIRS': '/usr/share/ubuntu:/usr/share/gnome:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop', 'PYTHONPATH': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/lib/python/site-packages:/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/lib/python3.12/site-packages', 'CONDA_PREFIX': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default', 'GSETTINGS_SCHEMA_DIR_CONDA_BACKUP': '', 'COLCON': '1', 'MEMORY_PRESSURE_WRITE': 'c29tZSAyMDAwMDAgMjAwMDAwMAA=', 'VTE_VERSION': '7600', 'INIT_CWD': '/home/grumpy/dd2419_ws_Group5_2026', 'CMAKE_PREFIX_PATH': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default'}), 'shell': False}
+[0.408679] (-) TimerEvent: {}
+[0.409149] (librealsense2) JobProgress: {'identifier': 'librealsense2', 'progress': 'cmake'}
+[0.409169] (librealsense2) JobProgress: {'identifier': 'librealsense2', 'progress': 'build'}
+[0.409181] (librealsense2) Command: {'cmd': ['/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/bin/cmake', '--build', '/home/grumpy/dd2419_ws_Group5_2026/build/librealsense2', '--', '-j8', '-l8'], 'cwd': '/home/grumpy/dd2419_ws_Group5_2026/build/librealsense2', 'env': OrderedDict({'LESSOPEN': '| /usr/bin/lesspipe %s', 'PIXI_ENVIRONMENT_NAME': 'default', 'USER': 'grumpy', 'PIXI_EXE': '/home/grumpy/.pixi/bin/pixi', 'XDG_SESSION_TYPE': 'x11', 'CLUTTER_DISABLE_MIPMAPPED_TEXT': '1', 'LD_LIBRARY_PATH': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/opt/rviz_ogre_vendor/lib:/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/opt/libphidget22/lib:/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/lib', 'ROS_ETC_DIR': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/etc/ros', 'SHLVL': '1', 'CONDA_SHLVL': '1', 'HOME': '/home/grumpy', 'OLDPWD': '/home/grumpy', 'DESKTOP_SESSION': 'ubuntu', 'GNOME_SHELL_SESSION_MODE': 'ubuntu', 'GTK_MODULES': 'gail:atk-bridge', 'ROS_PYTHON_VERSION': '3', 'PIXI_IN_SHELL': '1', 'DBUS_SESSION_BUS_ADDRESS': 'unix:path=/run/user/1000/bus', 'GSM_SKIP_SSH_AGENT_WORKAROUND': 'true', 'SYSTEMD_EXEC_PID': '1662', 'COLORTERM': 'truecolor', 'DEBUGINFOD_URLS': 'https://debuginfod.ubuntu.com', 'ROS_DISTRO': 'jazzy', 'LOGNAME': 'grumpy', '_': '/home/grumpy/.pixi/bin/pixi', 'MEMORY_PRESSURE_WATCH': '/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/session.slice/org.gnome.Shell@x11.service/memory.pressure', 'ROS_VERSION': '2', 'XDG_SESSION_CLASS': 'user', 'PIXI_ENVIRONMENT_PLATFORMS': 'linux-64,win-64,osx-arm64', 'TERM': 'xterm-256color', 'USERNAME': 'grumpy', 'GNOME_DESKTOP_SESSION_ID': 'this-is-deprecated', 'ROS_OS_OVERRIDE': 'conda:linux', 'WINDOWPATH': '2', 'PATH': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/bin:/home/grumpy/.pixi/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin', 'SESSION_MANAGER': 'local/grumpy:@/tmp/.ICE-unix/1631,unix/grumpy:/tmp/.ICE-unix/1631', 'GNOME_TERMINAL_SCREEN': '/org/gnome/Terminal/screen/7a63c77b_0be4_438f_9cd1_b3690b9682cf', 'PIXI_PROJECT_VERSION': '1.0.0', 'XDG_MENU_PREFIX': 'gnome-', 'XDG_RUNTIME_DIR': '/run/user/1000', 'DISPLAY': ':0', 'LANG': 'en_US.UTF-8', 'RMW_IMPLEMENTATION': 'rmw_cyclonedds_cpp', 'XDG_CURRENT_DESKTOP': 'ubuntu:GNOME', 'GNOME_TERMINAL_SERVICE': ':1.95', 'LS_COLORS': 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=00:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.avif=01;35:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:*~=00;90:*#=00;90:*.bak=00;90:*.crdownload=00;90:*.dpkg-dist=00;90:*.dpkg-new=00;90:*.dpkg-old=00;90:*.dpkg-tmp=00;90:*.old=00;90:*.orig=00;90:*.part=00;90:*.rej=00;90:*.rpmnew=00;90:*.rpmorig=00;90:*.rpmsave=00;90:*.swp=00;90:*.tmp=00;90:*.ucf-dist=00;90:*.ucf-new=00;90:*.ucf-old=00;90:', 'XAUTHORITY': '/run/user/1000/gdm/Xauthority', 'XDG_SESSION_DESKTOP': 'ubuntu', 'XMODIFIERS': '@im=ibus', 'AMENT_PREFIX_PATH': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default', 'GSETTINGS_SCHEMA_DIR': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/share/glib-2.0/schemas', 'PIXI_PROMPT': '(dd2419_ws)', 'ROS_DOMAIN_ID': '5', 'SSH_AUTH_SOCK': '/run/user/1000/keyring/ssh', 'XML_CATALOG_FILES': 'file:///home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/etc/xml/catalog file:///etc/xml/catalog', 'SHELL': '/bin/bash', 'GDMSESSION': 'ubuntu', 'QT_ACCESSIBILITY': '1', 'CONDA_DEFAULT_ENV': 'dd2419_ws', 'LESSCLOSE': '/usr/bin/lesspipe %s %s', 'PIXI_PROJECT_ROOT': '/home/grumpy/dd2419_ws_Group5_2026', 'GPG_AGENT_INFO': '/run/user/1000/gnupg/S.gpg-agent:0:1', 'PIXI_PROJECT_MANIFEST': '/home/grumpy/dd2419_ws_Group5_2026/pixi.toml', 'QT_IM_MODULE': 'ibus', 'ROS_AUTOMATIC_DISCOVERY_RANGE': 'SUBNET', 'PWD': '/home/grumpy/dd2419_ws_Group5_2026/build/librealsense2', 'PIXI_PROJECT_NAME': 'dd2419_ws', 'XDG_CONFIG_DIRS': '/etc/xdg/xdg-ubuntu:/etc/xdg', 'XDG_DATA_DIRS': '/usr/share/ubuntu:/usr/share/gnome:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop', 'PYTHONPATH': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/lib/python/site-packages:/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/lib/python3.12/site-packages', 'CONDA_PREFIX': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default', 'GSETTINGS_SCHEMA_DIR_CONDA_BACKUP': '', 'COLCON': '1', 'MEMORY_PRESSURE_WRITE': 'c29tZSAyMDAwMDAgMjAwMDAwMAA=', 'VTE_VERSION': '7600', 'INIT_CWD': '/home/grumpy/dd2419_ws_Group5_2026', 'CMAKE_PREFIX_PATH': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default'}), 'shell': False}
+[0.438690] (realsense2_camera_msgs) StderrLine: {'line': b'\x1b[0mCMake Deprecation Warning at CMakeLists.txt:15 (cmake_minimum_required):\n'}
+[0.438935] (realsense2_camera_msgs) StderrLine: {'line': b'  Compatibility with CMake < 3.10 will be removed from a future version of\n'}
+[0.439038] (realsense2_camera_msgs) StderrLine: {'line': b'  CMake.\n'}
+[0.439116] (realsense2_camera_msgs) StderrLine: {'line': b'\n'}
+[0.439199] (realsense2_camera_msgs) StderrLine: {'line': b'  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax\n'}
+[0.439290] (realsense2_camera_msgs) StderrLine: {'line': b'  to tell CMake that the project requires at least <min> but has been updated\n'}
+[0.439415] (realsense2_camera_msgs) StderrLine: {'line': b'  to work with policies introduced by <max> or earlier.\n'}
+[0.439486] (realsense2_camera_msgs) StderrLine: {'line': b'\n'}
+[0.439536] (realsense2_camera_msgs) StderrLine: {'line': b'\x1b[0m\n'}
+[0.439608] (phidgets_msgs) StderrLine: {'line': b'\x1b[0mCMake Deprecation Warning at CMakeLists.txt:1 (cmake_minimum_required):\n'}
+[0.439719] (phidgets_msgs) StderrLine: {'line': b'  Compatibility with CMake < 3.10 will be removed from a future version of\n'}
+[0.439804] (phidgets_msgs) StderrLine: {'line': b'  CMake.\n'}
+[0.439861] (phidgets_msgs) StderrLine: {'line': b'\n'}
+[0.439909] (phidgets_msgs) StderrLine: {'line': b'  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax\n'}
+[0.439959] (phidgets_msgs) StderrLine: {'line': b'  to tell CMake that the project requires at least <min> but has been updated\n'}
+[0.440037] (phidgets_msgs) StderrLine: {'line': b'  to work with policies introduced by <max> or earlier.\n'}
+[0.440124] (phidgets_msgs) StderrLine: {'line': b'\n'}
+[0.440210] (phidgets_msgs) StderrLine: {'line': b'\x1b[0m\n'}
+[0.440281] (robp_interfaces) StderrLine: {'line': b'\x1b[0mCMake Deprecation Warning at CMakeLists.txt:1 (cmake_minimum_required):\n'}
+[0.440346] (robp_interfaces) StderrLine: {'line': b'  Compatibility with CMake < 3.10 will be removed from a future version of\n'}
+[0.440395] (robp_interfaces) StderrLine: {'line': b'  CMake.\n'}
+[0.440442] (robp_interfaces) StderrLine: {'line': b'\n'}
+[0.440489] (robp_interfaces) StderrLine: {'line': b'  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax\n'}
+[0.440537] (robp_interfaces) StderrLine: {'line': b'  to tell CMake that the project requires at least <min> but has been updated\n'}
+[0.440586] (robp_interfaces) StderrLine: {'line': b'  to work with policies introduced by <max> or earlier.\n'}
+[0.440633] (robp_interfaces) StderrLine: {'line': b'\n'}
+[0.440680] (robp_interfaces) StderrLine: {'line': b'\x1b[0m\n'}
+[0.440728] (aruco_msgs) StderrLine: {'line': b'\x1b[0mCMake Deprecation Warning at CMakeLists.txt:1 (cmake_minimum_required):\n'}
+[0.440786] (aruco_msgs) StderrLine: {'line': b'  Compatibility with CMake < 3.10 will be removed from a future version of\n'}
+[0.440836] (aruco_msgs) StderrLine: {'line': b'  CMake.\n'}
+[0.440891] (aruco_msgs) StderrLine: {'line': b'\n'}
+[0.440940] (aruco_msgs) StderrLine: {'line': b'  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax\n'}
+[0.440987] (aruco_msgs) StderrLine: {'line': b'  to tell CMake that the project requires at least <min> but has been updated\n'}
+[0.441048] (aruco_msgs) StderrLine: {'line': b'  to work with policies introduced by <max> or earlier.\n'}
+[0.441097] (aruco_msgs) StderrLine: {'line': b'\n'}
+[0.441142] (aruco_msgs) StderrLine: {'line': b'\x1b[0m\n'}
+[0.455392] (realsense2_camera_msgs) StdoutLine: {'line': b'-- Found ament_cmake: 2.5.4 (/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/share/ament_cmake/cmake)\n'}
+[0.455737] (phidgets_msgs) StdoutLine: {'line': b'-- Found ament_cmake: 2.5.4 (/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/share/ament_cmake/cmake)\n'}
+[0.455883] (aruco_msgs) StdoutLine: {'line': b'-- Found ament_cmake: 2.5.4 (/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/share/ament_cmake/cmake)\n'}
+[0.455995] (robp_interfaces) StdoutLine: {'line': b'-- Found ament_cmake: 2.5.4 (/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/share/ament_cmake/cmake)\n'}
+[0.467514] (aruco) StdoutLine: {'line': b'[  5%] \x1b[32mBuilding CXX object CMakeFiles/aruco.dir/src/aruco/cvdrawingutils.cpp.o\x1b[0m\n'}
+[0.468801] (aruco) StdoutLine: {'line': b'[ 11%] \x1b[32mBuilding CXX object CMakeFiles/aruco.dir/src/aruco/dictionary_based.cpp.o\x1b[0m\n'}
+[0.471756] (aruco) StdoutLine: {'line': b'[ 16%] \x1b[32mBuilding CXX object CMakeFiles/aruco.dir/src/aruco/cameraparameters.cpp.o\x1b[0m\n'}
+[0.476115] (aruco) StdoutLine: {'line': b'[ 22%] \x1b[32mBuilding CXX object CMakeFiles/aruco.dir/src/aruco/debug.cpp.o\x1b[0m\n'}
+[0.479112] (aruco) StdoutLine: {'line': b'[ 27%] \x1b[32mBuilding CXX object CMakeFiles/aruco.dir/src/aruco/dictionary.cpp.o\x1b[0m\n'}
+[0.479534] (libphidget22) StdoutLine: {'line': b"[ 12%] \x1b[1m\x1b[34mCreating directories for 'EP_libphidget22'\x1b[0m\n"}
+[0.481816] (aruco) StdoutLine: {'line': b'[ 33%] \x1b[32mBuilding CXX object CMakeFiles/aruco.dir/src/aruco/fractaldetector.cpp.o\x1b[0m\n'}
+[0.482048] (aruco) StdoutLine: {'line': b'[ 38%] \x1b[32mBuilding CXX object CMakeFiles/aruco.dir/src/aruco/ippe.cpp.o\x1b[0m\n'}
+[0.487148] (aruco) StdoutLine: {'line': b'[ 44%] \x1b[32mBuilding CXX object CMakeFiles/aruco.dir/src/aruco/marker.cpp.o\x1b[0m\n'}
+[0.508790] (-) TimerEvent: {}
+[0.509830] (libphidget22) StdoutLine: {'line': b"[ 25%] \x1b[1m\x1b[34mPerforming download step (download, verify and extract) for 'EP_libphidget22'\x1b[0m\n"}
+[0.517946] (libphidget22) StdoutLine: {'line': b'-- Downloading...\n'}
+[0.518181] (libphidget22) StdoutLine: {'line': b"   dst='/home/grumpy/dd2419_ws_Group5_2026/build/libphidget22/EP_libphidget22-prefix/src/libphidget22-1.19.20240304.tar.gz'\n"}
+[0.518293] (libphidget22) StdoutLine: {'line': b"   timeout='none'\n"}
+[0.518384] (libphidget22) StdoutLine: {'line': b"   inactivity timeout='none'\n"}
+[0.518470] (libphidget22) StdoutLine: {'line': b"-- Using src='https://www.phidgets.com/downloads/phidget22/libraries/linux/libphidget22/libphidget22-1.19.20240304.tar.gz'\n"}
+[0.612652] (-) TimerEvent: {}
+[0.713005] (-) TimerEvent: {}
+[0.833167] (-) TimerEvent: {}
+[0.883154] (aruco_msgs) StdoutLine: {'line': b'-- Found std_msgs: 5.3.6 (/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/share/std_msgs/cmake)\n'}
+[0.909261] (phidgets_msgs) StderrLine: {'line': b'\x1b[31mCMake Error at CMakeLists.txt:14 (find_package):\n'}
+[0.909505] (phidgets_msgs) StderrLine: {'line': b'  By not providing "Findrosidl_default_generators.cmake" in CMAKE_MODULE_PATH\n'}
+[0.909596] (phidgets_msgs) StderrLine: {'line': b'  this project has asked CMake to find a package configuration file provided\n'}
+[0.909677] (phidgets_msgs) StderrLine: {'line': b'  by "rosidl_default_generators", but CMake did not find one.\n'}
+[0.909760] (phidgets_msgs) StderrLine: {'line': b'\n'}
+[0.909842] (phidgets_msgs) StderrLine: {'line': b'  Could not find a package configuration file provided by\n'}
+[0.909922] (phidgets_msgs) StderrLine: {'line': b'  "rosidl_default_generators" with any of the following names:\n'}
+[0.910004] (phidgets_msgs) StderrLine: {'line': b'\n'}
+[0.910098] (phidgets_msgs) StderrLine: {'line': b'    rosidl_default_generatorsConfig.cmake\n'}
+[0.910179] (phidgets_msgs) StderrLine: {'line': b'    rosidl_default_generators-config.cmake\n'}
+[0.910259] (phidgets_msgs) StderrLine: {'line': b'\n'}
+[0.910336] (phidgets_msgs) StderrLine: {'line': b'  Add the installation prefix of "rosidl_default_generators" to\n'}
+[0.910415] (phidgets_msgs) StderrLine: {'line': b'  CMAKE_PREFIX_PATH or set "rosidl_default_generators_DIR" to a directory\n'}
+[0.910497] (phidgets_msgs) StderrLine: {'line': b'  containing one of the above files.  If "rosidl_default_generators" provides\n'}
+[0.910579] (phidgets_msgs) StderrLine: {'line': b'  a separate development package or SDK, be sure it has been installed.\n'}
+[0.910661] (phidgets_msgs) StderrLine: {'line': b'\n'}
+[0.910742] (phidgets_msgs) StderrLine: {'line': b'\x1b[0m\n'}
+[0.922182] (phidgets_msgs) StdoutLine: {'line': b'-- Configuring incomplete, errors occurred!\n'}
+[0.936820] (-) TimerEvent: {}
+[0.987212] (aruco_msgs) StdoutLine: {'line': b'-- Found rosidl_generator_c: 4.6.7 (/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/share/rosidl_generator_c/cmake)\n'}
+[1.025276] (librealsense2) StdoutLine: {'line': b'[  0%] \x1b[32mBuilding C object common/fw/CMakeFiles/fw.dir/empty.c.o\x1b[0m\n'}
+[1.025475] (librealsense2) StdoutLine: {'line': b'[  0%] \x1b[32mBuilding C object common/fw/CMakeFiles/fw.dir/D4XX_FW_Image.c.o\x1b[0m\n'}
+[1.025573] (librealsense2) StdoutLine: {'line': b'[  0%] \x1b[32mBuilding CXX object tools/embed/CMakeFiles/rs-embed.dir/rs-embed.cpp.o\x1b[0m\n'}
+[1.025669] (librealsense2) StdoutLine: {'line': b'[  0%] \x1b[32mBuilding C object tools/embed/CMakeFiles/rs-embed.dir/__/__/third-party/realsense-file/lz4/lz4.c.o\x1b[0m\n'}
+[1.025757] (librealsense2) StdoutLine: {'line': b'[  0%] \x1b[32mBuilding CXX object third-party/realsense-file/CMakeFiles/realsense-file.dir/rosbag/console_bridge/src/console.cpp.o\x1b[0m\n'}
+[1.025842] (librealsense2) StdoutLine: {'line': b'[  0%] \x1b[32mBuilding CXX object third-party/realsense-file/CMakeFiles/realsense-file.dir/rosbag/cpp_common/src/debug.cpp.o\x1b[0m\n'}
+[1.025928] (librealsense2) StdoutLine: {'line': b'[  0%] \x1b[32mBuilding CXX object third-party/rsutils/CMakeFiles/rsutils.dir/__/easyloggingpp/src/easylogging++.cc.o\x1b[0m\n'}
+[1.026019] (librealsense2) StdoutLine: {'line': b'[  1%] \x1b[32mBuilding CXX object third-party/realsense-file/CMakeFiles/realsense-file.dir/rosbag/cpp_common/src/header.cpp.o\x1b[0m\n'}
+[1.026106] (librealsense2) StdoutLine: {'line': b'[  1%] \x1b[32mBuilding CXX object third-party/rsutils/CMakeFiles/rsutils.dir/src/byte-manipulation.cpp.o\x1b[0m\n'}
+[1.026194] (librealsense2) StdoutLine: {'line': b'[  1%] \x1b[1m\x1b[32mLinking C static library ../../Release/libfw.a\x1b[0m\n'}
+[1.026288] (librealsense2) StdoutLine: {'line': b'[  1%] Built target fw\n'}
+[1.026383] (librealsense2) StdoutLine: {'line': b'[  1%] \x1b[32mBuilding CXX object third-party/realsense-file/CMakeFiles/realsense-file.dir/rosbag/rosbag_storage/src/bag.cpp.o\x1b[0m\n'}
+[1.026478] (librealsense2) StdoutLine: {'line': b'[  1%] \x1b[32mBuilding CXX object third-party/rsutils/CMakeFiles/rsutils.dir/src/configure-elpp-logger.cpp.o\x1b[0m\n'}
+[1.026577] (phidgets_msgs) CommandEnded: {'returncode': 1}
+[1.028481] (aruco_msgs) StdoutLine: {'line': b'-- Found rosidl_generator_cpp: 4.6.7 (/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/share/rosidl_generator_cpp/cmake)\n'}
+[1.036953] (-) TimerEvent: {}
+[1.078683] (realsense2_camera_msgs) StderrLine: {'line': b'\x1b[31mCMake Error at CMakeLists.txt:32 (find_package):\n'}
+[1.078921] (realsense2_camera_msgs) StderrLine: {'line': b'  By not providing "Findrosidl_default_generators.cmake" in CMAKE_MODULE_PATH\n'}
+[1.079040] (realsense2_camera_msgs) StderrLine: {'line': b'  this project has asked CMake to find a package configuration file provided\n'}
+[1.079138] (realsense2_camera_msgs) StderrLine: {'line': b'  by "rosidl_default_generators", but CMake did not find one.\n'}
+[1.079226] (realsense2_camera_msgs) StderrLine: {'line': b'\n'}
+[1.079317] (realsense2_camera_msgs) StderrLine: {'line': b'  Could not find a package configuration file provided by\n'}
+[1.079414] (realsense2_camera_msgs) StderrLine: {'line': b'  "rosidl_default_generators" with any of the following names:\n'}
+[1.079503] (realsense2_camera_msgs) StderrLine: {'line': b'\n'}
+[1.079594] (realsense2_camera_msgs) StderrLine: {'line': b'    rosidl_default_generatorsConfig.cmake\n'}
+[1.079686] (realsense2_camera_msgs) StderrLine: {'line': b'    rosidl_default_generators-config.cmake\n'}
+[1.079777] (realsense2_camera_msgs) StderrLine: {'line': b'\n'}
+[1.079867] (realsense2_camera_msgs) StderrLine: {'line': b'  Add the installation prefix of "rosidl_default_generators" to\n'}
+[1.079959] (realsense2_camera_msgs) StderrLine: {'line': b'  CMAKE_PREFIX_PATH or set "rosidl_default_generators_DIR" to a directory\n'}
+[1.080068] (realsense2_camera_msgs) StderrLine: {'line': b'  containing one of the above files.  If "rosidl_default_generators" provides\n'}
+[1.080160] (realsense2_camera_msgs) StderrLine: {'line': b'  a separate development package or SDK, be sure it has been installed.\n'}
+[1.080249] (realsense2_camera_msgs) StderrLine: {'line': b'\n'}
+[1.080356] (realsense2_camera_msgs) StderrLine: {'line': b'\x1b[0m\n'}
+[1.080451] (realsense2_camera_msgs) StdoutLine: {'line': b'-- Configuring incomplete, errors occurred!\n'}
+[1.102134] (aruco_msgs) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c\n'}
+[1.114390] (robp_interfaces) StderrLine: {'line': b'\x1b[31mCMake Error at CMakeLists.txt:10 (find_package):\n'}
+[1.114604] (robp_interfaces) StderrLine: {'line': b'  By not providing "Findrosidl_default_generators.cmake" in CMAKE_MODULE_PATH\n'}
+[1.114714] (robp_interfaces) StderrLine: {'line': b'  this project has asked CMake to find a package configuration file provided\n'}
+[1.114803] (robp_interfaces) StderrLine: {'line': b'  by "rosidl_default_generators", but CMake did not find one.\n'}
+[1.114892] (robp_interfaces) StderrLine: {'line': b'\n'}
+[1.114983] (robp_interfaces) StderrLine: {'line': b'  Could not find a package configuration file provided by\n'}
+[1.115090] (robp_interfaces) StderrLine: {'line': b'  "rosidl_default_generators" with any of the following names:\n'}
+[1.115187] (robp_interfaces) StderrLine: {'line': b'\n'}
+[1.115276] (robp_interfaces) StderrLine: {'line': b'    rosidl_default_generatorsConfig.cmake\n'}
+[1.115369] (robp_interfaces) StderrLine: {'line': b'    rosidl_default_generators-config.cmake\n'}
+[1.115465] (robp_interfaces) StderrLine: {'line': b'\n'}
+[1.115556] (robp_interfaces) StderrLine: {'line': b'  Add the installation prefix of "rosidl_default_generators" to\n'}
+[1.115647] (robp_interfaces) StderrLine: {'line': b'  CMAKE_PREFIX_PATH or set "rosidl_default_generators_DIR" to a directory\n'}
+[1.115743] (robp_interfaces) StderrLine: {'line': b'  containing one of the above files.  If "rosidl_default_generators" provides\n'}
+[1.115835] (robp_interfaces) StderrLine: {'line': b'  a separate development package or SDK, be sure it has been installed.\n'}
+[1.115926] (robp_interfaces) StderrLine: {'line': b'\n'}
+[1.116023] (robp_interfaces) StderrLine: {'line': b'\x1b[0m\n'}
+[1.116125] (robp_interfaces) StdoutLine: {'line': b'-- Configuring incomplete, errors occurred!\n'}
+[1.145199] (-) TimerEvent: {}
+[1.200523] (phidgets_msgs) JobEnded: {'identifier': 'phidgets_msgs', 'rc': 1}
+[1.202574] (aruco_msgs) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp\n'}
+[1.204475] (realsense2_camera_msgs) JobEnded: {'identifier': 'realsense2_camera_msgs', 'rc': 'SIGINT'}
+[1.205028] (robp_interfaces) JobEnded: {'identifier': 'robp_interfaces', 'rc': 'SIGINT'}
+[1.245368] (-) TimerEvent: {}
+[1.350069] (-) TimerEvent: {}
+[1.374301] (aruco_msgs) StdoutLine: {'line': b'-- Found geometry_msgs: 5.3.6 (/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/share/geometry_msgs/cmake)\n'}
+[1.450169] (-) TimerEvent: {}
+[1.456120] (libphidget22) StdoutLine: {'line': b'-- [download 1% complete]\n'}
+[1.456321] (libphidget22) StdoutLine: {'line': b'-- [download 2% complete]\n'}
+[1.476196] (aruco_msgs) StdoutLine: {'line': b'-- Configuring incomplete, errors occurred!\n'}
+[1.476534] (aruco_msgs) StderrLine: {'line': b'\x1b[31mCMake Error at CMakeLists.txt:12 (find_package):\n'}
+[1.476664] (aruco_msgs) StderrLine: {'line': b'  By not providing "Findrosidl_default_generators.cmake" in CMAKE_MODULE_PATH\n'}
+[1.476742] (aruco_msgs) StderrLine: {'line': b'  this project has asked CMake to find a package configuration file provided\n'}
+[1.476816] (aruco_msgs) StderrLine: {'line': b'  by "rosidl_default_generators", but CMake did not find one.\n'}
+[1.476886] (aruco_msgs) StderrLine: {'line': b'\n'}
+[1.476959] (aruco_msgs) StderrLine: {'line': b'  Could not find a package configuration file provided by\n'}
+[1.477046] (aruco_msgs) StderrLine: {'line': b'  "rosidl_default_generators" with any of the following names:\n'}
+[1.477122] (aruco_msgs) StderrLine: {'line': b'\n'}
+[1.477194] (aruco_msgs) StderrLine: {'line': b'    rosidl_default_generatorsConfig.cmake\n'}
+[1.477269] (aruco_msgs) StderrLine: {'line': b'    rosidl_default_generators-config.cmake\n'}
+[1.477341] (aruco_msgs) StderrLine: {'line': b'\n'}
+[1.477411] (aruco_msgs) StderrLine: {'line': b'  Add the installation prefix of "rosidl_default_generators" to\n'}
+[1.477479] (aruco_msgs) StderrLine: {'line': b'  CMAKE_PREFIX_PATH or set "rosidl_default_generators_DIR" to a directory\n'}
+[1.477558] (aruco_msgs) StderrLine: {'line': b'  containing one of the above files.  If "rosidl_default_generators" provides\n'}
+[1.477644] (aruco_msgs) StderrLine: {'line': b'  a separate development package or SDK, be sure it has been installed.\n'}
+[1.477720] (aruco_msgs) StderrLine: {'line': b'\n'}
+[1.477795] (aruco_msgs) StderrLine: {'line': b'\x1b[0m\n'}
+[1.482275] (aruco_msgs) JobEnded: {'identifier': 'aruco_msgs', 'rc': 'SIGINT'}
+[1.551082] (-) TimerEvent: {}
+[1.651440] (-) TimerEvent: {}
+[1.683275] (aruco) StdoutLine: {'line': b'[ 50%] \x1b[32mBuilding CXX object CMakeFiles/aruco.dir/src/aruco/markerdetector_impl.cpp.o\x1b[0m\n'}
+[1.753125] (-) TimerEvent: {}
+[1.753842] (libphidget22) StdoutLine: {'line': b'-- [download 3% complete]\n'}
+[1.754068] (libphidget22) StdoutLine: {'line': b'-- [download 5% complete]\n'}
+[1.853221] (-) TimerEvent: {}
+[1.953602] (-) TimerEvent: {}
+[1.994903] (librealsense2) StdoutLine: {'line': b'[  1%] \x1b[32mBuilding CXX object third-party/realsense-file/CMakeFiles/realsense-file.dir/rosbag/rosbag_storage/src/bag_player.cpp.o\x1b[0m\n'}
+[2.059719] (-) TimerEvent: {}
+[2.160053] (-) TimerEvent: {}
+[2.182629] (librealsense2) StdoutLine: {'line': b'[  1%] \x1b[32mBuilding CXX object third-party/realsense-file/CMakeFiles/realsense-file.dir/rosbag/rosbag_storage/src/buffer.cpp.o\x1b[0m\n'}
+[2.211258] (librealsense2) StdoutLine: {'line': b'[  1%] \x1b[32mBuilding CXX object third-party/rsutils/CMakeFiles/rsutils.dir/src/control-c-handler.cpp.o\x1b[0m\n'}
+[2.260152] (-) TimerEvent: {}
+[2.360515] (-) TimerEvent: {}
+[2.370569] (librealsense2) StdoutLine: {'line': b'[  2%] \x1b[32mBuilding CXX object third-party/rsutils/CMakeFiles/rsutils.dir/src/crc32.cpp.o\x1b[0m\n'}
+[2.412133] (libphidget22) StdoutLine: {'line': b'-- [download 6% complete]\n'}
+[2.465075] (-) TimerEvent: {}
+[2.486628] (librealsense2) StdoutLine: {'line': b'[  2%] \x1b[32mBuilding CXX object third-party/rsutils/CMakeFiles/rsutils.dir/src/dispatcher.cpp.o\x1b[0m\n'}
+[2.565188] (-) TimerEvent: {}
+[2.666349] (-) TimerEvent: {}
+[2.694006] (libphidget22) StdoutLine: {'line': b'-- [download 7% complete]\n'}
+[2.694298] (libphidget22) StdoutLine: {'line': b'-- [download 8% complete]\n'}
+[2.766474] (-) TimerEvent: {}
+[2.870262] (-) TimerEvent: {}
+[2.909594] (libphidget22) StdoutLine: {'line': b'-- [download 9% complete]\n'}
+[2.909839] (libphidget22) StdoutLine: {'line': b'-- [download 11% complete]\n'}
+[2.959146] (detection) JobEnded: {'identifier': 'detection', 'rc': 'SIGINT'}
+[2.970382] (-) TimerEvent: {}
+[3.070725] (-) TimerEvent: {}
+[3.093257] (aruco) StdoutLine: {'line': b'[ 55%] \x1b[32mBuilding CXX object CMakeFiles/aruco.dir/src/aruco/markerdetector.cpp.o\x1b[0m\n'}
+[3.158470] (libphidget22) StdoutLine: {'line': b'-- [download 12% complete]\n'}
+[3.170842] (-) TimerEvent: {}
+[3.171639] (libphidget22) StdoutLine: {'line': b'-- [download 13% complete]\n'}
+[3.177174] (libphidget22) StdoutLine: {'line': b'-- [download 14% complete]\n'}
+[3.270979] (-) TimerEvent: {}
+[3.301174] (libphidget22) StdoutLine: {'line': b'-- [download 15% complete]\n'}
+[3.343879] (libphidget22) StdoutLine: {'line': b'-- [download 16% complete]\n'}
+[3.351989] (libphidget22) StdoutLine: {'line': b'-- [download 18% complete]\n'}
+[3.371105] (-) TimerEvent: {}
+[3.474455] (-) TimerEvent: {}
+[3.489077] (librealsense2) StdoutLine: {'line': b'[  2%] \x1b[32mBuilding CXX object third-party/rsutils/CMakeFiles/rsutils.dir/src/ensure-console.cpp.o\x1b[0m\n'}
+[3.515737] (libphidget22) StdoutLine: {'line': b'-- [download 19% complete]\n'}
+[3.532153] (libphidget22) StdoutLine: {'line': b'-- [download 20% complete]\n'}
+[3.532385] (libphidget22) StdoutLine: {'line': b'-- [download 21% complete]\n'}
+[3.559124] (librealsense2) StdoutLine: {'line': b'[  2%] \x1b[32mBuilding CXX object third-party/rsutils/CMakeFiles/rsutils.dir/src/eth-config.cpp.o\x1b[0m\n'}
+[3.574574] (-) TimerEvent: {}
+[3.631103] (aruco) StdoutLine: {'line': b'[ 61%] \x1b[32mBuilding CXX object CMakeFiles/aruco.dir/src/aruco/markerlabeler.cpp.o\x1b[0m\n'}
+[3.659690] (libphidget22) StdoutLine: {'line': b'-- [download 22% complete]\n'}
+[3.674703] (-) TimerEvent: {}
+[3.700502] (libphidget22) StdoutLine: {'line': b'-- [download 23% complete]\n'}
+[3.707135] (libphidget22) StdoutLine: {'line': b'-- [download 24% complete]\n'}
+[3.715483] (aruco) StdoutLine: {'line': b'[ 66%] \x1b[32mBuilding CXX object CMakeFiles/aruco.dir/src/aruco/markermap.cpp.o\x1b[0m\n'}
+[3.777091] (-) TimerEvent: {}
+[3.835158] (libphidget22) StdoutLine: {'line': b'-- [download 25% complete]\n'}
+[3.857827] (libphidget22) StdoutLine: {'line': b'-- [download 26% complete]\n'}
+[3.876622] (libphidget22) StdoutLine: {'line': b'-- [download 28% complete]\n'}
+[3.877169] (-) TimerEvent: {}
+[3.904459] (aruco) StdoutLine: {'line': b'[ 72%] \x1b[32mBuilding CXX object CMakeFiles/aruco.dir/src/aruco/posetracker.cpp.o\x1b[0m\n'}
+[3.977294] (-) TimerEvent: {}
+[4.028251] (libphidget22) StdoutLine: {'line': b'-- [download 30% complete]\n'}
+[4.047403] (libphidget22) StdoutLine: {'line': b'-- [download 31% complete]\n'}
+[4.077416] (-) TimerEvent: {}
+[4.171268] (libphidget22) StdoutLine: {'line': b'-- [download 32% complete]\n'}
+[4.177537] (-) TimerEvent: {}
+[4.198818] (libphidget22) StdoutLine: {'line': b'-- [download 33% complete]\n'}
+[4.220380] (libphidget22) StdoutLine: {'line': b'-- [download 34% complete]\n'}
+[4.278316] (-) TimerEvent: {}
+[4.330027] (libphidget22) StdoutLine: {'line': b'-- [download 35% complete]\n'}
+[4.359867] (libphidget22) StdoutLine: {'line': b'-- [download 36% complete]\n'}
+[4.378433] (-) TimerEvent: {}
+[4.388795] (libphidget22) StdoutLine: {'line': b'-- [download 37% complete]\n'}
+[4.390238] (libphidget22) StdoutLine: {'line': b'-- [download 38% complete]\n'}
+[4.446167] (librealsense2) StdoutLine: {'line': b'[  2%] \x1b[32mBuilding CXX object third-party/realsense-file/CMakeFiles/realsense-file.dir/rosbag/rosbag_storage/src/chunked_file.cpp.o\x1b[0m\n'}
+[4.480095] (-) TimerEvent: {}
+[4.492721] (aruco) StdoutLine: {'line': b'[ 77%] \x1b[32mBuilding CXX object CMakeFiles/aruco.dir/src/aruco/fractallabelers/fractallabeler.cpp.o\x1b[0m\n'}
+[4.505155] (libphidget22) StdoutLine: {'line': b'-- [download 39% complete]\n'}
+[4.543001] (libphidget22) StdoutLine: {'line': b'-- [download 40% complete]\n'}
+[4.554377] (libphidget22) StdoutLine: {'line': b'-- [download 41% complete]\n'}
+[4.580207] (-) TimerEvent: {}
+[4.639152] (aruco) StdoutLine: {'line': b'[ 83%] \x1b[32mBuilding CXX object CMakeFiles/aruco.dir/src/aruco/fractallabelers/fractalmarker.cpp.o\x1b[0m\n'}
+[4.644838] (libphidget22) StdoutLine: {'line': b'-- [download 42% complete]\n'}
+[4.683114] (-) TimerEvent: {}
+[4.687066] (libphidget22) StdoutLine: {'line': b'-- [download 43% complete]\n'}
+[4.715456] (libphidget22) StdoutLine: {'line': b'-- [download 44% complete]\n'}
+[4.741348] (libphidget22) StdoutLine: {'line': b'-- [download 45% complete]\n'}
+[4.788089] (-) TimerEvent: {}
+[4.856885] (libphidget22) StdoutLine: {'line': b'-- [download 46% complete]\n'}
+[4.874676] (libphidget22) StdoutLine: {'line': b'-- [download 47% complete]\n'}
+[4.891088] (-) TimerEvent: {}
+[4.919159] (libphidget22) StdoutLine: {'line': b'-- [download 49% complete]\n'}
+[4.991206] (-) TimerEvent: {}
+[5.029785] (libphidget22) StdoutLine: {'line': b'-- [download 50% complete]\n'}
+[5.057686] (libphidget22) StdoutLine: {'line': b'-- [download 51% complete]\n'}
+[5.089619] (libphidget22) StdoutLine: {'line': b'-- [download 52% complete]\n'}
+[5.097125] (-) TimerEvent: {}
+[5.156272] (libphidget22) StdoutLine: {'line': b'-- [download 53% complete]\n'}
+[5.197237] (-) TimerEvent: {}
+[5.229991] (libphidget22) StdoutLine: {'line': b'-- [download 54% complete]\n'}
+[5.241736] (libphidget22) StdoutLine: {'line': b'-- [download 55% complete]\n'}
+[5.297369] (-) TimerEvent: {}
+[5.309602] (aruco) StdoutLine: {'line': b'[ 88%] \x1b[32mBuilding CXX object CMakeFiles/aruco.dir/src/aruco/fractallabelers/fractalmarkerset.cpp.o\x1b[0m\n'}
+[5.331312] (libphidget22) StdoutLine: {'line': b'-- [download 56% complete]\n'}
+[5.371898] (libphidget22) StdoutLine: {'line': b'-- [download 57% complete]\n'}
+[5.397486] (-) TimerEvent: {}
+[5.399574] (libphidget22) StdoutLine: {'line': b'-- [download 58% complete]\n'}
+[5.438305] (librealsense2) StdoutLine: {'line': b'[  2%] \x1b[32mBuilding CXX object third-party/rsutils/CMakeFiles/rsutils.dir/src/executable-name.cpp.o\x1b[0m\n'}
+[5.443365] (libphidget22) StdoutLine: {'line': b'-- [download 59% complete]\n'}
+[5.498397] (-) TimerEvent: {}
+[5.536157] (libphidget22) StdoutLine: {'line': b'-- [download 60% complete]\n'}
+[5.545359] (libphidget22) StdoutLine: {'line': b'-- [download 61% complete]\n'}
+[5.595743] (librealsense2) StdoutLine: {'line': b'[  2%] \x1b[32mBuilding CXX object third-party/rsutils/CMakeFiles/rsutils.dir/src/float3.cpp.o\x1b[0m\n'}
+[5.598512] (-) TimerEvent: {}
+[5.615754] (libphidget22) StdoutLine: {'line': b'-- [download 62% complete]\n'}
+[5.617312] (libphidget22) StdoutLine: {'line': b'-- [download 63% complete]\n'}
+[5.666961] (aruco) StdoutLine: {'line': b'[ 94%] \x1b[32mBuilding CXX object CMakeFiles/aruco.dir/src/aruco/fractallabelers/fractalposetracker.cpp.o\x1b[0m\n'}
+[5.700138] (-) TimerEvent: {}
+[5.719159] (libphidget22) StdoutLine: {'line': b'-- [download 64% complete]\n'}
+[5.745964] (libphidget22) StdoutLine: {'line': b'-- [download 65% complete]\n'}
+[5.746672] (libphidget22) StdoutLine: {'line': b'-- [download 66% complete]\n'}
+[5.800257] (-) TimerEvent: {}
+[5.814108] (libphidget22) StdoutLine: {'line': b'-- [download 67% complete]\n'}
+[5.867722] (librealsense2) StdoutLine: {'line': b'[  3%] \x1b[32mBuilding CXX object third-party/realsense-file/CMakeFiles/realsense-file.dir/rosbag/rosbag_storage/src/lz4_stream.cpp.o\x1b[0m\n'}
+[5.881618] (libphidget22) StdoutLine: {'line': b'-- [download 68% complete]\n'}
+[5.900378] (-) TimerEvent: {}
+[5.918335] (libphidget22) StdoutLine: {'line': b'-- [download 69% complete]\n'}
+[5.968101] (libphidget22) StdoutLine: {'line': b'-- [download 70% complete]\n'}
+[6.000494] (-) TimerEvent: {}
+[6.015134] (libphidget22) StdoutLine: {'line': b'-- [download 71% complete]\n'}
+[6.060577] (libphidget22) StdoutLine: {'line': b'-- [download 72% complete]\n'}
+[6.100645] (-) TimerEvent: {}
+[6.102106] (libphidget22) StdoutLine: {'line': b'-- [download 73% complete]\n'}
+[6.164090] (libphidget22) StdoutLine: {'line': b'-- [download 74% complete]\n'}
+[6.203091] (-) TimerEvent: {}
+[6.215568] (librealsense2) StdoutLine: {'line': b'[  3%] \x1b[32mBuilding CXX object third-party/realsense-file/CMakeFiles/realsense-file.dir/rosbag/rosbag_storage/src/message_instance.cpp.o\x1b[0m\n'}
+[6.236464] (libphidget22) StdoutLine: {'line': b'-- [download 75% complete]\n'}
+[6.252333] (libphidget22) StdoutLine: {'line': b'-- [download 76% complete]\n'}
+[6.303208] (-) TimerEvent: {}
+[6.308352] (libphidget22) StdoutLine: {'line': b'-- [download 77% complete]\n'}
+[6.334446] (libphidget22) StdoutLine: {'line': b'-- [download 78% complete]\n'}
+[6.404093] (-) TimerEvent: {}
+[6.406801] (libphidget22) StdoutLine: {'line': b'-- [download 79% complete]\n'}
+[6.437369] (libphidget22) StdoutLine: {'line': b'-- [download 80% complete]\n'}
+[6.505066] (libphidget22) StdoutLine: {'line': b'-- [download 81% complete]\n'}
+[6.505301] (-) TimerEvent: {}
+[6.525004] (libphidget22) StdoutLine: {'line': b'-- [download 82% complete]\n'}
+[6.553514] (librealsense2) StdoutLine: {'line': b'[  4%] \x1b[32mBuilding CXX object third-party/rsutils/CMakeFiles/rsutils.dir/src/fourcc.cpp.o\x1b[0m\n'}
+[6.604330] (libphidget22) StdoutLine: {'line': b'-- [download 83% complete]\n'}
+[6.605415] (-) TimerEvent: {}
+[6.612158] (libphidget22) StdoutLine: {'line': b'-- [download 84% complete]\n'}
+[6.675826] (libphidget22) StdoutLine: {'line': b'-- [download 85% complete]\n'}
+[6.705541] (-) TimerEvent: {}
+[6.744409] (libphidget22) StdoutLine: {'line': b'-- [download 86% complete]\n'}
+[6.783678] (libphidget22) StdoutLine: {'line': b'-- [download 87% complete]\n'}
+[6.805661] (-) TimerEvent: {}
+[6.824472] (libphidget22) StdoutLine: {'line': b'-- [download 88% complete]\n'}
+[6.867295] (libphidget22) StdoutLine: {'line': b'-- [download 89% complete]\n'}
+[6.905778] (-) TimerEvent: {}
+[6.920292] (libphidget22) StdoutLine: {'line': b'-- [download 90% complete]\n'}
+[6.952179] (libphidget22) StdoutLine: {'line': b'-- [download 91% complete]\n'}
+[6.976159] (librealsense2) StdoutLine: {'line': b'[  4%] \x1b[32mBuilding CXX object third-party/realsense-file/CMakeFiles/realsense-file.dir/rosbag/rosbag_storage/src/query.cpp.o\x1b[0m\n'}
+[7.005900] (-) TimerEvent: {}
+[7.112088] (-) TimerEvent: {}
+[7.160712] (libphidget22) StdoutLine: {'line': b'-- [download 92% complete]\n'}
+[7.161220] (libphidget22) StdoutLine: {'line': b'-- [download 93% complete]\n'}
+[7.161378] (libphidget22) StdoutLine: {'line': b'-- [download 95% complete]\n'}
+[7.212203] (-) TimerEvent: {}
+[7.257141] (libphidget22) StdoutLine: {'line': b'-- [download 96% complete]\n'}
+[7.276973] (libphidget22) StdoutLine: {'line': b'-- [download 97% complete]\n'}
+[7.304319] (librealsense2) StdoutLine: {'line': b'[  4%] \x1b[32mBuilding CXX object third-party/rsutils/CMakeFiles/rsutils.dir/src/from.cpp.o\x1b[0m\n'}
+[7.312325] (-) TimerEvent: {}
+[7.344329] (libphidget22) StdoutLine: {'line': b'-- [download 98% complete]\n'}
+[7.378912] (libphidget22) StdoutLine: {'line': b'-- [download 99% complete]\n'}
+[7.412443] (-) TimerEvent: {}
+[7.474139] (libphidget22) StdoutLine: {'line': b'-- [download 100% complete]\n'}
+[7.474355] (libphidget22) StdoutLine: {'line': b'-- verifying file...\n'}
+[7.474446] (libphidget22) StdoutLine: {'line': b"       file='/home/grumpy/dd2419_ws_Group5_2026/build/libphidget22/EP_libphidget22-prefix/src/libphidget22-1.19.20240304.tar.gz'\n"}
+[7.484160] (libphidget22) StdoutLine: {'line': b'-- Downloading... done\n'}
+[7.516087] (-) TimerEvent: {}
+[7.530072] (libphidget22) StdoutLine: {'line': b'-- extracting...\n'}
+[7.530383] (libphidget22) StdoutLine: {'line': b"     src='/home/grumpy/dd2419_ws_Group5_2026/build/libphidget22/EP_libphidget22-prefix/src/libphidget22-1.19.20240304.tar.gz'\n"}
+[7.530819] (libphidget22) StdoutLine: {'line': b"     dst='/home/grumpy/dd2419_ws_Group5_2026/build/libphidget22/libphidget22-src'\n"}
+[7.530978] (libphidget22) StdoutLine: {'line': b'-- extracting... [tar xf]\n'}
+[7.614559] (libphidget22) StdoutLine: {'line': b'-- extracting... [analysis]\n'}
+[7.616147] (libphidget22) StdoutLine: {'line': b'-- extracting... [rename]\n'}
+[7.616366] (-) TimerEvent: {}
+[7.616522] (libphidget22) StdoutLine: {'line': b'-- extracting... [clean up]\n'}
+[7.616627] (libphidget22) StdoutLine: {'line': b'-- extracting... done\n'}
+[7.648054] (libphidget22) StdoutLine: {'line': b"[ 37%] \x1b[1m\x1b[34mNo update step for 'EP_libphidget22'\x1b[0m\n"}
+[7.684810] (libphidget22) StdoutLine: {'line': b"[ 50%] \x1b[1m\x1b[34mNo patch step for 'EP_libphidget22'\x1b[0m\n"}
+[7.705138] (libphidget22) StdoutLine: {'line': b"[ 62%] \x1b[1m\x1b[34mPerforming configure step for 'EP_libphidget22'\x1b[0m\n"}
+[7.716497] (-) TimerEvent: {}
+[7.819094] (-) TimerEvent: {}
+[7.920091] (-) TimerEvent: {}
+[8.023095] (-) TimerEvent: {}
+[8.057126] (libphidget22) StdoutLine: {'line': b'checking for a BSD-compatible install... /usr/bin/install -c\n'}
+[8.066294] (libphidget22) StdoutLine: {'line': b'checking whether build environment is sane... yes\n'}
+[8.093691] (libphidget22) StdoutLine: {'line': b'checking for a race-free mkdir -p... /usr/bin/mkdir -p\n'}
+[8.094171] (libphidget22) StdoutLine: {'line': b'checking for gawk... no\n'}
+[8.095167] (libphidget22) StdoutLine: {'line': b'checking for mawk... mawk\n'}
+[8.123212] (-) TimerEvent: {}
+[8.132877] (libphidget22) StdoutLine: {'line': b'checking whether make sets $(MAKE)... yes\n'}
+[8.141354] (libphidget22) StdoutLine: {'line': b'checking whether make supports nested variables... yes\n'}
+[8.163633] (libphidget22) StdoutLine: {'line': b'checking whether make supports the include directive... yes (GNU style)\n'}
+[8.164925] (libphidget22) StdoutLine: {'line': b'checking for gcc... gcc\n'}
+[8.219921] (librealsense2) StdoutLine: {'line': b'[  4%] \x1b[32mBuilding CXX object third-party/realsense-file/CMakeFiles/realsense-file.dir/rosbag/rosbag_storage/src/stream.cpp.o\x1b[0m\n'}
+[8.223329] (-) TimerEvent: {}
+[8.268299] (librealsense2) StdoutLine: {'line': b'[  4%] \x1b[32mBuilding CXX object third-party/realsense-file/CMakeFiles/realsense-file.dir/rosbag/rosbag_storage/src/uncompressed_stream.cpp.o\x1b[0m\n'}
+[8.323454] (-) TimerEvent: {}
+[8.374036] (libphidget22) StdoutLine: {'line': b'checking whether the C compiler works... yes\n'}
+[8.374307] (libphidget22) StdoutLine: {'line': b'checking for C compiler default output file name... a.out\n'}
+[8.426098] (-) TimerEvent: {}
+[8.451311] (libphidget22) StdoutLine: {'line': b'checking for suffix of executables... \n'}
+[8.505724] (libphidget22) StdoutLine: {'line': b'checking whether we are cross compiling... no\n'}
+[8.526220] (-) TimerEvent: {}
+[8.542393] (libphidget22) StdoutLine: {'line': b'checking for suffix of object files... o\n'}
+[8.566599] (librealsense2) StderrLine: {'line': b'In file included from \x1b[01m\x1b[K/usr/include/features.h:502\x1b[m\x1b[K,\n'}
+[8.566859] (librealsense2) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/usr/include/x86_64-linux-gnu/c++/13/bits/os_defines.h:39\x1b[m\x1b[K,\n'}
+[8.566970] (librealsense2) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/usr/include/x86_64-linux-gnu/c++/13/bits/c++config.h:679\x1b[m\x1b[K,\n'}
+[8.567080] (librealsense2) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/usr/include/c++/13/ctime:41\x1b[m\x1b[K,\n'}
+[8.567174] (librealsense2) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/home/grumpy/dd2419_ws_Group5_2026/src/librealsense/third-party/easyloggingpp/src/easylogging++.h:354\x1b[m\x1b[K,\n'}
+[8.567269] (librealsense2) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/home/grumpy/dd2419_ws_Group5_2026/src/librealsense/third-party/easyloggingpp/src/easylogging++.cc:17\x1b[m\x1b[K:\n'}
+[8.567354] (librealsense2) StderrLine: {'line': b'In function \xe2\x80\x98\x1b[01m\x1b[Ksize_t\x1b[01;32m\x1b[K wcstombs\x1b[m\x1b[K(char*, const wchar_t*, size_t)\x1b[m\x1b[K\xe2\x80\x99,\n'}
+[8.567440] (librealsense2) StderrLine: {'line': b'    inlined from \xe2\x80\x98\x1b[01m\x1b[Kstatic char* el::base::utils::Str::\x1b[01;32m\x1b[KwcharPtrToCharPtr\x1b[m\x1b[K(const wchar_t*)\x1b[m\x1b[K\xe2\x80\x99 at \x1b[01m\x1b[K/home/grumpy/dd2419_ws_Group5_2026/src/librealsense/third-party/easyloggingpp/src/easylogging++.cc:1022:16\x1b[m\x1b[K:\n'}
+[8.567538] (librealsense2) StderrLine: {'line': b'\x1b[01m\x1b[K/usr/include/x86_64-linux-gnu/bits/stdlib.h:146:10:\x1b[m\x1b[K \x1b[01;35m\x1b[Kwarning: \x1b[m\x1b[K\xe2\x80\x98\x1b[01m\x1b[Ksize_t\x1b[01;32m\x1b[K __wcstombs_alias\x1b[m\x1b[K(char*, const wchar_t*, size_t)\x1b[m\x1b[K\xe2\x80\x99 specified size 18446744073709551614 exceeds maximum object size 9223372036854775807 [\x1b[01;35m\x1b[K\x1b]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wstringop-overflow=\x07-Wstringop-overflow=\x1b]8;;\x07\x1b[m\x1b[K]\n'}
+[8.567630] (librealsense2) StderrLine: {'line': b'  146 |   return \x1b[01;35m\x1b[K__glibc_fortify\x1b[m\x1b[K (wcstombs, __len, sizeof (char),\n'}
+[8.567721] (librealsense2) StderrLine: {'line': b'      |          \x1b[01;35m\x1b[K^~~~~~~~~~~~~~~\x1b[m\x1b[K\n'}
+[8.567807] (librealsense2) StderrLine: {'line': b'\x1b[01m\x1b[K/usr/include/x86_64-linux-gnu/bits/stdlib.h:\x1b[m\x1b[K In static member function \xe2\x80\x98\x1b[01m\x1b[Kstatic char* el::base::utils::Str::\x1b[01;32m\x1b[KwcharPtrToCharPtr\x1b[m\x1b[K(const wchar_t*)\x1b[m\x1b[K\xe2\x80\x99:\n'}
+[8.567897] (librealsense2) StderrLine: {'line': b'\x1b[01m\x1b[K/usr/include/x86_64-linux-gnu/bits/stdlib.h:131:15:\x1b[m\x1b[K \x1b[01;36m\x1b[Knote: \x1b[m\x1b[Kin a call to function \xe2\x80\x98\x1b[01m\x1b[Ksize_t\x1b[01;32m\x1b[K __wcstombs_alias\x1b[m\x1b[K(char*, const wchar_t*, size_t)\x1b[m\x1b[K\xe2\x80\x99 declared with attribute \xe2\x80\x98\x1b[01m\x1b[Kaccess (read_only, 2)\x1b[m\x1b[K\xe2\x80\x99\n'}
+[8.567989] (librealsense2) StderrLine: {'line': b'  131 | extern size_t \x1b[01;36m\x1b[K__REDIRECT_NTH\x1b[m\x1b[K (__wcstombs_alias,\n'}
+[8.568095] (librealsense2) StderrLine: {'line': b'      |               \x1b[01;36m\x1b[K^~~~~~~~~~~~~~\x1b[m\x1b[K\n'}
+[8.594067] (libphidget22) StdoutLine: {'line': b'checking whether the compiler supports GNU C... yes\n'}
+[8.631216] (-) TimerEvent: {}
+[8.642410] (libphidget22) StdoutLine: {'line': b'checking whether gcc accepts -g... yes\n'}
+[8.731344] (-) TimerEvent: {}
+[8.791191] (libphidget22) StdoutLine: {'line': b'checking for gcc option to enable C11 features... none needed\n'}
+[8.831470] (-) TimerEvent: {}
+[8.865789] (librealsense2) StdoutLine: {'line': b'[  5%] \x1b[32mBuilding CXX object third-party/realsense-file/CMakeFiles/realsense-file.dir/rosbag/rosbag_storage/src/view.cpp.o\x1b[0m\n'}
+[8.876096] (libphidget22) StdoutLine: {'line': b'checking whether gcc understands -c and -o together... yes\n'}
+[8.931596] (-) TimerEvent: {}
+[8.952240] (libphidget22) StdoutLine: {'line': b'checking dependency style of gcc... gcc3\n'}
+[8.958017] (libphidget22) StdoutLine: {'line': b'checking for ar... ar\n'}
+[8.975549] (librealsense2) StdoutLine: {'line': b'[  5%] \x1b[32mBuilding CXX object third-party/realsense-file/CMakeFiles/realsense-file.dir/rosbag/roscpp_serialization/src/serialization.cpp.o\x1b[0m\n'}
+[9.002857] (librealsense2) StdoutLine: {'line': b'[  5%] \x1b[32mBuilding CXX object third-party/rsutils/CMakeFiles/rsutils.dir/src/hexarray.cpp.o\x1b[0m\n'}
+[9.006419] (libphidget22) StdoutLine: {'line': b'checking the archiver (ar) interface... ar\n'}
+[9.031710] (-) TimerEvent: {}
+[9.132068] (-) TimerEvent: {}
+[9.139702] (libphidget22) StdoutLine: {'line': b'checking build system type... x86_64-pc-linux-gnu\n'}
+[9.139958] (libphidget22) StdoutLine: {'line': b'checking host system type... x86_64-pc-linux-gnu\n'}
+[9.150522] (libphidget22) StdoutLine: {'line': b'checking how to print strings... printf\n'}
+[9.159570] (libphidget22) StdoutLine: {'line': b'checking for a sed that does not truncate output... /usr/bin/sed\n'}
+[9.173031] (libphidget22) StdoutLine: {'line': b'checking for grep that handles long lines and -e... /usr/bin/grep\n'}
+[9.176214] (libphidget22) StdoutLine: {'line': b'checking for egrep... /usr/bin/grep -E\n'}
+[9.179786] (libphidget22) StdoutLine: {'line': b'checking for fgrep... /usr/bin/grep -F\n'}
+[9.196350] (libphidget22) StdoutLine: {'line': b'checking for ld used by gcc... /usr/bin/ld\n'}
+[9.201342] (libphidget22) StdoutLine: {'line': b'checking if the linker (/usr/bin/ld) is GNU ld... yes\n'}
+[9.203392] (librealsense2) StdoutLine: {'line': b'[  5%] \x1b[32mBuilding C object third-party/realsense-file/CMakeFiles/realsense-file.dir/rosbag/roslz4/src/lz4s.c.o\x1b[0m\n'}
+[9.219153] (libphidget22) StdoutLine: {'line': b'checking for BSD- or MS-compatible name lister (nm)... /usr/bin/nm -B\n'}
+[9.232186] (-) TimerEvent: {}
+[9.285542] (libphidget22) StdoutLine: {'line': b'checking the name lister (/usr/bin/nm -B) interface... BSD nm\n'}
+[9.285769] (libphidget22) StdoutLine: {'line': b'checking whether ln -s works... yes\n'}
+[9.298581] (libphidget22) StdoutLine: {'line': b'checking the maximum length of command line arguments... 1572864\n'}
+[9.306227] (libphidget22) StdoutLine: {'line': b'checking how to convert x86_64-pc-linux-gnu file names to x86_64-pc-linux-gnu format... func_convert_file_noop\n'}
+[9.306471] (libphidget22) StdoutLine: {'line': b'checking how to convert x86_64-pc-linux-gnu file names to toolchain format... func_convert_file_noop\n'}
+[9.306560] (libphidget22) StdoutLine: {'line': b'checking for /usr/bin/ld option to reload object files... -r\n'}
+[9.310566] (libphidget22) StdoutLine: {'line': b'checking for objdump... objdump\n'}
+[9.310913] (libphidget22) StdoutLine: {'line': b'checking how to recognize dependent libraries... pass_all\n'}
+[9.311567] (libphidget22) StdoutLine: {'line': b'checking for dlltool... no\n'}
+[9.311728] (libphidget22) StdoutLine: {'line': b'checking how to associate runtime and link libraries... printf %s\\n\n'}
+[9.333094] (-) TimerEvent: {}
+[9.384880] (libphidget22) StdoutLine: {'line': b'checking for archiver @FILE support... @\n'}
+[9.385523] (libphidget22) StdoutLine: {'line': b'checking for strip... strip\n'}
+[9.388289] (libphidget22) StdoutLine: {'line': b'checking for ranlib... ranlib\n'}
+[9.436092] (-) TimerEvent: {}
+[9.536471] (-) TimerEvent: {}
+[9.564067] (librealsense2) StdoutLine: {'line': b'[  5%] \x1b[32mBuilding CXX object third-party/rsutils/CMakeFiles/rsutils.dir/src/hexdump.cpp.o\x1b[0m\n'}
+[9.583720] (libphidget22) StdoutLine: {'line': b'checking command to parse /usr/bin/nm -B output from gcc object... ok\n'}
+[9.592050] (libphidget22) StdoutLine: {'line': b'checking for sysroot... no\n'}
+[9.607665] (libphidget22) StdoutLine: {'line': b'checking for a working dd... /usr/bin/dd\n'}
+[9.621504] (libphidget22) StdoutLine: {'line': b'checking how to truncate binary pipes... /usr/bin/dd bs=4096 count=1\n'}
+[9.636595] (-) TimerEvent: {}
+[9.679034] (libphidget22) StdoutLine: {'line': b'checking for mt... mt\n'}
+[9.696744] (libphidget22) StdoutLine: {'line': b'checking if mt is a manifest tool... no\n'}
+[9.736713] (-) TimerEvent: {}
+[9.755768] (libphidget22) StdoutLine: {'line': b'checking for stdio.h... yes\n'}
+[9.829387] (libphidget22) StdoutLine: {'line': b'checking for stdlib.h... yes\n'}
+[9.836837] (-) TimerEvent: {}
+[9.903722] (libphidget22) StdoutLine: {'line': b'checking for string.h... yes\n'}
+[9.929994] (librealsense2) StdoutLine: {'line': b'[  5%] \x1b[32mBuilding CXX object third-party/rsutils/CMakeFiles/rsutils.dir/src/ios.cpp.o\x1b[0m\n'}
+[9.936962] (-) TimerEvent: {}
+[9.971836] (libphidget22) StdoutLine: {'line': b'checking for inttypes.h... yes\n'}
+[10.037089] (-) TimerEvent: {}
+[10.050791] (libphidget22) StdoutLine: {'line': b'checking for stdint.h... yes\n'}
+[10.127444] (libphidget22) StdoutLine: {'line': b'checking for strings.h... yes\n'}
+[10.137212] (-) TimerEvent: {}
+[10.170105] (librealsense2) StdoutLine: {'line': b'[  6%] \x1b[32mBuilding CXX object third-party/rsutils/CMakeFiles/rsutils.dir/src/ip-address.cpp.o\x1b[0m\n'}
+[10.205359] (libphidget22) StdoutLine: {'line': b'checking for sys/stat.h... yes\n'}
+[10.237325] (-) TimerEvent: {}
+[10.284112] (libphidget22) StdoutLine: {'line': b'checking for sys/types.h... yes\n'}
+[10.337447] (-) TimerEvent: {}
+[10.375542] (libphidget22) StdoutLine: {'line': b'checking for unistd.h... yes\n'}
+[10.401498] (librealsense2) StdoutLine: {'line': b'[  6%] \x1b[32mBuilding C object third-party/realsense-file/CMakeFiles/realsense-file.dir/rosbag/roslz4/src/xxhash.c.o\x1b[0m\n'}
+[10.437570] (-) TimerEvent: {}
+[10.446721] (libphidget22) StdoutLine: {'line': b'checking for dlfcn.h... yes\n'}
+[10.451322] (libphidget22) StdoutLine: {'line': b'checking for objdir... .libs\n'}
+[10.488692] (librealsense2) StdoutLine: {'line': b'[  6%] \x1b[32mBuilding CXX object third-party/realsense-file/CMakeFiles/realsense-file.dir/rosbag/rostime/src/duration.cpp.o\x1b[0m\n'}
+[10.500154] (librealsense2) StdoutLine: {'line': b'[  6%] \x1b[32mBuilding CXX object third-party/rsutils/CMakeFiles/rsutils.dir/src/json.cpp.o\x1b[0m\n'}
+[10.537699] (-) TimerEvent: {}
+[10.588626] (librealsense2) StdoutLine: {'line': b'[  6%] \x1b[32mBuilding CXX object third-party/realsense-file/CMakeFiles/realsense-file.dir/rosbag/rostime/src/rate.cpp.o\x1b[0m\n'}
+[10.613354] (libphidget22) StdoutLine: {'line': b'checking if gcc supports -fno-rtti -fno-exceptions... no\n'}
+[10.613637] (libphidget22) StdoutLine: {'line': b'checking for gcc option to produce PIC... -fPIC -DPIC\n'}
+[10.637811] (-) TimerEvent: {}
+[10.662111] (libphidget22) StdoutLine: {'line': b'checking if gcc PIC flag -fPIC -DPIC works... yes\n'}
+[10.670114] (librealsense2) StdoutLine: {'line': b'[  7%] \x1b[32mBuilding CXX object third-party/realsense-file/CMakeFiles/realsense-file.dir/rosbag/rostime/src/time.cpp.o\x1b[0m\n'}
+[10.737929] (-) TimerEvent: {}
+[10.838297] (-) TimerEvent: {}
+[10.856582] (libphidget22) StdoutLine: {'line': b'checking if gcc static flag -static works... yes\n'}
+[10.924273] (libphidget22) StdoutLine: {'line': b'checking if gcc supports -c -o file.o... yes\n'}
+[10.924551] (libphidget22) StdoutLine: {'line': b'checking if gcc supports -c -o file.o... (cached) yes\n'}
+[10.939093] (-) TimerEvent: {}
+[10.965999] (libphidget22) StdoutLine: {'line': b'checking whether the gcc linker (/usr/bin/ld -m elf_x86_64) supports shared libraries... yes\n'}
+[11.027615] (libphidget22) StdoutLine: {'line': b'checking whether -lc should be explicitly linked in... no\n'}
+[11.039229] (-) TimerEvent: {}
+[11.139596] (-) TimerEvent: {}
+[11.168291] (libphidget22) StdoutLine: {'line': b'checking dynamic linker characteristics... GNU/Linux ld.so\n'}
+[11.168532] (libphidget22) StdoutLine: {'line': b'checking how to hardcode library paths into programs... immediate\n'}
+[11.176158] (libphidget22) StdoutLine: {'line': b'checking whether stripping libraries is possible... yes\n'}
+[11.176392] (libphidget22) StdoutLine: {'line': b'checking if libtool supports shared libraries... yes\n'}
+[11.176493] (libphidget22) StdoutLine: {'line': b'checking whether to build shared libraries... yes\n'}
+[11.176586] (libphidget22) StdoutLine: {'line': b'checking whether to build static libraries... yes\n'}
+[11.180801] (libphidget22) StdoutLine: {'line': b'checking whether make supports nested variables... (cached) yes\n'}
+[11.239720] (-) TimerEvent: {}
+[11.244266] (librealsense2) StdoutLine: {'line': b'[  7%] \x1b[32mBuilding CXX object third-party/rsutils/CMakeFiles/rsutils.dir/src/network-adapter-watcher.cpp.o\x1b[0m\n'}
+[11.270396] (librealsense2) StdoutLine: {'line': b'[  7%] \x1b[32mBuilding CXX object third-party/rsutils/CMakeFiles/rsutils.dir/src/os.cpp.o\x1b[0m\n'}
+[11.339840] (-) TimerEvent: {}
+[11.377476] (libphidget22) StdoutLine: {'line': b'checking whether byte ordering is bigendian... no\n'}
+[11.380091] (libphidget22) StdoutLine: {'line': b'checking for ldconfig... /sbin/ldconfig\n'}
+[11.439964] (-) TimerEvent: {}
+[11.493348] (libphidget22) StdoutLine: {'line': b'checking for library containing dlopen... none required\n'}
+[11.540098] (-) TimerEvent: {}
+[11.602686] (librealsense2) StdoutLine: {'line': b'[  7%] \x1b[32mBuilding C object third-party/realsense-file/CMakeFiles/realsense-file.dir/lz4/lz4.c.o\x1b[0m\n'}
+[11.640224] (-) TimerEvent: {}
+[11.729880] (libphidget22) StdoutLine: {'line': b'checking for library containing sqrt... -lm\n'}
+[11.740340] (-) TimerEvent: {}
+[11.799326] (librealsense2) StdoutLine: {'line': b'[  7%] \x1b[32mBuilding CXX object third-party/rsutils/CMakeFiles/rsutils.dir/src/rsutilgpu.cpp.o\x1b[0m\n'}
+[11.829634] (libphidget22) StdoutLine: {'line': b'checking for library containing pthread_create... none required\n'}
+[11.840706] (-) TimerEvent: {}
+[11.928693] (librealsense2) StdoutLine: {'line': b'[  8%] \x1b[32mBuilding CXX object third-party/rsutils/CMakeFiles/rsutils.dir/src/shorten-json-string.cpp.o\x1b[0m\n'}
+[11.940823] (-) TimerEvent: {}
+[12.010162] (libphidget22) StderrLine: {'line': b'configure: error: Missing libusb!\n'}
+[12.010482] (libphidget22) StdoutLine: {'line': b'checking for library containing libusb_init... no\n'}
+[12.043542] (-) TimerEvent: {}
+[12.099757] (libphidget22) StderrLine: {'line': b'gmake[2]: *** [CMakeFiles/EP_libphidget22.dir/build.make:92: EP_libphidget22-prefix/src/EP_libphidget22-stamp/EP_libphidget22-configure] Error 1\n'}
+[12.103479] (libphidget22) StderrLine: {'line': b'gmake[1]: *** [CMakeFiles/Makefile2:153: CMakeFiles/EP_libphidget22.dir/all] Error 2\n'}
+[12.104102] (libphidget22) StderrLine: {'line': b'gmake: *** [Makefile:146: all] Error 2\n'}
+[12.109114] (libphidget22) JobEnded: {'identifier': 'libphidget22', 'rc': 'SIGINT'}
+[12.143658] (-) TimerEvent: {}
+[12.243999] (-) TimerEvent: {}
+[12.347258] (-) TimerEvent: {}
+[12.398606] (librealsense2) StdoutLine: {'line': b'[  8%] \x1b[32mBuilding CXX object third-party/rsutils/CMakeFiles/rsutils.dir/src/special-folder.cpp.o\x1b[0m\n'}
+[12.440187] (aruco) StdoutLine: {'line': b'[100%] \x1b[1m\x1b[32mLinking CXX shared library libaruco.so\x1b[0m\n'}
+[12.447381] (-) TimerEvent: {}
+[12.547756] (-) TimerEvent: {}
+[12.581949] (librealsense2) StdoutLine: {'line': b'[  8%] \x1b[32mBuilding CXX object third-party/rsutils/CMakeFiles/rsutils.dir/src/version.cpp.o\x1b[0m\n'}
+[12.647893] (-) TimerEvent: {}
+[12.748284] (-) TimerEvent: {}
+[12.852223] (-) TimerEvent: {}
+[12.952573] (-) TimerEvent: {}
+[12.994153] (librealsense2) StdoutLine: {'line': b'[  8%] \x1b[32mBuilding CXX object third-party/rsutils/CMakeFiles/rsutils.dir/src/word-format.cpp.o\x1b[0m\n'}
+[13.052712] (-) TimerEvent: {}
+[13.145186] (aruco) StdoutLine: {'line': b'[100%] Built target aruco\n'}
+[13.152837] (-) TimerEvent: {}
+[13.166139] (aruco) JobEnded: {'identifier': 'aruco', 'rc': 'SIGINT'}
+[13.177269] (librealsense2) StdoutLine: {'line': b'[  8%] \x1b[32mBuilding CXX object third-party/rsutils/CMakeFiles/rsutils.dir/src/work-week.cpp.o\x1b[0m\n'}
+[13.252963] (-) TimerEvent: {}
+[13.353294] (-) TimerEvent: {}
+[13.453634] (-) TimerEvent: {}
+[13.554001] (-) TimerEvent: {}
+[13.654329] (-) TimerEvent: {}
+[13.754588] (-) TimerEvent: {}
+[13.854834] (-) TimerEvent: {}
+[13.955167] (-) TimerEvent: {}
+[13.980630] (librealsense2) StdoutLine: {'line': b'[  8%] \x1b[1m\x1b[32mLinking CXX executable ../../Release/rs-embed\x1b[0m\n'}
+[14.047628] (librealsense2) StdoutLine: {'line': b'[  8%] Built target rs-embed\n'}
+[14.055250] (-) TimerEvent: {}
+[14.155558] (-) TimerEvent: {}
+[14.255886] (-) TimerEvent: {}
+[14.356151] (-) TimerEvent: {}
+[14.456489] (-) TimerEvent: {}
+[14.556764] (-) TimerEvent: {}
+[14.657104] (-) TimerEvent: {}
+[14.757404] (-) TimerEvent: {}
+[14.857741] (-) TimerEvent: {}
+[14.957981] (-) TimerEvent: {}
+[15.058225] (-) TimerEvent: {}
+[15.158551] (-) TimerEvent: {}
+[15.258807] (-) TimerEvent: {}
+[15.273750] (librealsense2) StdoutLine: {'line': b'[  8%] \x1b[1m\x1b[32mLinking CXX static library ../../Release/librealsense-file.a\x1b[0m\n'}
+[15.300258] (librealsense2) StdoutLine: {'line': b'[  8%] Built target realsense-file\n'}
+[15.358926] (-) TimerEvent: {}
+[15.459303] (-) TimerEvent: {}
+[15.476229] (librealsense2) StdoutLine: {'line': b'[  9%] \x1b[1m\x1b[32mLinking CXX static library ../../Release/librsutils.a\x1b[0m\n'}
+[15.501916] (librealsense2) StdoutLine: {'line': b'[  9%] Built target rsutils\n'}
+[15.521801] (librealsense2) StdoutLine: {'line': b'[  9%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/core/matcher-factory.cpp.o\x1b[0m\n'}
+[15.522501] (librealsense2) StdoutLine: {'line': b'[  9%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/core/options-container.cpp.o\x1b[0m\n'}
+[15.522663] (librealsense2) StdoutLine: {'line': b'[ 10%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/core/options-registry.cpp.o\x1b[0m\n'}
+[15.522811] (librealsense2) StdoutLine: {'line': b'[ 10%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/core/options-watcher.cpp.o\x1b[0m\n'}
+[15.522901] (librealsense2) StdoutLine: {'line': b'[  9%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/core/notification.cpp.o\x1b[0m\n'}
+[15.522989] (librealsense2) StdoutLine: {'line': b'[ 10%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/d400/d400-options.cpp.o\x1b[0m\n'}
+[15.523106] (librealsense2) StdoutLine: {'line': b'[ 10%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/d400/d400-private.cpp.o\x1b[0m\n'}
+[15.523186] (librealsense2) StdoutLine: {'line': b'[ 10%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/d400/d400-motion.cpp.o\x1b[0m\n'}
+[15.560081] (-) TimerEvent: {}
+[15.660380] (-) TimerEvent: {}
+[15.760692] (-) TimerEvent: {}
+[15.861085] (-) TimerEvent: {}
+[15.962089] (-) TimerEvent: {}
+[16.062455] (-) TimerEvent: {}
+[16.166413] (-) TimerEvent: {}
+[16.267085] (-) TimerEvent: {}
+[16.367432] (-) TimerEvent: {}
+[16.468086] (-) TimerEvent: {}
+[16.568433] (-) TimerEvent: {}
+[16.669086] (-) TimerEvent: {}
+[16.769424] (-) TimerEvent: {}
+[16.870086] (-) TimerEvent: {}
+[16.970415] (-) TimerEvent: {}
+[17.005410] (librealsense2) StdoutLine: {'line': b'[ 11%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/d400/d400-nonmonochrome.cpp.o\x1b[0m\n'}
+[17.070536] (-) TimerEvent: {}
+[17.120659] (librealsense2) StdoutLine: {'line': b'[ 11%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/d400/d400-device.cpp.o\x1b[0m\n'}
+[17.171087] (-) TimerEvent: {}
+[17.271428] (-) TimerEvent: {}
+[17.372084] (-) TimerEvent: {}
+[17.472425] (-) TimerEvent: {}
+[17.573086] (-) TimerEvent: {}
+[17.638810] (librealsense2) StdoutLine: {'line': b'[ 11%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/d400/d400-color.cpp.o\x1b[0m\n'}
+[17.674088] (-) TimerEvent: {}
+[17.697826] (librealsense2) StdoutLine: {'line': b'[ 11%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/d400/d400-active.cpp.o\x1b[0m\n'}
+[17.774199] (-) TimerEvent: {}
+[17.875084] (-) TimerEvent: {}
+[17.975416] (-) TimerEvent: {}
+[18.075760] (-) TimerEvent: {}
+[18.176091] (-) TimerEvent: {}
+[18.277094] (-) TimerEvent: {}
+[18.377433] (-) TimerEvent: {}
+[18.477790] (-) TimerEvent: {}
+[18.579256] (-) TimerEvent: {}
+[18.679617] (-) TimerEvent: {}
+[18.779991] (-) TimerEvent: {}
+[18.882259] (-) TimerEvent: {}
+[18.982624] (-) TimerEvent: {}
+[19.082984] (-) TimerEvent: {}
+[19.183352] (-) TimerEvent: {}
+[19.283691] (-) TimerEvent: {}
+[19.384049] (-) TimerEvent: {}
+[19.486265] (-) TimerEvent: {}
+[19.586619] (-) TimerEvent: {}
+[19.686981] (-) TimerEvent: {}
+[19.787342] (-) TimerEvent: {}
+[19.887678] (-) TimerEvent: {}
+[19.988042] (-) TimerEvent: {}
+[20.007080] (librealsense2) StdoutLine: {'line': b'[ 11%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/d400/d400-factory.cpp.o\x1b[0m\n'}
+[20.088170] (-) TimerEvent: {}
+[20.188545] (-) TimerEvent: {}
+[20.291239] (-) TimerEvent: {}
+[20.391630] (-) TimerEvent: {}
+[20.491984] (-) TimerEvent: {}
+[20.592328] (-) TimerEvent: {}
+[20.618125] (librealsense2) StdoutLine: {'line': b'[ 12%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/d400/d400-fw-update-device.cpp.o\x1b[0m\n'}
+[20.692452] (-) TimerEvent: {}
+[20.792827] (-) TimerEvent: {}
+[20.894091] (-) TimerEvent: {}
+[20.994435] (-) TimerEvent: {}
+[21.094762] (-) TimerEvent: {}
+[21.195094] (-) TimerEvent: {}
+[21.232625] (librealsense2) StdoutLine: {'line': b'[ 12%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/d400/d400-auto-calibration.cpp.o\x1b[0m\n'}
+[21.295221] (-) TimerEvent: {}
+[21.395587] (-) TimerEvent: {}
+[21.495937] (-) TimerEvent: {}
+[21.596267] (-) TimerEvent: {}
+[21.696623] (-) TimerEvent: {}
+[21.797048] (-) TimerEvent: {}
+[21.897407] (-) TimerEvent: {}
+[21.999241] (-) TimerEvent: {}
+[22.099582] (-) TimerEvent: {}
+[22.199938] (-) TimerEvent: {}
+[22.300287] (-) TimerEvent: {}
+[22.400645] (-) TimerEvent: {}
+[22.503255] (-) TimerEvent: {}
+[22.603578] (-) TimerEvent: {}
+[22.703900] (-) TimerEvent: {}
+[22.804253] (-) TimerEvent: {}
+[22.904636] (-) TimerEvent: {}
+[23.079069] (librealsense2) StdoutLine: {'line': b'[ 12%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/d400/d400-mipi-device.cpp.o\x1b[0m\n'}
+[23.079320] (-) TimerEvent: {}
+[23.106399] (librealsense2) StdoutLine: {'line': b'[ 12%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/d500/d500-device.cpp.o\x1b[0m\n'}
+[23.177074] (librealsense2) StdoutLine: {'line': b'[ 12%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/d500/d500-color.cpp.o\x1b[0m\n'}
+[23.179440] (-) TimerEvent: {}
+[23.279762] (-) TimerEvent: {}
+[23.381215] (-) TimerEvent: {}
+[23.481572] (-) TimerEvent: {}
+[23.581908] (-) TimerEvent: {}
+[23.682262] (-) TimerEvent: {}
+[23.783091] (-) TimerEvent: {}
+[23.883424] (-) TimerEvent: {}
+[23.984084] (-) TimerEvent: {}
+[24.084418] (-) TimerEvent: {}
+[24.185086] (-) TimerEvent: {}
+[24.286309] (-) TimerEvent: {}
+[24.389247] (-) TimerEvent: {}
+[24.489606] (-) TimerEvent: {}
+[24.590849] (-) TimerEvent: {}
+[24.692242] (-) TimerEvent: {}
+[24.793431] (-) TimerEvent: {}
+[24.895246] (-) TimerEvent: {}
+[24.995600] (-) TimerEvent: {}
+[25.097251] (-) TimerEvent: {}
+[25.159054] (librealsense2) StdoutLine: {'line': b'[ 12%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/d500/d500-motion.cpp.o\x1b[0m\n'}
+[25.197377] (-) TimerEvent: {}
+[25.297726] (-) TimerEvent: {}
+[25.398085] (-) TimerEvent: {}
+[25.498449] (-) TimerEvent: {}
+[25.598824] (-) TimerEvent: {}
+[25.701357] (-) TimerEvent: {}
+[25.801718] (-) TimerEvent: {}
+[25.902072] (-) TimerEvent: {}
+[26.005276] (-) TimerEvent: {}
+[26.105635] (-) TimerEvent: {}
+[26.205970] (-) TimerEvent: {}
+[26.306324] (-) TimerEvent: {}
+[26.406679] (-) TimerEvent: {}
+[26.507021] (-) TimerEvent: {}
+[26.607363] (-) TimerEvent: {}
+[26.707713] (-) TimerEvent: {}
+[26.769173] (librealsense2) StdoutLine: {'line': b'[ 13%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/d500/d500-active.cpp.o\x1b[0m\n'}
+[26.808085] (-) TimerEvent: {}
+[26.909089] (-) TimerEvent: {}
+[27.009423] (-) TimerEvent: {}
+[27.109772] (-) TimerEvent: {}
+[27.211087] (-) TimerEvent: {}
+[27.311413] (-) TimerEvent: {}
+[27.411750] (-) TimerEvent: {}
+[27.512092] (-) TimerEvent: {}
+[27.613093] (-) TimerEvent: {}
+[27.713432] (-) TimerEvent: {}
+[27.813765] (-) TimerEvent: {}
+[27.915100] (-) TimerEvent: {}
+[28.015455] (-) TimerEvent: {}
+[28.115791] (-) TimerEvent: {}
+[28.216095] (-) TimerEvent: {}
+[28.317091] (-) TimerEvent: {}
+[28.417427] (-) TimerEvent: {}
+[28.517755] (-) TimerEvent: {}
+[28.619091] (-) TimerEvent: {}
+[28.719433] (-) TimerEvent: {}
+[28.819774] (-) TimerEvent: {}
+[28.920095] (-) TimerEvent: {}
+[29.021092] (-) TimerEvent: {}
+[29.121437] (-) TimerEvent: {}
+[29.221785] (-) TimerEvent: {}
+[29.326092] (-) TimerEvent: {}
+[29.416066] (librealsense2) StdoutLine: {'line': b'[ 13%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/d500/d500-private.cpp.o\x1b[0m\n'}
+[29.426203] (-) TimerEvent: {}
+[29.526525] (-) TimerEvent: {}
+[29.626831] (-) TimerEvent: {}
+[29.727171] (-) TimerEvent: {}
+[29.828094] (-) TimerEvent: {}
+[29.928428] (-) TimerEvent: {}
+[30.028773] (-) TimerEvent: {}
+[30.129100] (-) TimerEvent: {}
+[30.229462] (-) TimerEvent: {}
+[30.331254] (-) TimerEvent: {}
+[30.367153] (librealsense2) StdoutLine: {'line': b'[ 13%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/d500/d500-factory.cpp.o\x1b[0m\n'}
+[30.431376] (-) TimerEvent: {}
+[30.531732] (-) TimerEvent: {}
+[30.632081] (-) TimerEvent: {}
+[30.732442] (-) TimerEvent: {}
+[30.834259] (-) TimerEvent: {}
+[30.934617] (-) TimerEvent: {}
+[31.034975] (-) TimerEvent: {}
+[31.056930] (librealsense2) StdoutLine: {'line': b'[ 13%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/d500/d500-safety.cpp.o\x1b[0m\n'}
+[31.136105] (-) TimerEvent: {}
+[31.236447] (-) TimerEvent: {}
+[31.336772] (-) TimerEvent: {}
+[31.404896] (librealsense2) StdoutLine: {'line': b'[ 13%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/d500/d500-depth-mapping.cpp.o\x1b[0m\n'}
+[31.437083] (-) TimerEvent: {}
+[31.538097] (-) TimerEvent: {}
+[31.638432] (-) TimerEvent: {}
+[31.736865] (librealsense2) StdoutLine: {'line': b'[ 14%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/d500/hw_monitor_extended_buffers.cpp.o\x1b[0m\n'}
+[31.738534] (-) TimerEvent: {}
+[31.838825] (-) TimerEvent: {}
+[31.939173] (-) TimerEvent: {}
+[32.039524] (-) TimerEvent: {}
+[32.139875] (-) TimerEvent: {}
+[32.240244] (-) TimerEvent: {}
+[32.340588] (-) TimerEvent: {}
+[32.441091] (-) TimerEvent: {}
+[32.542097] (-) TimerEvent: {}
+[32.642459] (-) TimerEvent: {}
+[32.742811] (-) TimerEvent: {}
+[32.844097] (-) TimerEvent: {}
+[32.944463] (-) TimerEvent: {}
+[33.044818] (-) TimerEvent: {}
+[33.089896] (librealsense2) StdoutLine: {'line': b'[ 14%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/d500/d500-options.cpp.o\x1b[0m\n'}
+[33.145179] (-) TimerEvent: {}
+[33.246102] (-) TimerEvent: {}
+[33.346458] (-) TimerEvent: {}
+[33.447093] (-) TimerEvent: {}
+[33.548090] (-) TimerEvent: {}
+[33.648427] (-) TimerEvent: {}
+[33.748783] (-) TimerEvent: {}
+[33.850086] (-) TimerEvent: {}
+[33.950420] (-) TimerEvent: {}
+[34.050768] (-) TimerEvent: {}
+[34.151091] (-) TimerEvent: {}
+[34.253090] (-) TimerEvent: {}
+[34.353425] (-) TimerEvent: {}
+[34.453766] (-) TimerEvent: {}
+[34.554094] (-) TimerEvent: {}
+[34.654430] (-) TimerEvent: {}
+[34.754767] (-) TimerEvent: {}
+[34.792087] (librealsense2) StdoutLine: {'line': b'[ 14%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/d500/d500-fw-update-device.cpp.o\x1b[0m\n'}
+[34.854890] (-) TimerEvent: {}
+[34.946790] (librealsense2) StdoutLine: {'line': b'[ 14%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/d500/d500-auto-calibration.cpp.o\x1b[0m\n'}
+[34.955007] (-) TimerEvent: {}
+[35.056082] (-) TimerEvent: {}
+[35.156392] (-) TimerEvent: {}
+[35.256716] (-) TimerEvent: {}
+[35.360261] (-) TimerEvent: {}
+[35.460619] (-) TimerEvent: {}
+[35.561000] (-) TimerEvent: {}
+[35.661342] (-) TimerEvent: {}
+[35.723517] (librealsense2) StdoutLine: {'line': b'[ 14%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/d500/d500-debug-protocol-calibration-engine.cpp.o\x1b[0m\n'}
+[35.761457] (-) TimerEvent: {}
+[35.861792] (-) TimerEvent: {}
+[35.962106] (-) TimerEvent: {}
+[36.062793] (-) TimerEvent: {}
+[36.163152] (-) TimerEvent: {}
+[36.267234] (-) TimerEvent: {}
+[36.367572] (-) TimerEvent: {}
+[36.467911] (-) TimerEvent: {}
+[36.568251] (-) TimerEvent: {}
+[36.668605] (-) TimerEvent: {}
+[36.768962] (-) TimerEvent: {}
+[36.869320] (-) TimerEvent: {}
+[36.969670] (-) TimerEvent: {}
+[37.070046] (-) TimerEvent: {}
+[37.170411] (-) TimerEvent: {}
+[37.270785] (-) TimerEvent: {}
+[37.371179] (-) TimerEvent: {}
+[37.475270] (-) TimerEvent: {}
+[37.575618] (-) TimerEvent: {}
+[37.675992] (-) TimerEvent: {}
+[37.737160] (librealsense2) StdoutLine: {'line': b'[ 15%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/ds-device-common.cpp.o\x1b[0m\n'}
+[37.776105] (-) TimerEvent: {}
+[37.876459] (-) TimerEvent: {}
+[37.976821] (-) TimerEvent: {}
+[38.012334] (librealsense2) StdoutLine: {'line': b'[ 15%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/ds-motion-common.cpp.o\x1b[0m\n'}
+[38.076944] (-) TimerEvent: {}
+[38.177319] (-) TimerEvent: {}
+[38.277686] (-) TimerEvent: {}
+[38.378048] (-) TimerEvent: {}
+[38.475085] (librealsense2) StdoutLine: {'line': b'[ 15%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/ds-color-common.cpp.o\x1b[0m\n'}
+[38.478165] (-) TimerEvent: {}
+[38.578512] (-) TimerEvent: {}
+[38.678869] (-) TimerEvent: {}
+[38.779249] (-) TimerEvent: {}
+[38.879591] (-) TimerEvent: {}
+[38.982266] (-) TimerEvent: {}
+[39.082646] (-) TimerEvent: {}
+[39.183925] (-) TimerEvent: {}
+[39.284313] (-) TimerEvent: {}
+[39.350141] (librealsense2) StdoutLine: {'line': b'[ 15%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/ds-active-common.cpp.o\x1b[0m\n'}
+[39.384428] (-) TimerEvent: {}
+[39.485633] (-) TimerEvent: {}
+[39.585990] (-) TimerEvent: {}
+[39.687226] (-) TimerEvent: {}
+[39.789093] (-) TimerEvent: {}
+[39.890392] (-) TimerEvent: {}
+[39.993100] (-) TimerEvent: {}
+[40.093467] (-) TimerEvent: {}
+[40.193849] (-) TimerEvent: {}
+[40.296238] (-) TimerEvent: {}
+[40.396585] (-) TimerEvent: {}
+[40.496922] (-) TimerEvent: {}
+[40.597319] (-) TimerEvent: {}
+[40.697675] (-) TimerEvent: {}
+[40.798025] (-) TimerEvent: {}
+[40.898378] (-) TimerEvent: {}
+[41.000305] (-) TimerEvent: {}
+[41.100716] (-) TimerEvent: {}
+[41.271537] (-) TimerEvent: {}
+[41.375263] (-) TimerEvent: {}
+[41.475626] (-) TimerEvent: {}
+[41.575983] (-) TimerEvent: {}
+[41.677268] (-) TimerEvent: {}
+[41.778636] (-) TimerEvent: {}
+[41.883549] (-) TimerEvent: {}
+[41.985413] (-) TimerEvent: {}
+[42.085776] (-) TimerEvent: {}
+[42.186151] (-) TimerEvent: {}
+[42.286518] (-) TimerEvent: {}
+[42.309216] (librealsense2) StdoutLine: {'line': b'[ 15%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/ds-private.cpp.o\x1b[0m\n'}
+[42.386642] (-) TimerEvent: {}
+[42.487002] (-) TimerEvent: {}
+[42.588635] (-) TimerEvent: {}
+[42.688992] (-) TimerEvent: {}
+[42.791255] (-) TimerEvent: {}
+[42.891615] (-) TimerEvent: {}
+[42.992943] (-) TimerEvent: {}
+[43.093316] (-) TimerEvent: {}
+[43.194098] (-) TimerEvent: {}
+[43.296256] (-) TimerEvent: {}
+[43.396617] (-) TimerEvent: {}
+[43.499270] (-) TimerEvent: {}
+[43.599653] (-) TimerEvent: {}
+[43.700950] (-) TimerEvent: {}
+[43.785109] (librealsense2) StdoutLine: {'line': b'[ 16%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/ds-timestamp.cpp.o\x1b[0m\n'}
+[43.801077] (-) TimerEvent: {}
+[43.902828] (-) TimerEvent: {}
+[44.006269] (-) TimerEvent: {}
+[44.106653] (-) TimerEvent: {}
+[44.208036] (-) TimerEvent: {}
+[44.309663] (-) TimerEvent: {}
+[44.412278] (-) TimerEvent: {}
+[44.433035] (librealsense2) StdoutLine: {'line': b'[ 16%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/ds-options.cpp.o\x1b[0m\n'}
+[44.512409] (-) TimerEvent: {}
+[44.614182] (-) TimerEvent: {}
+[44.714543] (-) TimerEvent: {}
+[44.818264] (-) TimerEvent: {}
+[44.918628] (-) TimerEvent: {}
+[45.019026] (-) TimerEvent: {}
+[45.122264] (-) TimerEvent: {}
+[45.223590] (-) TimerEvent: {}
+[45.323941] (-) TimerEvent: {}
+[45.425244] (-) TimerEvent: {}
+[45.527093] (-) TimerEvent: {}
+[45.627439] (-) TimerEvent: {}
+[45.680364] (librealsense2) StdoutLine: {'line': b'[ 16%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/advanced_mode/rs_advanced_mode.cpp.o\x1b[0m\n'}
+[45.727560] (-) TimerEvent: {}
+[45.831268] (-) TimerEvent: {}
+[45.931646] (-) TimerEvent: {}
+[46.032055] (-) TimerEvent: {}
+[46.090885] (librealsense2) StdoutLine: {'line': b'[ 16%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/advanced_mode/presets.cpp.o\x1b[0m\n'}
+[46.132176] (-) TimerEvent: {}
+[46.210464] (librealsense2) StdoutLine: {'line': b'[ 16%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/advanced_mode/advanced_mode.cpp.o\x1b[0m\n'}
+[46.232293] (-) TimerEvent: {}
+[46.338266] (-) TimerEvent: {}
+[46.438625] (-) TimerEvent: {}
+[46.538998] (-) TimerEvent: {}
+[46.639352] (-) TimerEvent: {}
+[46.739706] (-) TimerEvent: {}
+[46.820700] (librealsense2) StdoutLine: {'line': b'[ 16%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/ds-calib-parsers.cpp.o\x1b[0m\n'}
+[46.839837] (-) TimerEvent: {}
+[46.873756] (librealsense2) StdoutLine: {'line': b'[ 17%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/ds-calib-common.cpp.o\x1b[0m\n'}
+[46.939960] (-) TimerEvent: {}
+[47.040326] (-) TimerEvent: {}
+[47.140688] (-) TimerEvent: {}
+[47.243275] (-) TimerEvent: {}
+[47.343641] (-) TimerEvent: {}
+[47.443999] (-) TimerEvent: {}
+[47.544357] (-) TimerEvent: {}
+[47.644710] (-) TimerEvent: {}
+[47.745089] (-) TimerEvent: {}
+[47.845466] (-) TimerEvent: {}
+[47.946091] (-) TimerEvent: {}
+[48.047090] (-) TimerEvent: {}
+[48.147451] (-) TimerEvent: {}
+[48.247819] (-) TimerEvent: {}
+[48.349246] (-) TimerEvent: {}
+[48.449612] (-) TimerEvent: {}
+[48.549971] (-) TimerEvent: {}
+[48.653276] (-) TimerEvent: {}
+[48.753657] (-) TimerEvent: {}
+[48.854092] (-) TimerEvent: {}
+[48.954513] (-) TimerEvent: {}
+[49.054883] (-) TimerEvent: {}
+[49.155241] (-) TimerEvent: {}
+[49.255586] (-) TimerEvent: {}
+[49.343159] (librealsense2) StdoutLine: {'line': b'[ 17%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/ds-thermal-monitor.cpp.o\x1b[0m\n'}
+[49.355748] (-) TimerEvent: {}
+[49.456210] (-) TimerEvent: {}
+[49.556570] (-) TimerEvent: {}
+[49.656930] (-) TimerEvent: {}
+[49.759256] (-) TimerEvent: {}
+[49.769416] (librealsense2) StdoutLine: {'line': b'[ 17%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/features/amplitude-factor-feature.cpp.o\x1b[0m\n'}
+[49.859433] (-) TimerEvent: {}
+[49.959785] (-) TimerEvent: {}
+[50.062731] (-) TimerEvent: {}
+[50.095202] (librealsense2) StdoutLine: {'line': b'[ 17%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/features/emitter-frequency-feature.cpp.o\x1b[0m\n'}
+[50.162859] (-) TimerEvent: {}
+[50.263237] (-) TimerEvent: {}
+[50.363586] (-) TimerEvent: {}
+[50.463950] (-) TimerEvent: {}
+[50.565708] (-) TimerEvent: {}
+[50.666089] (-) TimerEvent: {}
+[50.766432] (-) TimerEvent: {}
+[50.866781] (-) TimerEvent: {}
+[50.968640] (-) TimerEvent: {}
+[51.041670] (librealsense2) StdoutLine: {'line': b'[ 17%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/features/auto-exposure-roi-feature.cpp.o\x1b[0m\n'}
+[51.068763] (-) TimerEvent: {}
+[51.169095] (-) TimerEvent: {}
+[51.269429] (-) TimerEvent: {}
+[51.322370] (librealsense2) StdoutLine: {'line': b'[ 18%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/features/remove-ir-pattern-feature.cpp.o\x1b[0m\n'}
+[51.369545] (-) TimerEvent: {}
+[51.470101] (-) TimerEvent: {}
+[51.513083] (librealsense2) StdoutLine: {'line': b'[ 18%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/features/auto-exposure-limit-feature.cpp.o\x1b[0m\n'}
+[51.571084] (-) TimerEvent: {}
+[51.640654] (librealsense2) StdoutLine: {'line': b'[ 18%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/features/gain-limit-feature.cpp.o\x1b[0m\n'}
+[51.671205] (-) TimerEvent: {}
+[51.773086] (-) TimerEvent: {}
+[51.873444] (-) TimerEvent: {}
+[51.973786] (-) TimerEvent: {}
+[52.074086] (-) TimerEvent: {}
+[52.174430] (-) TimerEvent: {}
+[52.274767] (-) TimerEvent: {}
+[52.376093] (-) TimerEvent: {}
+[52.476450] (-) TimerEvent: {}
+[52.576786] (-) TimerEvent: {}
+[52.621668] (librealsense2) StdoutLine: {'line': b'[ 18%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/ds/features/gyro-sensitivity-feature.cpp.o\x1b[0m\n'}
+[52.676914] (-) TimerEvent: {}
+[52.778088] (-) TimerEvent: {}
+[52.878429] (-) TimerEvent: {}
+[52.978772] (-) TimerEvent: {}
+[53.080094] (-) TimerEvent: {}
+[53.180433] (-) TimerEvent: {}
+[53.280790] (-) TimerEvent: {}
+[53.381147] (-) TimerEvent: {}
+[53.439080] (librealsense2) StdoutLine: {'line': b'[ 18%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/media/record/record_device.cpp.o\x1b[0m\n'}
+[53.481261] (-) TimerEvent: {}
+[53.582089] (-) TimerEvent: {}
+[53.682430] (-) TimerEvent: {}
+[53.783085] (-) TimerEvent: {}
+[53.883416] (-) TimerEvent: {}
+[53.984090] (-) TimerEvent: {}
+[54.056925] (librealsense2) StdoutLine: {'line': b'[ 19%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/media/record/record_sensor.cpp.o\x1b[0m\n'}
+[54.084211] (-) TimerEvent: {}
+[54.184560] (-) TimerEvent: {}
+[54.284914] (-) TimerEvent: {}
+[54.386087] (-) TimerEvent: {}
+[54.486447] (-) TimerEvent: {}
+[54.586848] (-) TimerEvent: {}
+[54.670073] (librealsense2) StdoutLine: {'line': b'[ 19%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/media/playback/playback_device.cpp.o\x1b[0m\n'}
+[54.686972] (-) TimerEvent: {}
+[54.743620] (librealsense2) StdoutLine: {'line': b'[ 19%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/media/playback/playback_sensor.cpp.o\x1b[0m\n'}
+[54.788094] (-) TimerEvent: {}
+[54.888434] (-) TimerEvent: {}
+[54.988780] (-) TimerEvent: {}
+[55.089183] (-) TimerEvent: {}
+[55.192260] (-) TimerEvent: {}
+[55.292610] (-) TimerEvent: {}
+[55.392942] (-) TimerEvent: {}
+[55.493335] (-) TimerEvent: {}
+[55.593721] (-) TimerEvent: {}
+[55.694105] (-) TimerEvent: {}
+[55.794473] (-) TimerEvent: {}
+[55.894845] (-) TimerEvent: {}
+[55.996240] (-) TimerEvent: {}
+[56.096601] (-) TimerEvent: {}
+[56.286274] (-) TimerEvent: {}
+[56.386646] (-) TimerEvent: {}
+[56.487020] (-) TimerEvent: {}
+[56.587402] (-) TimerEvent: {}
+[56.689262] (-) TimerEvent: {}
+[56.750144] (librealsense2) StdoutLine: {'line': b'[ 19%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/media/ros/ros_reader.cpp.o\x1b[0m\n'}
+[56.789381] (-) TimerEvent: {}
+[56.890087] (-) TimerEvent: {}
+[56.991460] (-) TimerEvent: {}
+[57.083335] (librealsense2) StdoutLine: {'line': b'[ 19%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/media/ros/ros_writer.cpp.o\x1b[0m\n'}
+[57.091576] (-) TimerEvent: {}
+[57.198411] (-) TimerEvent: {}
+[57.298781] (-) TimerEvent: {}
+[57.399159] (-) TimerEvent: {}
+[57.499521] (-) TimerEvent: {}
+[57.599907] (-) TimerEvent: {}
+[57.662621] (librealsense2) StdoutLine: {'line': b'[ 19%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/sse/sse-align.cpp.o\x1b[0m\n'}
+[57.700036] (-) TimerEvent: {}
+[57.800389] (-) TimerEvent: {}
+[57.900725] (-) TimerEvent: {}
+[58.001068] (-) TimerEvent: {}
+[58.102837] (-) TimerEvent: {}
+[58.203206] (-) TimerEvent: {}
+[58.303547] (-) TimerEvent: {}
+[58.363875] (librealsense2) StdoutLine: {'line': b'[ 20%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/sse/sse-pointcloud.cpp.o\x1b[0m\n'}
+[58.404089] (-) TimerEvent: {}
+[58.504441] (-) TimerEvent: {}
+[58.605088] (-) TimerEvent: {}
+[58.705421] (-) TimerEvent: {}
+[58.806085] (-) TimerEvent: {}
+[58.906437] (-) TimerEvent: {}
+[59.007084] (-) TimerEvent: {}
+[59.107407] (-) TimerEvent: {}
+[59.208086] (-) TimerEvent: {}
+[59.308427] (-) TimerEvent: {}
+[59.409090] (-) TimerEvent: {}
+[59.509430] (-) TimerEvent: {}
+[59.610096] (-) TimerEvent: {}
+[59.710438] (-) TimerEvent: {}
+[59.811090] (-) TimerEvent: {}
+[59.912097] (-) TimerEvent: {}
+[60.012467] (-) TimerEvent: {}
+[60.112851] (-) TimerEvent: {}
+[60.214100] (-) TimerEvent: {}
+[60.314463] (-) TimerEvent: {}
+[60.414838] (-) TimerEvent: {}
+[60.516098] (-) TimerEvent: {}
+[60.616471] (-) TimerEvent: {}
+[60.680434] (librealsense2) StdoutLine: {'line': b'[ 20%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/neon/image-neon.cpp.o\x1b[0m\n'}
+[60.718085] (-) TimerEvent: {}
+[60.818446] (-) TimerEvent: {}
+[60.918818] (-) TimerEvent: {}
+[61.019189] (-) TimerEvent: {}
+[61.119569] (-) TimerEvent: {}
+[61.220097] (-) TimerEvent: {}
+[61.321957] (-) TimerEvent: {}
+[61.422327] (-) TimerEvent: {}
+[61.491152] (librealsense2) StdoutLine: {'line': b'[ 20%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/neon/neon-pointcloud.cpp.o\x1b[0m\n'}
+[61.523085] (-) TimerEvent: {}
+[61.623426] (-) TimerEvent: {}
+[61.723773] (-) TimerEvent: {}
+[61.825685] (-) TimerEvent: {}
+[61.926065] (-) TimerEvent: {}
+[62.000968] (librealsense2) StdoutLine: {'line': b'[ 20%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/neon/neon-align.cpp.o\x1b[0m\n'}
+[62.026192] (-) TimerEvent: {}
+[62.128006] (-) TimerEvent: {}
+[62.134795] (librealsense2) StdoutLine: {'line': b'[ 20%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/processing-blocks-factory.cpp.o\x1b[0m\n'}
+[62.228098] (-) TimerEvent: {}
+[62.330598] (-) TimerEvent: {}
+[62.430968] (-) TimerEvent: {}
+[62.531350] (-) TimerEvent: {}
+[62.631701] (-) TimerEvent: {}
+[62.732053] (-) TimerEvent: {}
+[62.832393] (-) TimerEvent: {}
+[62.933101] (-) TimerEvent: {}
+[63.033457] (-) TimerEvent: {}
+[63.134086] (-) TimerEvent: {}
+[63.235086] (-) TimerEvent: {}
+[63.335445] (-) TimerEvent: {}
+[63.435797] (-) TimerEvent: {}
+[63.537101] (-) TimerEvent: {}
+[63.637447] (-) TimerEvent: {}
+[63.737805] (-) TimerEvent: {}
+[63.776793] (librealsense2) StdoutLine: {'line': b'[ 21%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/align.cpp.o\x1b[0m\n'}
+[63.837928] (-) TimerEvent: {}
+[63.890337] (librealsense2) StdoutLine: {'line': b'[ 21%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/colorizer.cpp.o\x1b[0m\n'}
+[63.938063] (-) TimerEvent: {}
+[63.947395] (librealsense2) StdoutLine: {'line': b'[ 21%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/pointcloud.cpp.o\x1b[0m\n'}
+[63.948162] (librealsense2) StdoutLine: {'line': b'[ 21%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/occlusion-filter.cpp.o\x1b[0m\n'}
+[64.038174] (-) TimerEvent: {}
+[64.138536] (-) TimerEvent: {}
+[64.238893] (-) TimerEvent: {}
+[64.339269] (-) TimerEvent: {}
+[64.441101] (-) TimerEvent: {}
+[64.542370] (-) TimerEvent: {}
+[64.646502] (-) TimerEvent: {}
+[64.746858] (-) TimerEvent: {}
+[64.781614] (librealsense2) StdoutLine: {'line': b'[ 21%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/synthetic-stream.cpp.o\x1b[0m\n'}
+[64.846988] (-) TimerEvent: {}
+[64.949868] (-) TimerEvent: {}
+[65.050219] (-) TimerEvent: {}
+[65.150604] (-) TimerEvent: {}
+[65.250975] (-) TimerEvent: {}
+[65.278147] (librealsense2) StdoutLine: {'line': b'[ 22%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/syncer-processing-block.cpp.o\x1b[0m\n'}
+[65.351111] (-) TimerEvent: {}
+[65.452093] (-) TimerEvent: {}
+[65.552450] (-) TimerEvent: {}
+[65.652793] (-) TimerEvent: {}
+[65.754093] (-) TimerEvent: {}
+[65.854437] (-) TimerEvent: {}
+[65.954796] (-) TimerEvent: {}
+[66.055176] (-) TimerEvent: {}
+[66.156089] (-) TimerEvent: {}
+[66.256432] (-) TimerEvent: {}
+[66.358248] (-) TimerEvent: {}
+[66.458621] (-) TimerEvent: {}
+[66.561365] (-) TimerEvent: {}
+[66.567124] (librealsense2) StdoutLine: {'line': b'[ 22%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/decimation-filter.cpp.o\x1b[0m\n'}
+[66.661489] (-) TimerEvent: {}
+[66.762085] (-) TimerEvent: {}
+[66.863087] (-) TimerEvent: {}
+[66.963429] (-) TimerEvent: {}
+[67.063781] (-) TimerEvent: {}
+[67.165097] (-) TimerEvent: {}
+[67.265441] (-) TimerEvent: {}
+[67.365799] (-) TimerEvent: {}
+[67.466152] (-) TimerEvent: {}
+[67.567101] (-) TimerEvent: {}
+[67.667463] (-) TimerEvent: {}
+[67.768087] (-) TimerEvent: {}
+[67.869092] (-) TimerEvent: {}
+[67.969427] (-) TimerEvent: {}
+[68.005517] (librealsense2) StdoutLine: {'line': b'[ 22%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/rotation-filter.cpp.o\x1b[0m\n'}
+[68.044061] (librealsense2) StdoutLine: {'line': b'[ 22%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/spatial-filter.cpp.o\x1b[0m\n'}
+[68.070087] (-) TimerEvent: {}
+[68.170434] (-) TimerEvent: {}
+[68.271098] (-) TimerEvent: {}
+[68.371440] (-) TimerEvent: {}
+[68.472093] (-) TimerEvent: {}
+[68.572429] (-) TimerEvent: {}
+[68.673092] (-) TimerEvent: {}
+[68.773436] (-) TimerEvent: {}
+[68.874091] (-) TimerEvent: {}
+[68.974431] (-) TimerEvent: {}
+[69.075099] (-) TimerEvent: {}
+[69.175462] (-) TimerEvent: {}
+[69.276091] (-) TimerEvent: {}
+[69.377096] (-) TimerEvent: {}
+[69.472100] (librealsense2) StdoutLine: {'line': b'[ 22%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/hdr-merge.cpp.o\x1b[0m\n'}
+[69.472355] (librealsense2) StdoutLine: {'line': b'[ 22%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/temporal-filter.cpp.o\x1b[0m\n'}
+[69.477848] (-) TimerEvent: {}
+[69.579035] (-) TimerEvent: {}
+[69.679394] (-) TimerEvent: {}
+[69.779737] (-) TimerEvent: {}
+[69.856076] (librealsense2) StdoutLine: {'line': b'[ 23%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/sequence-id-filter.cpp.o\x1b[0m\n'}
+[69.879859] (-) TimerEvent: {}
+[69.980206] (-) TimerEvent: {}
+[70.082092] (-) TimerEvent: {}
+[70.182434] (-) TimerEvent: {}
+[70.282775] (-) TimerEvent: {}
+[70.383092] (-) TimerEvent: {}
+[70.483466] (-) TimerEvent: {}
+[70.583829] (-) TimerEvent: {}
+[70.685376] (-) TimerEvent: {}
+[70.785744] (-) TimerEvent: {}
+[70.883153] (librealsense2) StdoutLine: {'line': b'[ 23%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/hole-filling-filter.cpp.o\x1b[0m\n'}
+[70.885868] (-) TimerEvent: {}
+[70.986208] (-) TimerEvent: {}
+[71.087089] (-) TimerEvent: {}
+[71.187435] (-) TimerEvent: {}
+[71.288093] (-) TimerEvent: {}
+[71.389807] (-) TimerEvent: {}
+[71.491241] (-) TimerEvent: {}
+[71.522143] (librealsense2) StdoutLine: {'line': b'[ 23%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/disparity-transform.cpp.o\x1b[0m\n'}
+[71.591361] (-) TimerEvent: {}
+[71.691718] (-) TimerEvent: {}
+[71.793389] (-) TimerEvent: {}
+[71.893760] (-) TimerEvent: {}
+[71.995417] (-) TimerEvent: {}
+[72.095775] (-) TimerEvent: {}
+[72.196108] (-) TimerEvent: {}
+[72.297993] (-) TimerEvent: {}
+[72.398375] (-) TimerEvent: {}
+[72.432730] (librealsense2) StdoutLine: {'line': b'[ 23%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/y8i-to-y8y8.cpp.o\x1b[0m\n'}
+[72.498494] (-) TimerEvent: {}
+[72.598866] (-) TimerEvent: {}
+[72.699219] (-) TimerEvent: {}
+[72.801086] (-) TimerEvent: {}
+[72.901422] (-) TimerEvent: {}
+[72.936285] (librealsense2) StdoutLine: {'line': b'[ 23%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/y8i-to-y8y8-mipi.cpp.o\x1b[0m\n'}
+[73.001539] (-) TimerEvent: {}
+[73.101884] (-) TimerEvent: {}
+[73.203091] (-) TimerEvent: {}
+[73.305254] (-) TimerEvent: {}
+[73.406545] (-) TimerEvent: {}
+[73.507996] (-) TimerEvent: {}
+[73.609240] (-) TimerEvent: {}
+[73.702084] (librealsense2) StdoutLine: {'line': b'[ 24%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/y12i-to-y16y16.cpp.o\x1b[0m\n'}
+[73.709360] (-) TimerEvent: {}
+[73.809702] (-) TimerEvent: {}
+[73.831142] (librealsense2) StdoutLine: {'line': b'[ 24%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/y12i-to-y16y16-mipi.cpp.o\x1b[0m\n'}
+[73.910096] (-) TimerEvent: {}
+[73.985055] (librealsense2) StdoutLine: {'line': b'[ 24%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/y16i-10msb-to-y16y16.cpp.o\x1b[0m\n'}
+[74.011094] (-) TimerEvent: {}
+[74.111441] (-) TimerEvent: {}
+[74.211774] (-) TimerEvent: {}
+[74.312094] (-) TimerEvent: {}
+[74.413089] (-) TimerEvent: {}
+[74.513425] (-) TimerEvent: {}
+[74.613768] (-) TimerEvent: {}
+[74.715102] (-) TimerEvent: {}
+[74.815437] (-) TimerEvent: {}
+[74.915803] (-) TimerEvent: {}
+[75.016175] (-) TimerEvent: {}
+[75.116880] (-) TimerEvent: {}
+[75.217236] (-) TimerEvent: {}
+[75.319095] (-) TimerEvent: {}
+[75.419451] (-) TimerEvent: {}
+[75.508974] (librealsense2) StdoutLine: {'line': b'[ 24%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/y16-10msb-to-y16.cpp.o\x1b[0m\n'}
+[75.519577] (-) TimerEvent: {}
+[75.619931] (-) TimerEvent: {}
+[75.718065] (librealsense2) StdoutLine: {'line': b'[ 24%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/identity-processing-block.cpp.o\x1b[0m\n'}
+[75.720053] (-) TimerEvent: {}
+[75.820386] (-) TimerEvent: {}
+[75.920731] (-) TimerEvent: {}
+[75.996450] (librealsense2) StdoutLine: {'line': b'[ 25%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/threshold.cpp.o\x1b[0m\n'}
+[76.020854] (-) TimerEvent: {}
+[76.121245] (-) TimerEvent: {}
+[76.221613] (-) TimerEvent: {}
+[76.323236] (-) TimerEvent: {}
+[76.423593] (-) TimerEvent: {}
+[76.523958] (-) TimerEvent: {}
+[76.624328] (-) TimerEvent: {}
+[76.727283] (-) TimerEvent: {}
+[76.774874] (librealsense2) StdoutLine: {'line': b'[ 25%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/rates-printer.cpp.o\x1b[0m\n'}
+[76.827391] (-) TimerEvent: {}
+[76.927776] (-) TimerEvent: {}
+[77.028149] (-) TimerEvent: {}
+[77.103831] (librealsense2) StdoutLine: {'line': b'[ 25%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/units-transform.cpp.o\x1b[0m\n'}
+[77.128259] (-) TimerEvent: {}
+[77.165582] (librealsense2) StdoutLine: {'line': b'[ 25%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/rotation-transform.cpp.o\x1b[0m\n'}
+[77.228373] (-) TimerEvent: {}
+[77.328724] (-) TimerEvent: {}
+[77.432270] (-) TimerEvent: {}
+[77.532644] (-) TimerEvent: {}
+[77.533245] (librealsense2) StdoutLine: {'line': b'[ 25%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/color-formats-converter.cpp.o\x1b[0m\n'}
+[77.632769] (-) TimerEvent: {}
+[77.733155] (-) TimerEvent: {}
+[77.833527] (-) TimerEvent: {}
+[77.935092] (-) TimerEvent: {}
+[78.035462] (-) TimerEvent: {}
+[78.135827] (-) TimerEvent: {}
+[78.236188] (-) TimerEvent: {}
+[78.336559] (-) TimerEvent: {}
+[78.442089] (-) TimerEvent: {}
+[78.542450] (-) TimerEvent: {}
+[78.609148] (librealsense2) StdoutLine: {'line': b'[ 26%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/depth-formats-converter.cpp.o\x1b[0m\n'}
+[78.642571] (-) TimerEvent: {}
+[78.728093] (librealsense2) StdoutLine: {'line': b'[ 26%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/motion-transform.cpp.o\x1b[0m\n'}
+[78.742694] (-) TimerEvent: {}
+[78.843046] (-) TimerEvent: {}
+[78.943399] (-) TimerEvent: {}
+[79.043734] (-) TimerEvent: {}
+[79.144087] (-) TimerEvent: {}
+[79.244436] (-) TimerEvent: {}
+[79.344770] (-) TimerEvent: {}
+[79.446102] (-) TimerEvent: {}
+[79.546449] (-) TimerEvent: {}
+[79.646786] (-) TimerEvent: {}
+[79.747099] (-) TimerEvent: {}
+[79.847439] (-) TimerEvent: {}
+[79.947782] (-) TimerEvent: {}
+[80.048099] (-) TimerEvent: {}
+[80.148452] (-) TimerEvent: {}
+[80.204071] (librealsense2) StdoutLine: {'line': b'[ 26%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/auto-exposure-processor.cpp.o\x1b[0m\n'}
+[80.248577] (-) TimerEvent: {}
+[80.348934] (-) TimerEvent: {}
+[80.442183] (librealsense2) StdoutLine: {'line': b'[ 26%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/y411-converter.cpp.o\x1b[0m\n'}
+[80.449074] (-) TimerEvent: {}
+[80.550348] (-) TimerEvent: {}
+[80.650683] (-) TimerEvent: {}
+[80.751088] (-) TimerEvent: {}
+[80.854255] (-) TimerEvent: {}
+[80.954637] (-) TimerEvent: {}
+[81.055003] (-) TimerEvent: {}
+[81.155372] (-) TimerEvent: {}
+[81.255741] (-) TimerEvent: {}
+[81.356113] (-) TimerEvent: {}
+[81.456488] (-) TimerEvent: {}
+[81.556868] (-) TimerEvent: {}
+[81.657238] (-) TimerEvent: {}
+[81.758172] (-) TimerEvent: {}
+[81.767935] (librealsense2) StdoutLine: {'line': b'[ 26%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/formats-converter.cpp.o\x1b[0m\n'}
+[81.859095] (-) TimerEvent: {}
+[81.959440] (-) TimerEvent: {}
+[82.059797] (-) TimerEvent: {}
+[82.161252] (-) TimerEvent: {}
+[82.261628] (-) TimerEvent: {}
+[82.362019] (-) TimerEvent: {}
+[82.466239] (-) TimerEvent: {}
+[82.474166] (librealsense2) StdoutLine: {'line': b'[ 26%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/decimation-embedded-filter.cpp.o\x1b[0m\n'}
+[82.523126] (librealsense2) StdoutLine: {'line': b'[ 27%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/proc/temporal-embedded-filter.cpp.o\x1b[0m\n'}
+[82.566355] (-) TimerEvent: {}
+[82.667620] (-) TimerEvent: {}
+[82.767991] (-) TimerEvent: {}
+[82.868390] (-) TimerEvent: {}
+[82.968778] (-) TimerEvent: {}
+[83.070244] (-) TimerEvent: {}
+[83.171091] (-) TimerEvent: {}
+[83.257650] (librealsense2) StdoutLine: {'line': b'[ 27%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/pipeline/pipeline.cpp.o\x1b[0m\n'}
+[83.274107] (-) TimerEvent: {}
+[83.374501] (-) TimerEvent: {}
+[83.474867] (-) TimerEvent: {}
+[83.576109] (-) TimerEvent: {}
+[83.679083] (-) TimerEvent: {}
+[83.779451] (-) TimerEvent: {}
+[83.879806] (-) TimerEvent: {}
+[83.980190] (-) TimerEvent: {}
+[84.081452] (-) TimerEvent: {}
+[84.155770] (librealsense2) StdoutLine: {'line': b'[ 27%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/pipeline/config.cpp.o\x1b[0m\n'}
+[84.181569] (-) TimerEvent: {}
+[84.282835] (-) TimerEvent: {}
+[84.321118] (librealsense2) StdoutLine: {'line': b'[ 27%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/pipeline/profile.cpp.o\x1b[0m\n'}
+[84.355578] (librealsense2) StdoutLine: {'line': b'[ 27%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/pipeline/aggregator.cpp.o\x1b[0m\n'}
+[84.382958] (-) TimerEvent: {}
+[84.483321] (-) TimerEvent: {}
+[84.583680] (-) TimerEvent: {}
+[84.684065] (-) TimerEvent: {}
+[84.784437] (-) TimerEvent: {}
+[84.884800] (-) TimerEvent: {}
+[84.986098] (-) TimerEvent: {}
+[85.086488] (-) TimerEvent: {}
+[85.186850] (-) TimerEvent: {}
+[85.288095] (-) TimerEvent: {}
+[85.335130] (librealsense2) StdoutLine: {'line': b'[ 28%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/fw-logs/fw-log-data.cpp.o\x1b[0m\n'}
+[85.388227] (-) TimerEvent: {}
+[85.488589] (-) TimerEvent: {}
+[85.588957] (-) TimerEvent: {}
+[85.689345] (-) TimerEvent: {}
+[85.792730] (-) TimerEvent: {}
+[85.824772] (librealsense2) StdoutLine: {'line': b'[ 28%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/fw-logs/fw-logs-formatting-options.cpp.o\x1b[0m\n'}
+[85.892854] (-) TimerEvent: {}
+[85.993223] (-) TimerEvent: {}
+[86.093610] (-) TimerEvent: {}
+[86.196086] (-) TimerEvent: {}
+[86.299102] (-) TimerEvent: {}
+[86.399486] (-) TimerEvent: {}
+[86.494609] (librealsense2) StdoutLine: {'line': b'[ 28%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/fw-logs/fw-logs-parser.cpp.o\x1b[0m\n'}
+[86.499606] (-) TimerEvent: {}
+[86.599974] (-) TimerEvent: {}
+[86.700353] (-) TimerEvent: {}
+[86.803334] (-) TimerEvent: {}
+[86.906264] (-) TimerEvent: {}
+[86.979864] (librealsense2) StdoutLine: {'line': b'[ 28%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/fw-logs/fw-logs-xml-helper.cpp.o\x1b[0m\n'}
+[87.006384] (-) TimerEvent: {}
+[87.106733] (-) TimerEvent: {}
+[87.207101] (-) TimerEvent: {}
+[87.308098] (-) TimerEvent: {}
+[87.345542] (librealsense2) StdoutLine: {'line': b'[ 28%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/fw-logs/fw-string-formatter.cpp.o\x1b[0m\n'}
+[87.408219] (-) TimerEvent: {}
+[87.508565] (-) TimerEvent: {}
+[87.561075] (librealsense2) StdoutLine: {'line': b'[ 29%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/fw-update/fw-update-device.cpp.o\x1b[0m\n'}
+[87.609091] (-) TimerEvent: {}
+[87.711180] (-) TimerEvent: {}
+[87.812474] (-) TimerEvent: {}
+[87.912869] (-) TimerEvent: {}
+[88.016276] (-) TimerEvent: {}
+[88.116666] (-) TimerEvent: {}
+[88.217067] (-) TimerEvent: {}
+[88.317422] (-) TimerEvent: {}
+[88.410818] (librealsense2) StdoutLine: {'line': b'[ 29%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/fw-update/fw-update-factory.cpp.o\x1b[0m\n'}
+[88.417553] (-) TimerEvent: {}
+[88.521443] (-) TimerEvent: {}
+[88.624337] (-) TimerEvent: {}
+[88.725090] (-) TimerEvent: {}
+[88.825444] (-) TimerEvent: {}
+[88.926092] (-) TimerEvent: {}
+[89.026445] (-) TimerEvent: {}
+[89.127088] (-) TimerEvent: {}
+[89.227447] (-) TimerEvent: {}
+[89.328089] (-) TimerEvent: {}
+[89.428436] (-) TimerEvent: {}
+[89.529101] (-) TimerEvent: {}
+[89.629474] (-) TimerEvent: {}
+[89.730087] (-) TimerEvent: {}
+[89.831102] (-) TimerEvent: {}
+[89.931477] (-) TimerEvent: {}
+[90.031845] (-) TimerEvent: {}
+[90.133092] (-) TimerEvent: {}
+[90.233438] (-) TimerEvent: {}
+[90.333779] (-) TimerEvent: {}
+[90.412433] (librealsense2) StdoutLine: {'line': b'[ 29%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/fw-update/fw-update-unsigned.cpp.o\x1b[0m\n'}
+[90.434097] (-) TimerEvent: {}
+[90.535086] (-) TimerEvent: {}
+[90.635432] (-) TimerEvent: {}
+[90.735786] (-) TimerEvent: {}
+[90.837104] (-) TimerEvent: {}
+[90.937450] (-) TimerEvent: {}
+[91.037798] (-) TimerEvent: {}
+[91.081164] (librealsense2) StdoutLine: {'line': b'[ 29%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/libusb/context-libusb.cpp.o\x1b[0m\n'}
+[91.140096] (-) TimerEvent: {}
+[91.230669] (librealsense2) StdoutLine: {'line': b'[ 29%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/libusb/interface-libusb.cpp.o\x1b[0m\n'}
+[91.240223] (-) TimerEvent: {}
+[91.340569] (-) TimerEvent: {}
+[91.440926] (-) TimerEvent: {}
+[91.541285] (-) TimerEvent: {}
+[91.641632] (-) TimerEvent: {}
+[91.741966] (-) TimerEvent: {}
+[91.843089] (-) TimerEvent: {}
+[91.943425] (-) TimerEvent: {}
+[92.043779] (-) TimerEvent: {}
+[92.145103] (-) TimerEvent: {}
+[92.191272] (librealsense2) StdoutLine: {'line': b'[ 29%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/libusb/device-libusb.cpp.o\x1b[0m\n'}
+[92.245236] (-) TimerEvent: {}
+[92.348245] (-) TimerEvent: {}
+[92.448603] (-) TimerEvent: {}
+[92.548988] (-) TimerEvent: {}
+[92.649383] (-) TimerEvent: {}
+[92.753274] (-) TimerEvent: {}
+[92.853634] (-) TimerEvent: {}
+[92.954020] (-) TimerEvent: {}
+[93.054400] (-) TimerEvent: {}
+[93.155704] (-) TimerEvent: {}
+[93.173999] (librealsense2) StdoutLine: {'line': b'[ 30%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/libusb/messenger-libusb.cpp.o\x1b[0m\n'}
+[93.255827] (-) TimerEvent: {}
+[93.271114] (librealsense2) StdoutLine: {'line': b'[ 30%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/libusb/request-libusb.cpp.o\x1b[0m\n'}
+[93.355952] (-) TimerEvent: {}
+[93.456357] (-) TimerEvent: {}
+[93.556708] (-) TimerEvent: {}
+[93.657089] (-) TimerEvent: {}
+[93.721538] (librealsense2) StdoutLine: {'line': b'[ 30%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/libusb/enumerator-libusb.cpp.o\x1b[0m\n'}
+[93.757201] (-) TimerEvent: {}
+[93.773697] (librealsense2) StdoutLine: {'line': b'[ 30%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/linux/backend-v4l2.cpp.o\x1b[0m\n'}
+[93.857322] (-) TimerEvent: {}
+[93.957676] (-) TimerEvent: {}
+[94.058058] (-) TimerEvent: {}
+[94.158432] (-) TimerEvent: {}
+[94.258812] (-) TimerEvent: {}
+[94.362248] (-) TimerEvent: {}
+[94.462640] (-) TimerEvent: {}
+[94.477722] (librealsense2) StdoutLine: {'line': b'[ 30%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/linux/backend-hid.cpp.o\x1b[0m\n'}
+[94.562755] (-) TimerEvent: {}
+[94.663099] (-) TimerEvent: {}
+[94.741813] (librealsense2) StdoutLine: {'line': b'[ 31%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/linux/udev-device-watcher.cpp.o\x1b[0m\n'}
+[94.763221] (-) TimerEvent: {}
+[94.863578] (-) TimerEvent: {}
+[94.963952] (-) TimerEvent: {}
+[95.065276] (-) TimerEvent: {}
+[95.168224] (-) TimerEvent: {}
+[95.268573] (-) TimerEvent: {}
+[95.368929] (-) TimerEvent: {}
+[95.469290] (-) TimerEvent: {}
+[95.569657] (-) TimerEvent: {}
+[95.671251] (-) TimerEvent: {}
+[95.753535] (librealsense2) StdoutLine: {'line': b'[ 31%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/algo.cpp.o\x1b[0m\n'}
+[95.771369] (-) TimerEvent: {}
+[95.834298] (librealsense2) StdoutLine: {'line': b'[ 31%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/archive.cpp.o\x1b[0m\n'}
+[95.871495] (-) TimerEvent: {}
+[95.971865] (-) TimerEvent: {}
+[95.980607] (librealsense2) StdoutLine: {'line': b'[ 31%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/backend.cpp.o\x1b[0m\n'}
+[96.017832] (librealsense2) StdoutLine: {'line': b'[ 31%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/backend-device-factory.cpp.o\x1b[0m\n'}
+[96.072094] (-) TimerEvent: {}
+[96.174916] (-) TimerEvent: {}
+[96.275284] (-) TimerEvent: {}
+[96.377072] (-) TimerEvent: {}
+[96.477433] (-) TimerEvent: {}
+[96.580305] (-) TimerEvent: {}
+[96.680678] (-) TimerEvent: {}
+[96.781973] (-) TimerEvent: {}
+[96.846664] (librealsense2) StdoutLine: {'line': b'[ 32%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/context.cpp.o\x1b[0m\n'}
+[96.882096] (-) TimerEvent: {}
+[96.984482] (-) TimerEvent: {}
+[97.086092] (-) TimerEvent: {}
+[97.190267] (-) TimerEvent: {}
+[97.290644] (-) TimerEvent: {}
+[97.391030] (-) TimerEvent: {}
+[97.491406] (-) TimerEvent: {}
+[97.543409] (librealsense2) StdoutLine: {'line': b'[ 32%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/device.cpp.o\x1b[0m\n'}
+[97.592088] (-) TimerEvent: {}
+[97.693378] (-) TimerEvent: {}
+[97.797277] (-) TimerEvent: {}
+[97.897674] (-) TimerEvent: {}
+[97.998095] (-) TimerEvent: {}
+[98.099255] (-) TimerEvent: {}
+[98.199625] (-) TimerEvent: {}
+[98.305259] (-) TimerEvent: {}
+[98.405628] (-) TimerEvent: {}
+[98.506023] (-) TimerEvent: {}
+[98.606398] (-) TimerEvent: {}
+[98.711400] (-) TimerEvent: {}
+[98.761031] (librealsense2) StdoutLine: {'line': b'[ 32%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/device-info.cpp.o\x1b[0m\n'}
+[98.811519] (-) TimerEvent: {}
+[98.911882] (-) TimerEvent: {}
+[99.012256] (-) TimerEvent: {}
+[99.113090] (-) TimerEvent: {}
+[99.213451] (-) TimerEvent: {}
+[99.218119] (librealsense2) StdoutLine: {'line': b'[ 32%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/device_hub.cpp.o\x1b[0m\n'}
+[99.313567] (-) TimerEvent: {}
+[99.413910] (-) TimerEvent: {}
+[99.514259] (-) TimerEvent: {}
+[99.614604] (-) TimerEvent: {}
+[99.714944] (-) TimerEvent: {}
+[99.816103] (-) TimerEvent: {}
+[99.916461] (-) TimerEvent: {}
+[99.929359] (librealsense2) StdoutLine: {'line': b'[ 32%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/environment.cpp.o\x1b[0m\n'}
+[100.017084] (-) TimerEvent: {}
+[100.117451] (-) TimerEvent: {}
+[100.221264] (-) TimerEvent: {}
+[100.321619] (-) TimerEvent: {}
+[100.421982] (-) TimerEvent: {}
+[100.522359] (-) TimerEvent: {}
+[100.622744] (-) TimerEvent: {}
+[100.723099] (-) TimerEvent: {}
+[100.823468] (-) TimerEvent: {}
+[100.923838] (-) TimerEvent: {}
+[101.024219] (-) TimerEvent: {}
+[101.124590] (-) TimerEvent: {}
+[101.161630] (librealsense2) StdoutLine: {'line': b'[ 32%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/error-handling.cpp.o\x1b[0m\n'}
+[101.224712] (-) TimerEvent: {}
+[101.325074] (-) TimerEvent: {}
+[101.425430] (-) TimerEvent: {}
+[101.525804] (-) TimerEvent: {}
+[101.627089] (-) TimerEvent: {}
+[101.728382] (-) TimerEvent: {}
+[101.776224] (librealsense2) StdoutLine: {'line': b'[ 33%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/firmware_logger_device.cpp.o\x1b[0m\n'}
+[101.828507] (-) TimerEvent: {}
+[101.928881] (-) TimerEvent: {}
+[102.029245] (-) TimerEvent: {}
+[102.129605] (-) TimerEvent: {}
+[102.194146] (librealsense2) StdoutLine: {'line': b'[ 33%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/global_timestamp_reader.cpp.o\x1b[0m\n'}
+[102.229730] (-) TimerEvent: {}
+[102.330096] (-) TimerEvent: {}
+[102.431366] (-) TimerEvent: {}
+[102.532640] (-) TimerEvent: {}
+[102.634275] (-) TimerEvent: {}
+[102.645513] (librealsense2) StdoutLine: {'line': b'[ 33%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/hdr-config.cpp.o\x1b[0m\n'}
+[102.734392] (-) TimerEvent: {}
+[102.834746] (-) TimerEvent: {}
+[102.936043] (-) TimerEvent: {}
+[103.038093] (-) TimerEvent: {}
+[103.071356] (librealsense2) StdoutLine: {'line': b'[ 33%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/hw-monitor.cpp.o\x1b[0m\n'}
+[103.138212] (-) TimerEvent: {}
+[103.229350] (librealsense2) StdoutLine: {'line': b'[ 33%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/image.cpp.o\x1b[0m\n'}
+[103.238345] (-) TimerEvent: {}
+[103.338726] (-) TimerEvent: {}
+[103.439101] (-) TimerEvent: {}
+[103.532400] (librealsense2) StdoutLine: {'line': b'[ 34%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/image-avx.cpp.o\x1b[0m\n'}
+[103.539221] (-) TimerEvent: {}
+[103.641038] (-) TimerEvent: {}
+[103.744253] (-) TimerEvent: {}
+[103.845521] (-) TimerEvent: {}
+[103.945880] (-) TimerEvent: {}
+[104.046239] (-) TimerEvent: {}
+[104.147098] (-) TimerEvent: {}
+[104.247453] (-) TimerEvent: {}
+[104.348093] (-) TimerEvent: {}
+[104.368722] (librealsense2) StdoutLine: {'line': b'[ 34%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/log.cpp.o\x1b[0m\n'}
+[104.449109] (-) TimerEvent: {}
+[104.549460] (-) TimerEvent: {}
+[104.649812] (-) TimerEvent: {}
+[104.751272] (-) TimerEvent: {}
+[104.763813] (librealsense2) StdoutLine: {'line': b'[ 34%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/option.cpp.o\x1b[0m\n'}
+[104.851394] (-) TimerEvent: {}
+[104.952089] (-) TimerEvent: {}
+[105.032146] (librealsense2) StdoutLine: {'line': b'[ 34%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/platform-camera.cpp.o\x1b[0m\n'}
+[105.053086] (-) TimerEvent: {}
+[105.154287] (-) TimerEvent: {}
+[105.254640] (-) TimerEvent: {}
+[105.354998] (-) TimerEvent: {}
+[105.456707] (-) TimerEvent: {}
+[105.554669] (librealsense2) StdoutLine: {'line': b'[ 34%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/rs.cpp.o\x1b[0m\n'}
+[105.556844] (-) TimerEvent: {}
+[105.658837] (-) TimerEvent: {}
+[105.759218] (-) TimerEvent: {}
+[105.859579] (-) TimerEvent: {}
+[105.959970] (-) TimerEvent: {}
+[106.003111] (librealsense2) StdoutLine: {'line': b'[ 35%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/sensor.cpp.o\x1b[0m\n'}
+[106.060096] (-) TimerEvent: {}
+[106.160454] (-) TimerEvent: {}
+[106.260824] (-) TimerEvent: {}
+[106.362548] (-) TimerEvent: {}
+[106.462918] (-) TimerEvent: {}
+[106.563259] (-) TimerEvent: {}
+[106.664086] (-) TimerEvent: {}
+[106.764432] (-) TimerEvent: {}
+[106.862885] (librealsense2) StdoutLine: {'line': b'[ 35%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/hid-sensor.cpp.o\x1b[0m\n'}
+[106.865078] (-) TimerEvent: {}
+[106.954147] (librealsense2) StdoutLine: {'line': b'[ 35%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/uvc-sensor.cpp.o\x1b[0m\n'}
+[106.966091] (-) TimerEvent: {}
+[107.066455] (-) TimerEvent: {}
+[107.166804] (-) TimerEvent: {}
+[107.267181] (-) TimerEvent: {}
+[107.370026] (-) TimerEvent: {}
+[107.470393] (-) TimerEvent: {}
+[107.573081] (-) TimerEvent: {}
+[107.673459] (-) TimerEvent: {}
+[107.774804] (-) TimerEvent: {}
+[107.880421] (-) TimerEvent: {}
+[107.980802] (-) TimerEvent: {}
+[108.081177] (-) TimerEvent: {}
+[108.181526] (-) TimerEvent: {}
+[108.284620] (-) TimerEvent: {}
+[108.385066] (-) TimerEvent: {}
+[108.483177] (librealsense2) StdoutLine: {'line': b'[ 35%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/rscore-pp-block-factory.cpp.o\x1b[0m\n'}
+[108.485184] (-) TimerEvent: {}
+[108.585538] (-) TimerEvent: {}
+[108.685928] (-) TimerEvent: {}
+[108.786302] (-) TimerEvent: {}
+[108.890245] (-) TimerEvent: {}
+[108.990623] (-) TimerEvent: {}
+[109.090964] (-) TimerEvent: {}
+[109.191323] (-) TimerEvent: {}
+[109.291676] (-) TimerEvent: {}
+[109.392052] (-) TimerEvent: {}
+[109.492403] (-) TimerEvent: {}
+[109.562081] (librealsense2) StdoutLine: {'line': b'[ 35%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/software-device.cpp.o\x1b[0m\n'}
+[109.592524] (-) TimerEvent: {}
+[109.692875] (-) TimerEvent: {}
+[109.793227] (-) TimerEvent: {}
+[109.894109] (-) TimerEvent: {}
+[109.923163] (librealsense2) StdoutLine: {'line': b'[ 36%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/software-device-info.cpp.o\x1b[0m\n'}
+[109.995092] (-) TimerEvent: {}
+[110.095446] (-) TimerEvent: {}
+[110.196087] (-) TimerEvent: {}
+[110.296429] (-) TimerEvent: {}
+[110.397089] (-) TimerEvent: {}
+[110.499089] (-) TimerEvent: {}
+[110.599429] (-) TimerEvent: {}
+[110.699782] (-) TimerEvent: {}
+[110.800152] (-) TimerEvent: {}
+[110.900956] (-) TimerEvent: {}
+[111.002097] (-) TimerEvent: {}
+[111.102444] (-) TimerEvent: {}
+[111.204095] (-) TimerEvent: {}
+[111.304451] (-) TimerEvent: {}
+[111.404802] (-) TimerEvent: {}
+[111.568213] (-) TimerEvent: {}
+[111.593576] (librealsense2) StdoutLine: {'line': b'[ 36%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/software-sensor.cpp.o\x1b[0m\n'}
+[111.669093] (-) TimerEvent: {}
+[111.769451] (-) TimerEvent: {}
+[111.870735] (-) TimerEvent: {}
+[111.972030] (-) TimerEvent: {}
+[112.074262] (-) TimerEvent: {}
+[112.176088] (-) TimerEvent: {}
+[112.276438] (-) TimerEvent: {}
+[112.376793] (-) TimerEvent: {}
+[112.477152] (-) TimerEvent: {}
+[112.577494] (-) TimerEvent: {}
+[112.649705] (librealsense2) StdoutLine: {'line': b'[ 36%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/source.cpp.o\x1b[0m\n'}
+[112.677615] (-) TimerEvent: {}
+[112.686916] (librealsense2) StdoutLine: {'line': b'[ 36%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/stream.cpp.o\x1b[0m\n'}
+[112.763125] (librealsense2) StdoutLine: {'line': b'[ 36%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/sync.cpp.o\x1b[0m\n'}
+[112.777739] (-) TimerEvent: {}
+[112.880264] (-) TimerEvent: {}
+[112.980642] (-) TimerEvent: {}
+[113.081025] (-) TimerEvent: {}
+[113.183247] (-) TimerEvent: {}
+[113.283604] (-) TimerEvent: {}
+[113.384932] (-) TimerEvent: {}
+[113.488261] (-) TimerEvent: {}
+[113.589544] (-) TimerEvent: {}
+[113.690813] (-) TimerEvent: {}
+[113.794270] (-) TimerEvent: {}
+[113.894634] (-) TimerEvent: {}
+[113.994988] (-) TimerEvent: {}
+[114.075404] (librealsense2) StdoutLine: {'line': b'[ 36%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/terminal-parser.cpp.o\x1b[0m\n'}
+[114.095089] (-) TimerEvent: {}
+[114.134029] (librealsense2) StdoutLine: {'line': b'[ 37%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/types.cpp.o\x1b[0m\n'}
+[114.196087] (-) TimerEvent: {}
+[114.296434] (-) TimerEvent: {}
+[114.396796] (-) TimerEvent: {}
+[114.461152] (librealsense2) StdoutLine: {'line': b'[ 37%] \x1b[32mBuilding C object CMakeFiles/realsense2.dir/src/verify.c.o\x1b[0m\n'}
+[114.497046] (-) TimerEvent: {}
+[114.533237] (librealsense2) StdoutLine: {'line': b'[ 37%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/serialized-utilities.cpp.o\x1b[0m\n'}
+[114.598097] (-) TimerEvent: {}
+[114.698441] (-) TimerEvent: {}
+[114.798802] (-) TimerEvent: {}
+[114.899167] (-) TimerEvent: {}
+[114.966219] (librealsense2) StdoutLine: {'line': b'[ 37%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/frame.cpp.o\x1b[0m\n'}
+[115.000114] (-) TimerEvent: {}
+[115.100511] (-) TimerEvent: {}
+[115.200874] (-) TimerEvent: {}
+[115.302245] (-) TimerEvent: {}
+[115.402625] (-) TimerEvent: {}
+[115.502999] (-) TimerEvent: {}
+[115.585027] (librealsense2) StdoutLine: {'line': b'[ 37%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/points.cpp.o\x1b[0m\n'}
+[115.603095] (-) TimerEvent: {}
+[115.703431] (-) TimerEvent: {}
+[115.803791] (-) TimerEvent: {}
+[115.904094] (-) TimerEvent: {}
+[115.915721] (librealsense2) StdoutLine: {'line': b'[ 38%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/labeled-points.cpp.o\x1b[0m\n'}
+[116.004217] (-) TimerEvent: {}
+[116.104559] (-) TimerEvent: {}
+[116.204922] (-) TimerEvent: {}
+[116.305296] (-) TimerEvent: {}
+[116.405647] (-) TimerEvent: {}
+[116.506034] (-) TimerEvent: {}
+[116.607102] (-) TimerEvent: {}
+[116.707441] (-) TimerEvent: {}
+[116.807793] (-) TimerEvent: {}
+[116.909094] (-) TimerEvent: {}
+[117.009441] (-) TimerEvent: {}
+[117.109812] (-) TimerEvent: {}
+[117.210199] (-) TimerEvent: {}
+[117.313261] (-) TimerEvent: {}
+[117.413621] (-) TimerEvent: {}
+[117.487884] (librealsense2) StdoutLine: {'line': b'[ 38%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/to-string.cpp.o\x1b[0m\n'}
+[117.513740] (-) TimerEvent: {}
+[117.614088] (-) TimerEvent: {}
+[117.678167] (librealsense2) StdoutLine: {'line': b'[ 38%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/eth-config-device.cpp.o\x1b[0m\n'}
+[117.714202] (-) TimerEvent: {}
+[117.780102] (librealsense2) StdoutLine: {'line': b'[ 38%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/platform/platform-utils.cpp.o\x1b[0m\n'}
+[117.814502] (-) TimerEvent: {}
+[117.916257] (-) TimerEvent: {}
+[117.938873] (librealsense2) StdoutLine: {'line': b'[ 38%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/platform/uvc-option.cpp.o\x1b[0m\n'}
+[118.017086] (-) TimerEvent: {}
+[118.117446] (-) TimerEvent: {}
+[118.217809] (-) TimerEvent: {}
+[118.321402] (-) TimerEvent: {}
+[118.421765] (-) TimerEvent: {}
+[118.437669] (librealsense2) StdoutLine: {'line': b'[ 39%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/auto-calibrated-proxy.cpp.o\x1b[0m\n'}
+[118.521886] (-) TimerEvent: {}
+[118.623526] (-) TimerEvent: {}
+[118.727318] (-) TimerEvent: {}
+[118.754443] (librealsense2) StdoutLine: {'line': b'[ 39%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/src/synthetic-options-watcher.cpp.o\x1b[0m\n'}
+[118.827440] (-) TimerEvent: {}
+[118.927782] (-) TimerEvent: {}
+[119.029093] (-) TimerEvent: {}
+[119.129455] (-) TimerEvent: {}
+[119.230099] (-) TimerEvent: {}
+[119.331098] (-) TimerEvent: {}
+[119.431462] (-) TimerEvent: {}
+[119.531840] (librealsense2) StdoutLine: {'line': b'[ 39%] \x1b[32mBuilding CXX object CMakeFiles/realsense2.dir/third-party/easyloggingpp/src/easylogging++.cc.o\x1b[0m\n'}
+[119.532179] (-) TimerEvent: {}
+[119.632479] (-) TimerEvent: {}
+[119.732875] (-) TimerEvent: {}
+[119.836284] (-) TimerEvent: {}
+[119.937571] (-) TimerEvent: {}
+[120.037952] (-) TimerEvent: {}
+[120.138317] (-) TimerEvent: {}
+[120.241342] (-) TimerEvent: {}
+[120.341731] (-) TimerEvent: {}
+[120.442115] (-) TimerEvent: {}
+[120.544338] (-) TimerEvent: {}
+[120.644713] (-) TimerEvent: {}
+[120.745093] (-) TimerEvent: {}
+[120.848262] (-) TimerEvent: {}
+[120.948639] (-) TimerEvent: {}
+[121.049059] (-) TimerEvent: {}
+[121.153269] (-) TimerEvent: {}
+[121.253644] (-) TimerEvent: {}
+[121.355750] (-) TimerEvent: {}
+[121.456070] (-) TimerEvent: {}
+[121.556404] (-) TimerEvent: {}
+[121.656748] (-) TimerEvent: {}
+[121.757101] (-) TimerEvent: {}
+[121.857455] (-) TimerEvent: {}
+[121.957791] (-) TimerEvent: {}
+[122.058093] (-) TimerEvent: {}
+[122.158394] (-) TimerEvent: {}
+[122.258701] (-) TimerEvent: {}
+[122.358998] (-) TimerEvent: {}
+[122.368392] (librealsense2) StderrLine: {'line': b'In file included from \x1b[01m\x1b[K/usr/include/features.h:502\x1b[m\x1b[K,\n'}
+[122.368613] (librealsense2) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/usr/include/x86_64-linux-gnu/c++/13/bits/os_defines.h:39\x1b[m\x1b[K,\n'}
+[122.368712] (librealsense2) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/usr/include/x86_64-linux-gnu/c++/13/bits/c++config.h:679\x1b[m\x1b[K,\n'}
+[122.368798] (librealsense2) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/usr/include/c++/13/ctime:41\x1b[m\x1b[K,\n'}
+[122.368883] (librealsense2) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/home/grumpy/dd2419_ws_Group5_2026/src/librealsense/third-party/easyloggingpp/src/easylogging++.h:354\x1b[m\x1b[K,\n'}
+[122.368970] (librealsense2) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/home/grumpy/dd2419_ws_Group5_2026/src/librealsense/third-party/easyloggingpp/src/easylogging++.cc:17\x1b[m\x1b[K:\n'}
+[122.369079] (librealsense2) StderrLine: {'line': b'In function \xe2\x80\x98\x1b[01m\x1b[Ksize_t\x1b[01;32m\x1b[K wcstombs\x1b[m\x1b[K(char*, const wchar_t*, size_t)\x1b[m\x1b[K\xe2\x80\x99,\n'}
+[122.369166] (librealsense2) StderrLine: {'line': b'    inlined from \xe2\x80\x98\x1b[01m\x1b[Kstatic char* el::base::utils::Str::\x1b[01;32m\x1b[KwcharPtrToCharPtr\x1b[m\x1b[K(const wchar_t*)\x1b[m\x1b[K\xe2\x80\x99 at \x1b[01m\x1b[K/home/grumpy/dd2419_ws_Group5_2026/src/librealsense/third-party/easyloggingpp/src/easylogging++.cc:1022:16\x1b[m\x1b[K:\n'}
+[122.369255] (librealsense2) StderrLine: {'line': b'\x1b[01m\x1b[K/usr/include/x86_64-linux-gnu/bits/stdlib.h:146:10:\x1b[m\x1b[K \x1b[01;35m\x1b[Kwarning: \x1b[m\x1b[K\xe2\x80\x98\x1b[01m\x1b[Ksize_t\x1b[01;32m\x1b[K __wcstombs_alias\x1b[m\x1b[K(char*, const wchar_t*, size_t)\x1b[m\x1b[K\xe2\x80\x99 specified size 18446744073709551614 exceeds maximum object size 9223372036854775807 [\x1b[01;35m\x1b[K\x1b]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wstringop-overflow=\x07-Wstringop-overflow=\x1b]8;;\x07\x1b[m\x1b[K]\n'}
+[122.369341] (librealsense2) StderrLine: {'line': b'  146 |   return \x1b[01;35m\x1b[K__glibc_fortify\x1b[m\x1b[K (wcstombs, __len, sizeof (char),\n'}
+[122.369444] (librealsense2) StderrLine: {'line': b'      |          \x1b[01;35m\x1b[K^~~~~~~~~~~~~~~\x1b[m\x1b[K\n'}
+[122.369524] (librealsense2) StderrLine: {'line': b'\x1b[01m\x1b[K/usr/include/x86_64-linux-gnu/bits/stdlib.h:\x1b[m\x1b[K In static member function \xe2\x80\x98\x1b[01m\x1b[Kstatic char* el::base::utils::Str::\x1b[01;32m\x1b[KwcharPtrToCharPtr\x1b[m\x1b[K(const wchar_t*)\x1b[m\x1b[K\xe2\x80\x99:\n'}
+[122.369608] (librealsense2) StderrLine: {'line': b'\x1b[01m\x1b[K/usr/include/x86_64-linux-gnu/bits/stdlib.h:131:15:\x1b[m\x1b[K \x1b[01;36m\x1b[Knote: \x1b[m\x1b[Kin a call to function \xe2\x80\x98\x1b[01m\x1b[Ksize_t\x1b[01;32m\x1b[K __wcstombs_alias\x1b[m\x1b[K(char*, const wchar_t*, size_t)\x1b[m\x1b[K\xe2\x80\x99 declared with attribute \xe2\x80\x98\x1b[01m\x1b[Kaccess (read_only, 2)\x1b[m\x1b[K\xe2\x80\x99\n'}
+[122.369701] (librealsense2) StderrLine: {'line': b'  131 | extern size_t \x1b[01;36m\x1b[K__REDIRECT_NTH\x1b[m\x1b[K (__wcstombs_alias,\n'}
+[122.369780] (librealsense2) StderrLine: {'line': b'      |               \x1b[01;36m\x1b[K^~~~~~~~~~~~~~\x1b[m\x1b[K\n'}
+[122.459087] (-) TimerEvent: {}
+[122.559392] (-) TimerEvent: {}
+[122.659697] (-) TimerEvent: {}
+[122.759954] (-) TimerEvent: {}
+[122.860156] (-) TimerEvent: {}
+[122.960388] (-) TimerEvent: {}
+[123.060642] (-) TimerEvent: {}
+[123.160892] (-) TimerEvent: {}
+[123.261234] (-) TimerEvent: {}
+[123.361495] (-) TimerEvent: {}
+[123.461835] (-) TimerEvent: {}
+[123.562155] (-) TimerEvent: {}
+[123.662496] (-) TimerEvent: {}
+[123.762750] (-) TimerEvent: {}
+[123.863028] (-) TimerEvent: {}
+[123.963293] (-) TimerEvent: {}
+[124.063626] (-) TimerEvent: {}
+[124.163960] (-) TimerEvent: {}
+[124.264297] (-) TimerEvent: {}
+[124.364600] (-) TimerEvent: {}
+[124.464938] (-) TimerEvent: {}
+[124.565284] (-) TimerEvent: {}
+[124.665611] (-) TimerEvent: {}
+[124.765936] (-) TimerEvent: {}
+[124.866300] (-) TimerEvent: {}
+[124.966654] (-) TimerEvent: {}
+[125.066902] (-) TimerEvent: {}
+[125.167221] (-) TimerEvent: {}
+[125.267499] (-) TimerEvent: {}
+[125.367832] (-) TimerEvent: {}
+[125.468143] (-) TimerEvent: {}
+[125.568459] (-) TimerEvent: {}
+[125.668760] (-) TimerEvent: {}
+[125.769088] (-) TimerEvent: {}
+[125.869397] (-) TimerEvent: {}
+[125.969700] (-) TimerEvent: {}
+[126.070019] (-) TimerEvent: {}
+[126.170286] (-) TimerEvent: {}
+[126.270546] (-) TimerEvent: {}
+[126.370790] (-) TimerEvent: {}
+[126.471128] (-) TimerEvent: {}
+[126.571385] (-) TimerEvent: {}
+[126.671637] (-) TimerEvent: {}
+[126.771889] (-) TimerEvent: {}
+[126.872171] (-) TimerEvent: {}
+[126.972432] (-) TimerEvent: {}
+[127.072681] (-) TimerEvent: {}
+[127.172911] (-) TimerEvent: {}
+[127.273170] (-) TimerEvent: {}
+[127.373398] (-) TimerEvent: {}
+[127.473646] (-) TimerEvent: {}
+[127.573904] (-) TimerEvent: {}
+[127.674188] (-) TimerEvent: {}
+[127.774421] (-) TimerEvent: {}
+[127.874676] (-) TimerEvent: {}
+[127.974947] (-) TimerEvent: {}
+[128.075194] (-) TimerEvent: {}
+[128.175451] (-) TimerEvent: {}
+[128.275774] (-) TimerEvent: {}
+[128.376024] (-) TimerEvent: {}
+[128.476422] (-) TimerEvent: {}
+[128.576810] (-) TimerEvent: {}
+[128.705018] (-) TimerEvent: {}
+[128.805337] (-) TimerEvent: {}
+[128.860311] (librealsense2) StdoutLine: {'line': b'[ 39%] \x1b[1m\x1b[32mLinking CXX shared library Release/librealsense2.so\x1b[0m\n'}
+[128.905447] (-) TimerEvent: {}
+[128.940475] (librealsense2) StderrLine: {'line': b'/usr/bin/ld: cannot find -ludev: No such file or directory\n'}
+[128.967744] (librealsense2) StderrLine: {'line': b'collect2: error: ld returned 1 exit status\n'}
+[128.968758] (librealsense2) StderrLine: {'line': b'gmake[2]: *** [CMakeFiles/realsense2.dir/build.make:2633: Release/librealsense2.so.2.57.5] Error 1\n'}
+[128.969046] (librealsense2) StderrLine: {'line': b'gmake[1]: *** [CMakeFiles/Makefile2:1115: CMakeFiles/realsense2.dir/all] Error 2\n'}
+[128.969254] (librealsense2) StderrLine: {'line': b'gmake: *** [Makefile:136: all] Error 2\n'}
+[128.970719] (librealsense2) JobEnded: {'identifier': 'librealsense2', 'rc': 'SIGINT'}
+[128.981269] (keyboard) JobSkipped: {'identifier': 'keyboard'}
+[128.981338] (learning_tf2_py) JobSkipped: {'identifier': 'learning_tf2_py'}
+[128.981351] (realsense2_ros_mqtt_bridge) JobSkipped: {'identifier': 'realsense2_ros_mqtt_bridge'}
+[128.981361] (robp_autocomplete) JobSkipped: {'identifier': 'robp_autocomplete'}
+[128.981370] (robp_launch) JobSkipped: {'identifier': 'robp_launch'}
+[128.981379] (rplidar_ros) JobSkipped: {'identifier': 'rplidar_ros'}
+[128.981388] (aruco_ros) JobSkipped: {'identifier': 'aruco_ros'}
+[128.981397] (display_markers) JobSkipped: {'identifier': 'display_markers'}
+[128.981406] (odometry) JobSkipped: {'identifier': 'odometry'}
+[128.981415] (phidgets_api) JobSkipped: {'identifier': 'phidgets_api'}
+[128.981423] (realsense2_camera) JobSkipped: {'identifier': 'realsense2_camera'}
+[128.981432] (realsense2_description) JobSkipped: {'identifier': 'realsense2_description'}
+[128.981441] (realsense2_rviz_plugin) JobSkipped: {'identifier': 'realsense2_rviz_plugin'}
+[128.981450] (robp_arm) JobSkipped: {'identifier': 'robp_arm'}
+[128.981459] (phidgets_accelerometer) JobSkipped: {'identifier': 'phidgets_accelerometer'}
+[128.981467] (phidgets_analog_inputs) JobSkipped: {'identifier': 'phidgets_analog_inputs'}
+[128.981476] (phidgets_analog_outputs) JobSkipped: {'identifier': 'phidgets_analog_outputs'}
+[128.981485] (phidgets_digital_inputs) JobSkipped: {'identifier': 'phidgets_digital_inputs'}
+[128.981494] (phidgets_digital_outputs) JobSkipped: {'identifier': 'phidgets_digital_outputs'}
+[128.981503] (phidgets_gyroscope) JobSkipped: {'identifier': 'phidgets_gyroscope'}
+[128.981512] (phidgets_high_speed_encoder) JobSkipped: {'identifier': 'phidgets_high_speed_encoder'}
+[128.981521] (phidgets_magnetometer) JobSkipped: {'identifier': 'phidgets_magnetometer'}
+[128.981530] (phidgets_motors) JobSkipped: {'identifier': 'phidgets_motors'}
+[128.981540] (phidgets_spatial) JobSkipped: {'identifier': 'phidgets_spatial'}
+[128.981549] (phidgets_stepper) JobSkipped: {'identifier': 'phidgets_stepper'}
+[128.981559] (phidgets_temperature) JobSkipped: {'identifier': 'phidgets_temperature'}
+[128.981568] (robp_boot_camp_launch) JobSkipped: {'identifier': 'robp_boot_camp_launch'}
+[128.981577] (robp_phidgets) JobSkipped: {'identifier': 'robp_phidgets'}
+[128.981586] (phidgets_ik) JobSkipped: {'identifier': 'phidgets_ik'}
+[128.981595] (phidgets_drivers) JobSkipped: {'identifier': 'phidgets_drivers'}
+[128.981605] (-) EventReactorShutdown: {}
