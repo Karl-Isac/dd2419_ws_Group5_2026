@@ -1,0 +1,3 @@
+1. pixi run realsense
+2. pixi run ros2 launch detection rviz.launch.py
+3. pixi run ros2 run detection detection

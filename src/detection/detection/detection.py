@@ -14,6 +14,7 @@ from tf2_ros.buffer import Buffer
 from tf2_ros.static_transform_broadcaster import StaticTransformBroadcaster
 from tf_transformations import quaternion_from_euler
 from geometry_msgs.msg import TransformStamped
+from visualization_msgs.msg import Marker
 
 from sensor_msgs.msg import PointCloud2
 import sensor_msgs_py.point_cloud2 as pc2
@@ -55,7 +56,6 @@ class Detection(Node):
         self.green_timestamp = None
 
         self.wood_published = False
-
         self.wood_available = False
         self.wood_timestamp = None
 
@@ -121,6 +121,8 @@ class Detection(Node):
         wood_counter = 0
         tf_wood = TransformStamped()
 
+        grey_points = []
+
         for idx, x in enumerate(gen):
             c = x[3]
             s = struct.pack('>f', c)
@@ -167,6 +169,9 @@ class Detection(Node):
                     wood_sum_x += x
                     wood_sum_y += y
                     wood_sum_z += z
+
+                if is_grey(h,s,v):
+                    grey_points.append([x,y,z])
 
         # red 
         if red_counter > 15 and not self.red_available:
@@ -475,6 +480,9 @@ def is_green(h,s,v):
 
 def is_wood(h,s,v):
     return True if 20 <= h <= 60 and 0 < s < 0.6 and v > 0.4 else False
+
+def is_grey(h,s,v):
+    return True if s < 0.2 and v > 0.2 and v < 0.8 else False
 
 if __name__ == '__main__':
     main()
