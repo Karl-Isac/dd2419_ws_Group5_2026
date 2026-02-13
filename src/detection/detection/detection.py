@@ -13,7 +13,7 @@ from tf2_ros import PointStamped, TransformBroadcaster, TransformListener, Trans
 from tf2_ros.buffer import Buffer
 from tf2_ros.static_transform_broadcaster import StaticTransformBroadcaster
 from tf_transformations import quaternion_from_euler
-from geometry_msgs.msg import TransformStamped
+from geometry_msgs.msg import TransformStamped, Point
 from visualization_msgs.msg import Marker
 
 from sensor_msgs.msg import PointCloud2
@@ -174,7 +174,7 @@ class Detection(Node):
                     wood_sum_z += z
 
                 if is_grey(h,s,v):
-                    grey_points.append([x,y,z])
+                    grey_points.append([x,z])
 
         # red 
         if red_counter > 15 and not self.red_available:
@@ -439,6 +439,8 @@ class Detection(Node):
 
         #     self.static_broadcaster.sendTransform(tf_red)
         #     self.red_published = True
+
+        self.publish_points_marker(grey_points, 'grey_points', (0.5, 0.5, 0.5), msg.header)
     
     def rgb_to_hsv(self, r, g, b):
         c_max = max(r, g, b)
@@ -460,7 +462,31 @@ class Detection(Node):
 
         return h, s, v
         
-    
+    def publish_points_marker(self, points, ns, color_rgb, header):
+        marker = Marker()
+        marker.header = header
+        marker.header.frame_id = 'realsense_camera_link'
+        marker.ns = ns
+        marker.id = 0
+        marker.type = Marker.POINTS
+        marker.action = Marker.ADD
+        marker.pose.orientation.w = 1.0
+        marker.scale.x = 0.01   # 点的大小
+        marker.scale.y = 0.01
+        marker.color.a = 1.0
+        marker.color.r = color_rgb[0]
+        marker.color.g = color_rgb[1]
+        marker.color.b = color_rgb[2]
+
+        # 将点添加到 marker.points
+        for pt in points:
+            p = Point()
+            p.x = pt[0]
+            p.y = pt[1]
+            p.z = 0.0   # 投影到地面
+            marker.points.append(p)
+
+        self.marker_pub.publish(marker)
  
 def main():
     rclpy.init()
