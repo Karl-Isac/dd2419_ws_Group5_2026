@@ -1,0 +1,105 @@
+[0.000000] (-) TimerEvent: {}
+[0.000311] (-) JobUnselected: {'identifier': 'aruco'}
+[0.000334] (-) JobUnselected: {'identifier': 'aruco_msgs'}
+[0.000348] (-) JobUnselected: {'identifier': 'aruco_ros'}
+[0.000358] (-) JobUnselected: {'identifier': 'detection'}
+[0.000367] (-) JobUnselected: {'identifier': 'display_markers'}
+[0.000376] (-) JobUnselected: {'identifier': 'keyboard'}
+[0.000384] (-) JobUnselected: {'identifier': 'libphidget22'}
+[0.000392] (-) JobUnselected: {'identifier': 'librealsense2'}
+[0.000401] (-) JobUnselected: {'identifier': 'odometry'}
+[0.000409] (-) JobUnselected: {'identifier': 'phidgets_accelerometer'}
+[0.000418] (-) JobUnselected: {'identifier': 'phidgets_analog_inputs'}
+[0.000427] (-) JobUnselected: {'identifier': 'phidgets_analog_outputs'}
+[0.000435] (-) JobUnselected: {'identifier': 'phidgets_api'}
+[0.000443] (-) JobUnselected: {'identifier': 'phidgets_digital_inputs'}
+[0.000452] (-) JobUnselected: {'identifier': 'phidgets_digital_outputs'}
+[0.000460] (-) JobUnselected: {'identifier': 'phidgets_drivers'}
+[0.000469] (-) JobUnselected: {'identifier': 'phidgets_gyroscope'}
+[0.000477] (-) JobUnselected: {'identifier': 'phidgets_high_speed_encoder'}
+[0.000486] (-) JobUnselected: {'identifier': 'phidgets_ik'}
+[0.000498] (-) JobUnselected: {'identifier': 'phidgets_magnetometer'}
+[0.000506] (-) JobUnselected: {'identifier': 'phidgets_motors'}
+[0.000514] (-) JobUnselected: {'identifier': 'phidgets_msgs'}
+[0.000523] (-) JobUnselected: {'identifier': 'phidgets_spatial'}
+[0.000531] (-) JobUnselected: {'identifier': 'phidgets_stepper'}
+[0.000539] (-) JobUnselected: {'identifier': 'phidgets_temperature'}
+[0.000548] (-) JobUnselected: {'identifier': 'realsense2_camera'}
+[0.000556] (-) JobUnselected: {'identifier': 'realsense2_camera_msgs'}
+[0.000565] (-) JobUnselected: {'identifier': 'realsense2_description'}
+[0.000573] (-) JobUnselected: {'identifier': 'realsense2_ros_mqtt_bridge'}
+[0.000582] (-) JobUnselected: {'identifier': 'realsense2_rviz_plugin'}
+[0.000590] (-) JobUnselected: {'identifier': 'robp_arm'}
+[0.000600] (-) JobUnselected: {'identifier': 'robp_autocomplete'}
+[0.000607] (-) JobUnselected: {'identifier': 'robp_boot_camp_launch'}
+[0.000615] (-) JobUnselected: {'identifier': 'robp_interfaces'}
+[0.000622] (-) JobUnselected: {'identifier': 'robp_launch'}
+[0.000630] (-) JobUnselected: {'identifier': 'robp_phidgets'}
+[0.000637] (-) JobUnselected: {'identifier': 'rplidar_ros'}
+[0.000647] (learning_tf2_py) JobQueued: {'identifier': 'learning_tf2_py', 'dependencies': OrderedDict()}
+[0.000659] (learning_tf2_py) JobStarted: {'identifier': 'learning_tf2_py'}
+[0.099849] (-) TimerEvent: {}
+[0.200168] (-) TimerEvent: {}
+[0.300410] (-) TimerEvent: {}
+[0.400728] (-) TimerEvent: {}
+[0.501010] (-) TimerEvent: {}
+[0.601318] (-) TimerEvent: {}
+[0.642870] (learning_tf2_py) Command: {'cmd': ['/usr/bin/python3', 'setup.py', 'egg_info', '--egg-base', '../../build/learning_tf2_py', 'build', '--build-base', '/home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/build', 'install', '--record', '/home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/install.log', '--single-version-externally-managed'], 'cwd': '/home/grumpy/dd2419_ws_Group5_2026/src/learning_tf2_py', 'env': {'CONDA_ENV_SHLVL_2_PIXI_EXE': '/home/grumpy/.pixi/bin/pixi', 'LESSOPEN': '| /usr/bin/lesspipe %s', 'PIXI_ENVIRONMENT_NAME': 'default', 'SSH_CLIENT': '172.20.10.4 48184 22', 'USER': 'grumpy', 'PIXI_EXE': '/home/grumpy/.pixi/bin/pixi', 'XDG_SESSION_TYPE': 'tty', 'LD_LIBRARY_PATH': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/opt/rviz_ogre_vendor/lib:/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/opt/libphidget22/lib:/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/lib', 'ROS_ETC_DIR': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/etc/ros', 'SHLVL': '2', 'CONDA_ENV_SHLVL_2_CONDA_PREFIX': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default', 'CONDA_ENV_SHLVL_2_PIXI_IN_SHELL': '1', 'CONDA_SHLVL': '2', 'HOME': '/home/grumpy', 'OLDPWD': '/home/grumpy', 'SSH_TTY': '/dev/pts/12', 'ROS_PYTHON_VERSION': '3', 'PS1': '(dd2419_ws) ${debian_chroot:+($debian_chroot)}\\u@\\h:\\w\\$', 'PIXI_IN_SHELL': '1', 'DBUS_SESSION_BUS_ADDRESS': 'unix:path=/run/user/1000/bus', 'DEBUGINFOD_URLS': 'https://debuginfod.ubuntu.com', 'CONDA_ENV_SHLVL_2_PIXI_ENVIRONMENT_PLATFORMS': 'linux-64,osx-arm64,win-64', 'ROS_DISTRO': 'jazzy', 'LOGNAME': 'grumpy', '_': '/home/grumpy/.pixi/bin/pixi', 'ROS_VERSION': '2', 'XDG_SESSION_CLASS': 'user', 'CONDA_ENV_SHLVL_2_PIXI_PROJECT_VERSION': '1.0.0', 'PIXI_ENVIRONMENT_PLATFORMS': 'linux-64,osx-arm64,win-64', 'TERM': 'alacritty', 'XDG_SESSION_ID': '23', 'ROS_OS_OVERRIDE': 'conda:linux', 'PATH': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/bin:/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/bin:/home/grumpy/.pixi/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin', 'CONDA_ENV_SHLVL_2_PIXI_PROMPT': '(dd2419_ws)', 'PIXI_PROJECT_VERSION': '1.0.0', 'XDG_RUNTIME_DIR': '/run/user/1000', 'LANG': 'en_US.UTF-8', 'RMW_IMPLEMENTATION': 'rmw_cyclonedds_cpp', 'LS_COLORS': '', 'AMENT_PREFIX_PATH': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default', 'CONDA_ENV_SHLVL_2_PIXI_PROJECT_ROOT': '/home/grumpy/dd2419_ws_Group5_2026', 'GSETTINGS_SCHEMA_DIR': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/share/glib-2.0/schemas', 'PIXI_PROMPT': '(dd2419_ws)', 'ROS_DOMAIN_ID': '5', 'XML_CATALOG_FILES': 'file:///home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/etc/xml/catalog file:///etc/xml/catalog file:///home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/etc/xml/catalog file:///etc/xml/catalog', 'CONDA_ENV_SHLVL_2_RMW_IMPLEMENTATION': 'rmw_cyclonedds_cpp', 'SHELL': '/bin/bash', 'CONDA_ENV_SHLVL_2_PIXI_PROJECT_MANIFEST': '/home/grumpy/dd2419_ws_Group5_2026/pixi.toml', 'CONDA_DEFAULT_ENV': 'dd2419_ws', 'CONDA_ENV_SHLVL_2_ROS_DOMAIN_ID': '5', 'LESSCLOSE': '/usr/bin/lesspipe %s %s', 'CONDA_ENV_SHLVL_2_PIXI_PROJECT_NAME': 'dd2419_ws', 'PIXI_PROJECT_ROOT': '/home/grumpy/dd2419_ws_Group5_2026', 'PIXI_PROJECT_MANIFEST': '/home/grumpy/dd2419_ws_Group5_2026/pixi.toml', 'ROS_AUTOMATIC_DISCOVERY_RANGE': 'SUBNET', 'PWD': '/home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py', 'PIXI_PROJECT_NAME': 'dd2419_ws', 'SSH_CONNECTION': '172.20.10.4 48184 172.20.10.13 22', 'XDG_DATA_DIRS': '/usr/share/gnome:/usr/local/share:/usr/share:/var/lib/snapd/desktop', 'CONDA_ENV_SHLVL_2_ROS_AUTOMATIC_DISCOVERY_RANGE': 'SUBNET', 'PYTHONPATH': '/home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/prefix_override:/home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/python3.12/site-packages:/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/lib/python/site-packages:/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/lib/python3.12/site-packages', 'CONDA_ENV_SHLVL_2_PIXI_ENVIRONMENT_NAME': 'default', 'CONDA_PREFIX': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default', 'GSETTINGS_SCHEMA_DIR_CONDA_BACKUP': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/share/glib-2.0/schemas', 'COLCON': '1', 'CONDA_ENV_SHLVL_2_CONDA_DEFAULT_ENV': 'dd2419_ws', 'INIT_CWD': '/home/grumpy/dd2419_ws_Group5_2026'}, 'shell': False}
+[0.701490] (-) TimerEvent: {}
+[0.801781] (-) TimerEvent: {}
+[0.833583] (learning_tf2_py) StdoutLine: {'line': b'running egg_info\n'}
+[0.847219] (learning_tf2_py) StdoutLine: {'line': b'writing ../../build/learning_tf2_py/learning_tf2_py.egg-info/PKG-INFO\n'}
+[0.847767] (learning_tf2_py) StdoutLine: {'line': b'writing dependency_links to ../../build/learning_tf2_py/learning_tf2_py.egg-info/dependency_links.txt\n'}
+[0.847992] (learning_tf2_py) StdoutLine: {'line': b'writing entry points to ../../build/learning_tf2_py/learning_tf2_py.egg-info/entry_points.txt\n'}
+[0.848151] (learning_tf2_py) StdoutLine: {'line': b'writing requirements to ../../build/learning_tf2_py/learning_tf2_py.egg-info/requires.txt\n'}
+[0.848212] (learning_tf2_py) StdoutLine: {'line': b'writing top-level names to ../../build/learning_tf2_py/learning_tf2_py.egg-info/top_level.txt\n'}
+[0.878638] (learning_tf2_py) StdoutLine: {'line': b"reading manifest file '../../build/learning_tf2_py/learning_tf2_py.egg-info/SOURCES.txt'\n"}
+[0.879493] (learning_tf2_py) StdoutLine: {'line': b"writing manifest file '../../build/learning_tf2_py/learning_tf2_py.egg-info/SOURCES.txt'\n"}
+[0.879620] (learning_tf2_py) StdoutLine: {'line': b'running build\n'}
+[0.879679] (learning_tf2_py) StdoutLine: {'line': b'running build_py\n'}
+[0.879817] (learning_tf2_py) StdoutLine: {'line': b'copying learning_tf2_py/timestamp.py -> /home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/build/lib/learning_tf2_py\n'}
+[0.879929] (learning_tf2_py) StdoutLine: {'line': b'copying learning_tf2_py/random_nav.py -> /home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/build/lib/learning_tf2_py\n'}
+[0.879984] (learning_tf2_py) StdoutLine: {'line': b'copying learning_tf2_py/executors.py -> /home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/build/lib/learning_tf2_py\n'}
+[0.880065] (learning_tf2_py) StdoutLine: {'line': b'copying learning_tf2_py/__init__.py -> /home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/build/lib/learning_tf2_py\n'}
+[0.880137] (learning_tf2_py) StdoutLine: {'line': b'copying learning_tf2_py/threading.py -> /home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/build/lib/learning_tf2_py\n'}
+[0.880212] (learning_tf2_py) StdoutLine: {'line': b'copying learning_tf2_py/keyboard_node.py -> /home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/build/lib/learning_tf2_py\n'}
+[0.880279] (learning_tf2_py) StdoutLine: {'line': b'copying learning_tf2_py/copy.py -> /home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/build/lib/learning_tf2_py\n'}
+[0.880343] (learning_tf2_py) StdoutLine: {'line': b'copying learning_tf2_py/pickup_hardcoded.py -> /home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/build/lib/learning_tf2_py\n'}
+[0.880411] (learning_tf2_py) StdoutLine: {'line': b'copying learning_tf2_py/interpolation.py -> /home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/build/lib/learning_tf2_py\n'}
+[0.880654] (learning_tf2_py) StdoutLine: {'line': b'running install\n'}
+[0.880928] (learning_tf2_py) StderrLine: {'line': b'/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/lib/python3.12/site-packages/setuptools/_distutils/cmd.py:90: SetuptoolsDeprecationWarning: setup.py install is deprecated.\n'}
+[0.881021] (learning_tf2_py) StderrLine: {'line': b'!!\n'}
+[0.881071] (learning_tf2_py) StderrLine: {'line': b'\n'}
+[0.881114] (learning_tf2_py) StderrLine: {'line': b'        ********************************************************************************\n'}
+[0.881157] (learning_tf2_py) StderrLine: {'line': b'        Please avoid running ``setup.py`` directly.\n'}
+[0.881199] (learning_tf2_py) StderrLine: {'line': b'        Instead, use pypa/build, pypa/installer or other\n'}
+[0.881241] (learning_tf2_py) StderrLine: {'line': b'        standards-based tools.\n'}
+[0.881282] (learning_tf2_py) StderrLine: {'line': b'\n'}
+[0.881323] (learning_tf2_py) StderrLine: {'line': b'        See https://blog.ganssle.io/articles/2021/10/setup-py-deprecated.html for details.\n'}
+[0.881365] (learning_tf2_py) StderrLine: {'line': b'        ********************************************************************************\n'}
+[0.881406] (learning_tf2_py) StderrLine: {'line': b'\n'}
+[0.881447] (learning_tf2_py) StderrLine: {'line': b'!!\n'}
+[0.881488] (learning_tf2_py) StderrLine: {'line': b'  self.initialize_options()\n'}
+[0.884891] (learning_tf2_py) StdoutLine: {'line': b'running install_lib\n'}
+[0.899717] (learning_tf2_py) StdoutLine: {'line': b'copying /home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/build/lib/learning_tf2_py/random_nav.py -> /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/python3.12/site-packages/learning_tf2_py\n'}
+[0.900253] (learning_tf2_py) StdoutLine: {'line': b'byte-compiling /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/python3.12/site-packages/learning_tf2_py/random_nav.py to random_nav.cpython-312.pyc\n'}
+[0.901338] (learning_tf2_py) StdoutLine: {'line': b'running install_data\n'}
+[0.901876] (-) TimerEvent: {}
+[0.915411] (learning_tf2_py) StdoutLine: {'line': b'copying resource/learning_tf2_py -> /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/share/ament_index/resource_index/packages\n'}
+[0.915625] (learning_tf2_py) StdoutLine: {'line': b'copying package.xml -> /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/share/learning_tf2_py\n'}
+[0.915685] (learning_tf2_py) StdoutLine: {'line': b'running install_egg_info\n'}
+[0.930707] (learning_tf2_py) StdoutLine: {'line': b"removing '/home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/python3.12/site-packages/learning_tf2_py-0.0.0-py3.12.egg-info' (and everything under it)\n"}
+[0.930907] (learning_tf2_py) StdoutLine: {'line': b'Copying ../../build/learning_tf2_py/learning_tf2_py.egg-info to /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/python3.12/site-packages/learning_tf2_py-0.0.0-py3.12.egg-info\n'}
+[0.931464] (learning_tf2_py) StdoutLine: {'line': b'running install_scripts\n'}
+[1.001964] (-) TimerEvent: {}
+[1.003395] (learning_tf2_py) StdoutLine: {'line': b'Installing executors script to /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/learning_tf2_py\n'}
+[1.003572] (learning_tf2_py) StdoutLine: {'line': b'Installing interpolation script to /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/learning_tf2_py\n'}
+[1.003654] (learning_tf2_py) StdoutLine: {'line': b'Installing keyboard script to /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/learning_tf2_py\n'}
+[1.003708] (learning_tf2_py) StdoutLine: {'line': b'Installing pickup_hardcoded script to /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/learning_tf2_py\n'}
+[1.003851] (learning_tf2_py) StdoutLine: {'line': b'Installing random_nav script to /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/learning_tf2_py\n'}
+[1.003940] (learning_tf2_py) StdoutLine: {'line': b'Installing threading script to /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/learning_tf2_py\n'}
+[1.004000] (learning_tf2_py) StdoutLine: {'line': b'Installing timestamp script to /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/learning_tf2_py\n'}
+[1.004067] (learning_tf2_py) StdoutLine: {'line': b"writing list of installed files to '/home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/install.log'\n"}
+[1.027948] (learning_tf2_py) CommandEnded: {'returncode': 0}
+[1.074967] (learning_tf2_py) JobEnded: {'identifier': 'learning_tf2_py', 'rc': 0}
+[1.075565] (-) EventReactorShutdown: {}

@@ -1,0 +1,36 @@
+running egg_info
+writing ../../build/learning_tf2_py/learning_tf2_py.egg-info/PKG-INFO
+writing dependency_links to ../../build/learning_tf2_py/learning_tf2_py.egg-info/dependency_links.txt
+writing entry points to ../../build/learning_tf2_py/learning_tf2_py.egg-info/entry_points.txt
+writing requirements to ../../build/learning_tf2_py/learning_tf2_py.egg-info/requires.txt
+writing top-level names to ../../build/learning_tf2_py/learning_tf2_py.egg-info/top_level.txt
+reading manifest file '../../build/learning_tf2_py/learning_tf2_py.egg-info/SOURCES.txt'
+writing manifest file '../../build/learning_tf2_py/learning_tf2_py.egg-info/SOURCES.txt'
+running build
+running build_py
+copying learning_tf2_py/timestamp.py -> /home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/build/lib/learning_tf2_py
+copying learning_tf2_py/random_nav.py -> /home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/build/lib/learning_tf2_py
+copying learning_tf2_py/executors.py -> /home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/build/lib/learning_tf2_py
+copying learning_tf2_py/__init__.py -> /home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/build/lib/learning_tf2_py
+copying learning_tf2_py/threading.py -> /home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/build/lib/learning_tf2_py
+copying learning_tf2_py/keyboard_node.py -> /home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/build/lib/learning_tf2_py
+copying learning_tf2_py/copy.py -> /home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/build/lib/learning_tf2_py
+copying learning_tf2_py/pickup_hardcoded.py -> /home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/build/lib/learning_tf2_py
+copying learning_tf2_py/interpolation.py -> /home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/build/lib/learning_tf2_py
+running install
+running install_lib
+running install_data
+copying resource/learning_tf2_py -> /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/share/ament_index/resource_index/packages
+copying package.xml -> /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/share/learning_tf2_py
+running install_egg_info
+removing '/home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/python3.12/site-packages/learning_tf2_py-0.0.0-py3.12.egg-info' (and everything under it)
+Copying ../../build/learning_tf2_py/learning_tf2_py.egg-info to /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/python3.12/site-packages/learning_tf2_py-0.0.0-py3.12.egg-info
+running install_scripts
+Installing executors script to /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/learning_tf2_py
+Installing interpolation script to /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/learning_tf2_py
+Installing keyboard script to /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/learning_tf2_py
+Installing pickup_hardcoded script to /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/learning_tf2_py
+Installing random_nav script to /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/learning_tf2_py
+Installing threading script to /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/learning_tf2_py
+Installing timestamp script to /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/learning_tf2_py
+writing list of installed files to '/home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/install.log'
