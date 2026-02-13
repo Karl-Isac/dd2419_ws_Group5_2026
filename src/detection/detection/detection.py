@@ -22,6 +22,7 @@ import sensor_msgs_py.point_cloud2 as pc2
 import ctypes
 import struct
 
+# Criteria of colors are at Line 468-478
 
 class Detection(Node):
 
