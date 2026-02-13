@@ -30,6 +30,7 @@ setup(
             'timestamp = learning_tf2_py.timestamp:main',
             'keyboard = learning_tf2_py.keyboard_node:main',
             'pickup_hardcoded = learning_tf2_py.pickup_hardcoded:main',
+            'pickup = learning_tf2_py.pickup:main',
         ],
     },
 )
