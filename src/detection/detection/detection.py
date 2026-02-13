@@ -13,7 +13,7 @@ from tf2_ros import PointStamped, TransformBroadcaster, TransformListener, Trans
 from tf2_ros.buffer import Buffer
 from tf2_ros.static_transform_broadcaster import StaticTransformBroadcaster
 from tf_transformations import quaternion_from_euler
-from geometry_msgs.msg import TransformStamped
+from geometry_msgs.msg import TransformStamped, Point
 from visualization_msgs.msg import Marker
 
 from sensor_msgs.msg import PointCloud2
@@ -172,9 +172,10 @@ class Detection(Node):
                     wood_sum_x += x
                     wood_sum_y += y
                     wood_sum_z += z
-
+            if y > 0 and y < 0.99 and z > 0 and z < 1:
                 if is_grey(h,s,v):
-                    grey_points.append([x,y,z])
+                    grey_points.append([x,z,-y])
+        
 
         # red 
         if red_counter > 15 and not self.red_available:
@@ -439,6 +440,8 @@ class Detection(Node):
 
         #     self.static_broadcaster.sendTransform(tf_red)
         #     self.red_published = True
+
+        self.publish_points_marker(grey_points, 'grey_points', (1.0, 1.0, 0.0), msg.header)
     
     def rgb_to_hsv(self, r, g, b):
         c_max = max(r, g, b)
@@ -460,7 +463,15 @@ class Detection(Node):
 
         return h, s, v
         
-    
+    def publish_2d_cloud(self, points_xy):
+        header = std_msgs.msg.Header()
+        header.stamp = self.get_clock().now().to_msg()
+        header.frame_id = 'realsense_camera_link'
+
+        points_3d = [(x, y, 0.02) for x, y in points_xy]
+
+        msg = pc2.create_cloud_xyz32(header, points_3d)
+        self._pub.publish(msg)
  
 def main():
     rclpy.init()
@@ -485,7 +496,7 @@ def is_wood(h,s,v):
     return True if 20 <= h <= 60 and 0 < s < 0.6 and v > 0.4 else False
 
 def is_grey(h,s,v):
-    return True if s < 0.2 and v > 0.2 and v < 0.8 else False
+    return True if s < 1 and v > 0 and v < 1 else False
 
 if __name__ == '__main__':
     main()

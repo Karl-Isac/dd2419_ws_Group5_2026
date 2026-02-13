@@ -4,12 +4,14 @@ import rclpy
 from rclpy.node import Node
 
 from sensor_msgs.msg import Image
+from robp_interfaces.msg import ArmControl
 
 import sys          ## return to these
 import math
 import cv2
 import numpy as np
 from cv_bridge import CvBridge      # to convert between ros2 image and numpy array (for opencv)
+import time
 
 def approx_to_polygon(contour):
     # Approximate contour to polygon
@@ -63,6 +65,15 @@ def draw_cs_on_image(image,centerpoint,angle):
     # Y axis:
     cv2.arrowedLine(image, (int(cx), int(cy)), (int(cx-arrow_length*math.sin(theta)),int(cy+arrow_length*math.cos(theta))),(0,255,0),2)
 
+def saturate_difference(current,previous,limit):
+    if abs(current - previous) > limit:
+        if (current - previous) > 0:
+            return previous + limit
+        else:
+            return previous - limit
+
+        
+
 
 class Pickup(Node):
     def __init__(self):
@@ -73,13 +84,75 @@ class Pickup(Node):
             Image, '/arm/camera/image_debug', 10)
         self._pub2 = self.create_publisher(
             Image, '/arm/camera/image_debug2', 10)
+        
+        self._pub_control = self.create_publisher(
+            ArmControl, '/arm/safe_control', 10)
 
         # Subscribe to the arm camera topic and call callback function on each received image
         self.create_subscription(
             Image, '/arm/camera/image_raw', self.image_callback, 10)
         
-        self.cube_position_in_frame = []
-        self.cube_orientation_in_frame = []
+        # Initialize the arm position
+        msg = ArmControl()
+        msg.header.stamp = self.get_clock().now().to_msg()
+        msg.time = [1000,1000,1000,1000,1000,1000]
+        msg.position = [10,120,30,180,100,120]
+        self._pub_control.publish(msg)
+        time.sleep(1)
+
+
+        
+        # Send out a control action every 0.1 seconds
+        timer_period = 0.1  # seconds
+        self.timer = self.create_timer(timer_period, self.timer_callback)
+
+        
+        self.cube_position_available = False
+
+        self.joint5target = 120
+        self.joint1target = 120
+
+
+    def timer_callback(self):
+        if self.cube_position_available:
+            # Control gains:
+            k_sideways = 0.2
+            k_rotation = 1
+
+            # Previous targets:
+            prev_joint1target = self.joint1target
+            prev_joint5target = self.joint5target
+
+            image_half_width = self.image_shape[1]/2
+            cx,cy = self.cube_position_in_frame
+            rotation = self.cube_orientation_in_frame
+            self.cube_position_available = False
+            # Sideways control
+            sideways_error = image_half_width-cx
+            self.joint5target = 120 + k_sideways*sideways_error
+            # Rotation control
+            rotation_error = rotation % 90
+            if rotation_error > 45:
+                rotation_error = rotation_error - 90
+            self.joint1target = 120 + k_rotation*rotation_error
+
+            # Max motor speed 60 deg / 0.22 sec
+            # => 25 deg per 0.1 tick
+            limit = 25
+            self.joint1target = saturate_difference(self.joint1target,prev_joint1target,limit)
+            self.joint5target = saturate_difference(self.joint5target,prev_joint5target,limit)
+            
+
+            msg = ArmControl()
+            msg.header.stamp = self.get_clock().now().to_msg()
+            msg.time = [1000,1000,1000,1000,1000,1000]
+            msg.position = [10,self.joint1target,30,180,100,self.joint5target]
+            print("joint1target: " + str(self.joint1target))
+            print("joint5target: " + str(self.joint5target))
+            self._pub_control.publish(msg)
+        return
+        
+        
         
     def image_callback(self, msg: Image):
         # For each image received on /arm/camera/image_raw it updates the cube position and orientation variables
@@ -98,6 +171,7 @@ class Pickup(Node):
         gray = cv2.cvtColor(raw_image, cv2.COLOR_YUV2GRAY_YUY2)
         gray = cv2.GaussianBlur(gray, (5, 5), 1.5)
         canny = cv2.Canny(gray, 50, 150)
+        self.image_shape = gray.shape
 
         if publish_debug_images:
             bgr_image = cv2.cvtColor(raw_image,cv2.COLOR_YUV2BGR_YUY2)
@@ -119,6 +193,7 @@ class Pickup(Node):
                     angle = rect[2]         # in degrees
                     self.cube_position_in_frame = centerpoint
                     self.cube_orientation_in_frame = angle
+                    self.cube_position_available = True
                     if publish_debug_images:
                         cv2.drawContours(bgr_image, contours, i, (255,0,0), 4)
                         draw_cs_on_image(bgr_image,centerpoint,angle)
@@ -142,6 +217,7 @@ class Pickup(Node):
         
 
 def main():
+    raise("dont run it, talk to Andrew first")
     rclpy.init()
     node = Pickup()
     try:

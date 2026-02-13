@@ -32,6 +32,7 @@ setup(
             'pickup_hardcoded = learning_tf2_py.pickup_hardcoded:main',
             'pickup = learning_tf2_py.pickup:main',
             'random_nav = learning_tf2_py.random_nav:main',
+            'arm_safe_republisher = learning_tf2_py.arm_safe_republisher:main',
         ],
     },
 )

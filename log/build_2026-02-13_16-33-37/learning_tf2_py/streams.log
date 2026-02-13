@@ -1,0 +1,109 @@
+[0.930s] Invoking command in '/home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py': CONDA_ENV_SHLVL_2_PIXI_PROMPT=(dd2419_ws) CONDA_ENV_SHLVL_3_PIXI_PROMPT=(dd2419_ws) CONDA_ENV_SHLVL_4_PIXI_PROMPT=(dd2419_ws) DEBUGINFOD_URLS=https://debuginfod.ubuntu.com PIXI_PROMPT=(dd2419_ws) PS1=(dd2419_ws) \[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ PYTHONPATH=/home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/prefix_override:/home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 setup.py develop --uninstall --editable --build-directory /home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/build
+[1.174s] running develop
+[1.174s] /home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/lib/python3.12/site-packages/setuptools/command/develop.py:41: EasyInstallDeprecationWarning: easy_install command is deprecated.
+[1.174s] !!
+[1.175s] 
+[1.175s]         ********************************************************************************
+[1.175s]         Please avoid running ``setup.py`` and ``easy_install``.
+[1.175s]         Instead, use pypa/build, pypa/installer or other
+[1.175s]         standards-based tools.
+[1.175s] 
+[1.175s]         See https://github.com/pypa/setuptools/issues/917 for details.
+[1.175s]         ********************************************************************************
+[1.175s] 
+[1.175s] !!
+[1.176s]   easy_install.initialize_options(self)
+[1.210s] /home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/lib/python3.12/site-packages/setuptools/_distutils/cmd.py:90: SetuptoolsDeprecationWarning: setup.py install is deprecated.
+[1.210s] !!
+[1.210s] 
+[1.210s]         ********************************************************************************
+[1.210s]         Please avoid running ``setup.py`` directly.
+[1.210s]         Instead, use pypa/build, pypa/installer or other
+[1.210s]         standards-based tools.
+[1.211s] 
+[1.211s]         See https://blog.ganssle.io/articles/2021/10/setup-py-deprecated.html for details.
+[1.211s]         ********************************************************************************
+[1.211s] 
+[1.211s] !!
+[1.211s]   self.initialize_options()
+[1.307s] /home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/lib/python3.12/site-packages/setuptools/command/easy_install.py:334: UserWarning: Unbuilt egg for pytest-repeat [unknown version] (/usr/lib/python3/dist-packages)
+[1.307s]   self.local_index = Environment(self.shadow_path + sys.path)
+[1.330s] Removing /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/python3.12/site-packages/learning-tf2-py.egg-link (link to .)
+[1.364s] Invoked command in '/home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py' returned '0': CONDA_ENV_SHLVL_2_PIXI_PROMPT=(dd2419_ws) CONDA_ENV_SHLVL_3_PIXI_PROMPT=(dd2419_ws) CONDA_ENV_SHLVL_4_PIXI_PROMPT=(dd2419_ws) DEBUGINFOD_URLS=https://debuginfod.ubuntu.com PIXI_PROMPT=(dd2419_ws) PS1=(dd2419_ws) \[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ PYTHONPATH=/home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/prefix_override:/home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 setup.py develop --uninstall --editable --build-directory /home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/build
+[1.365s] Invoking command in '/home/grumpy/dd2419_ws_Group5_2026/src/learning_tf2_py': CONDA_ENV_SHLVL_2_PIXI_PROMPT=(dd2419_ws) CONDA_ENV_SHLVL_3_PIXI_PROMPT=(dd2419_ws) CONDA_ENV_SHLVL_4_PIXI_PROMPT=(dd2419_ws) DEBUGINFOD_URLS=https://debuginfod.ubuntu.com PIXI_PROMPT=(dd2419_ws) PS1=(dd2419_ws) \[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ PYTHONPATH=/home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/prefix_override:/home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 setup.py egg_info --egg-base ../../build/learning_tf2_py build --build-base /home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/build install --record /home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/install.log --single-version-externally-managed
+[1.583s] running egg_info
+[1.601s] writing ../../build/learning_tf2_py/learning_tf2_py.egg-info/PKG-INFO
+[1.601s] writing dependency_links to ../../build/learning_tf2_py/learning_tf2_py.egg-info/dependency_links.txt
+[1.601s] writing entry points to ../../build/learning_tf2_py/learning_tf2_py.egg-info/entry_points.txt
+[1.602s] writing requirements to ../../build/learning_tf2_py/learning_tf2_py.egg-info/requires.txt
+[1.602s] writing top-level names to ../../build/learning_tf2_py/learning_tf2_py.egg-info/top_level.txt
+[1.641s] reading manifest file '../../build/learning_tf2_py/learning_tf2_py.egg-info/SOURCES.txt'
+[1.641s] writing manifest file '../../build/learning_tf2_py/learning_tf2_py.egg-info/SOURCES.txt'
+[1.642s] running build
+[1.642s] running build_py
+[1.642s] copying learning_tf2_py/timestamp.py -> /home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/build/lib/learning_tf2_py
+[1.642s] copying learning_tf2_py/random_nav.py -> /home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/build/lib/learning_tf2_py
+[1.642s] copying learning_tf2_py/executors.py -> /home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/build/lib/learning_tf2_py
+[1.642s] copying learning_tf2_py/arm_safe_republisher.py -> /home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/build/lib/learning_tf2_py
+[1.643s] copying learning_tf2_py/__init__.py -> /home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/build/lib/learning_tf2_py
+[1.643s] copying learning_tf2_py/threading.py -> /home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/build/lib/learning_tf2_py
+[1.643s] copying learning_tf2_py/keyboard_node.py -> /home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/build/lib/learning_tf2_py
+[1.644s] copying learning_tf2_py/copy.py -> /home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/build/lib/learning_tf2_py
+[1.644s] copying learning_tf2_py/pickup_hardcoded.py -> /home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/build/lib/learning_tf2_py
+[1.644s] copying learning_tf2_py/interpolation.py -> /home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/build/lib/learning_tf2_py
+[1.644s] copying learning_tf2_py/pickup.py -> /home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/build/lib/learning_tf2_py
+[1.644s] running install
+[1.644s] /home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/lib/python3.12/site-packages/setuptools/_distutils/cmd.py:90: SetuptoolsDeprecationWarning: setup.py install is deprecated.
+[1.644s] !!
+[1.644s] 
+[1.644s]         ********************************************************************************
+[1.644s]         Please avoid running ``setup.py`` directly.
+[1.644s]         Instead, use pypa/build, pypa/installer or other
+[1.645s]         standards-based tools.
+[1.645s] 
+[1.645s]         See https://blog.ganssle.io/articles/2021/10/setup-py-deprecated.html for details.
+[1.645s]         ********************************************************************************
+[1.645s] 
+[1.645s] !!
+[1.645s]   self.initialize_options()
+[1.650s] running install_lib
+[1.667s] creating /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/python3.12/site-packages/learning_tf2_py
+[1.667s] copying /home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/build/lib/learning_tf2_py/timestamp.py -> /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/python3.12/site-packages/learning_tf2_py
+[1.667s] copying /home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/build/lib/learning_tf2_py/random_nav.py -> /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/python3.12/site-packages/learning_tf2_py
+[1.667s] copying /home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/build/lib/learning_tf2_py/executors.py -> /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/python3.12/site-packages/learning_tf2_py
+[1.668s] copying /home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/build/lib/learning_tf2_py/arm_safe_republisher.py -> /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/python3.12/site-packages/learning_tf2_py
+[1.668s] copying /home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/build/lib/learning_tf2_py/__init__.py -> /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/python3.12/site-packages/learning_tf2_py
+[1.668s] copying /home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/build/lib/learning_tf2_py/threading.py -> /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/python3.12/site-packages/learning_tf2_py
+[1.668s] copying /home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/build/lib/learning_tf2_py/keyboard_node.py -> /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/python3.12/site-packages/learning_tf2_py
+[1.668s] copying /home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/build/lib/learning_tf2_py/copy.py -> /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/python3.12/site-packages/learning_tf2_py
+[1.668s] copying /home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/build/lib/learning_tf2_py/pickup_hardcoded.py -> /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/python3.12/site-packages/learning_tf2_py
+[1.668s] copying /home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/build/lib/learning_tf2_py/interpolation.py -> /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/python3.12/site-packages/learning_tf2_py
+[1.668s] copying /home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/build/lib/learning_tf2_py/pickup.py -> /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/python3.12/site-packages/learning_tf2_py
+[1.669s] byte-compiling /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/python3.12/site-packages/learning_tf2_py/timestamp.py to timestamp.cpython-312.pyc
+[1.670s] byte-compiling /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/python3.12/site-packages/learning_tf2_py/random_nav.py to random_nav.cpython-312.pyc
+[1.671s] byte-compiling /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/python3.12/site-packages/learning_tf2_py/executors.py to executors.cpython-312.pyc
+[1.672s] byte-compiling /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/python3.12/site-packages/learning_tf2_py/arm_safe_republisher.py to arm_safe_republisher.cpython-312.pyc
+[1.672s] byte-compiling /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/python3.12/site-packages/learning_tf2_py/__init__.py to __init__.cpython-312.pyc
+[1.672s] byte-compiling /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/python3.12/site-packages/learning_tf2_py/threading.py to threading.cpython-312.pyc
+[1.673s] byte-compiling /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/python3.12/site-packages/learning_tf2_py/keyboard_node.py to keyboard_node.cpython-312.pyc
+[1.673s] byte-compiling /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/python3.12/site-packages/learning_tf2_py/copy.py to copy.cpython-312.pyc
+[1.674s] byte-compiling /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/python3.12/site-packages/learning_tf2_py/pickup_hardcoded.py to pickup_hardcoded.cpython-312.pyc
+[1.674s] byte-compiling /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/python3.12/site-packages/learning_tf2_py/interpolation.py to interpolation.cpython-312.pyc
+[1.675s] byte-compiling /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/python3.12/site-packages/learning_tf2_py/pickup.py to pickup.cpython-312.pyc
+[1.677s] running install_data
+[1.696s] copying resource/learning_tf2_py -> /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/share/ament_index/resource_index/packages
+[1.697s] copying package.xml -> /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/share/learning_tf2_py
+[1.697s] running install_egg_info
+[1.713s] Copying ../../build/learning_tf2_py/learning_tf2_py.egg-info to /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/python3.12/site-packages/learning_tf2_py-0.0.0-py3.12.egg-info
+[1.715s] running install_scripts
+[1.802s] Installing arm_safe_republisher script to /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/learning_tf2_py
+[1.802s] Installing executors script to /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/learning_tf2_py
+[1.802s] Installing interpolation script to /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/learning_tf2_py
+[1.802s] Installing keyboard script to /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/learning_tf2_py
+[1.802s] Installing pickup script to /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/learning_tf2_py
+[1.802s] Installing pickup_hardcoded script to /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/learning_tf2_py
+[1.802s] Installing random_nav script to /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/learning_tf2_py
+[1.802s] Installing threading script to /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/learning_tf2_py
+[1.803s] Installing timestamp script to /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/learning_tf2_py
+[1.803s] writing list of installed files to '/home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/install.log'
+[1.830s] Invoked command in '/home/grumpy/dd2419_ws_Group5_2026/src/learning_tf2_py' returned '0': CONDA_ENV_SHLVL_2_PIXI_PROMPT=(dd2419_ws) CONDA_ENV_SHLVL_3_PIXI_PROMPT=(dd2419_ws) CONDA_ENV_SHLVL_4_PIXI_PROMPT=(dd2419_ws) DEBUGINFOD_URLS=https://debuginfod.ubuntu.com PIXI_PROMPT=(dd2419_ws) PS1=(dd2419_ws) \[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ PYTHONPATH=/home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/prefix_override:/home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 setup.py egg_info --egg-base ../../build/learning_tf2_py build --build-base /home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/build install --record /home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/install.log --single-version-externally-managed
