@@ -43,6 +43,8 @@ class Detection(Node):
         # Static TF broadcaster
         self.static_broadcaster = StaticTransformBroadcaster(self)
 
+        self.marker_pub = self.create_publisher(Marker, '/debug/projected_marker', 10)
+
         self.red_published = False
         self.red_available = False
         self.red_timestamp = None
