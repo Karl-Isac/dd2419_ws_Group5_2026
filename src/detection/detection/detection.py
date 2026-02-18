@@ -44,8 +44,6 @@ class Detection(Node):
         # Static TF broadcaster
         self.static_broadcaster = StaticTransformBroadcaster(self)
 
-        self.marker_pub = self.create_publisher(Marker, '/debug/projected_marker', 10)
-
         self.red_published = False
         self.red_available = False
         self.red_timestamp = None
@@ -145,37 +143,36 @@ class Detection(Node):
             h, s, v = self.rgb_to_hsv(r, g, b)
             if y > 0 and z > 0 and z < 0.5:
                 # red
-                if is_red(h, s, v):
-                    red_counter += 1
-                    red_points.append([x,y,z])
-                    red_sum_x += x
-                    red_sum_y += y
-                    red_sum_z += z
-                # blue
-                elif is_blue(h,s,v):
-                    blue_counter += 1
-                    blue_points.append([x,y,z])
-                    blue_sum_x += x
-                    blue_sum_y += y
-                    blue_sum_z += z
-                # green
-                elif is_green(h,s,v):
-                    green_counter += 1
-                    green_points.append([x,y,z])
-                    green_sum_x += x
-                    green_sum_y += y
-                    green_sum_z += z
-                # wood
-                elif is_wood(h,s,v):
-                    wood_counter += 1
-                    wood_points.append([x,y,z])
-                    wood_sum_x += x
-                    wood_sum_y += y
-                    wood_sum_z += z
-            if y > 0 and y < 0.99 and z > 0 and z < 1:
+                # if is_red(h, s, v):
+                #     red_counter += 1
+                #     red_points.append([x,y,z])
+                #     red_sum_x += x
+                #     red_sum_y += y
+                #     red_sum_z += z
+                # # blue
+                # elif is_blue(h,s,v):
+                #     blue_counter += 1
+                #     blue_points.append([x,y,z])
+                #     blue_sum_x += x
+                #     blue_sum_y += y
+                #     blue_sum_z += z
+                # # green
+                # elif is_green(h,s,v):
+                #     green_counter += 1
+                #     green_points.append([x,y,z])
+                #     green_sum_x += x
+                #     green_sum_y += y
+                #     green_sum_z += z
+                # # wood
+                # elif is_wood(h,s,v):
+                #     wood_counter += 1
+                #     wood_points.append([x,y,z])
+                #     wood_sum_x += x
+                #     wood_sum_y += y
+                #     wood_sum_z += z
+
                 if is_grey(h,s,v):
-                    grey_points.append([x,z,-y])
-        
+                    grey_points.append([z ,-x])
 
         # red 
         if red_counter > 15 and not self.red_available:
@@ -441,8 +438,31 @@ class Detection(Node):
         #     self.static_broadcaster.sendTransform(tf_red)
         #     self.red_published = True
 
-        self.publish_points_marker(grey_points, 'grey_points', (1.0, 1.0, 0.0), msg.header)
-    
+        self.publish_2d_cloud(grey_points, msg.header)
+
+        box_size = (0.24, 0.16)  # L, W
+        center, yaw, axes = self.estimate_box_from_points(grey_points, box_size)
+
+        if center is not None:
+            tf_grey = TransformStamped()
+            tf_grey.header.stamp = msg.header.stamp
+            tf_grey.header.frame_id = 'realsense_camera_link'
+            tf_grey.child_frame_id = 'grey_box'
+
+            # 位置
+            tf_grey.transform.translation.x = float(center[0])
+            tf_grey.transform.translation.y = float(center[1])
+            tf_grey.transform.translation.z = 0.05  # 高度固定为点云平面上方一点
+
+            # 旋转（绕 Z 轴 yaw）
+            q = quaternion_from_euler(0.0, 0.0, float(yaw))
+            tf_grey.transform.rotation.x = q[0]
+            tf_grey.transform.rotation.y = q[1]
+            tf_grey.transform.rotation.z = q[2]
+            tf_grey.transform.rotation.w = q[3]
+
+            self.static_broadcaster.sendTransform(tf_grey)
+
     def rgb_to_hsv(self, r, g, b):
         c_max = max(r, g, b)
         c_min = min(r, g, b)
@@ -463,15 +483,114 @@ class Detection(Node):
 
         return h, s, v
         
-    def publish_2d_cloud(self, points_xy):
-        header = std_msgs.msg.Header()
-        header.stamp = self.get_clock().now().to_msg()
-        header.frame_id = 'realsense_camera_link'
+    def publish_2d_cloud(self, points_xz, header):
+        # 新header
+        h = std_msgs.msg.Header()
+        h.stamp = header.stamp
+        h.frame_id = 'realsense_camera_link'
 
-        points_3d = [(x, y, 0.02) for x, y in points_xy]
+        # 2D → 3D
+        pts = [(p[0], p[1], 0.05) for p in points_xz]
 
-        msg = pc2.create_cloud_xyz32(header, points_3d)
-        self._pub.publish(msg)
+        cloud = pc2.create_cloud_xyz32(h, pts)
+        self._pub.publish(cloud)
+
+    def estimate_box_from_points(self, points, box_size=(0.24, 0.16), angle_thresh_deg=20):
+        """
+        Estimate box position and yaw from a set of 2D points (x, y) on the ground.
+        
+        points: Nx2 array, points in x-y plane
+        box_size: (length, width) in meters
+        angle_thresh_deg: allowable deviation from 90deg to consider a corner
+        
+        Returns:
+            center_shifted: (x, y) box center shifted along another axis
+            yaw: rotation around z in radians
+            axes: principal axes vectors (2x2)
+        """
+        if len(points) < 2:
+            return None, None, None  # 不够点无法估计
+
+        pts = np.array(points)
+        
+        # --- Step 0: 去除离群点（IQR法） ---
+        Q1 = np.percentile(pts, 25, axis=0)
+        Q3 = np.percentile(pts, 75, axis=0)
+        IQR = Q3 - Q1
+        mask = np.all((pts >= Q1 - 1.5 * IQR) & (pts <= Q3 + 1.5 * IQR), axis=1)
+        pts = pts[mask]
+        if len(pts) < 2:
+            return None, None, None
+
+        # --- Step 1: PCA ---
+        mean = np.mean(pts, axis=0)
+        pts_centered = pts - mean
+        U, S, Vt = np.linalg.svd(pts_centered, full_matrices=False)
+        axes = Vt[:2]  # 两个主轴
+
+        # --- Step 2: 判断角度 ---
+        dir1 = axes[0]
+        dir2 = axes[1]
+        dot = np.clip(np.dot(dir1, dir2), -1.0, 1.0)
+        angle_deg = np.arccos(dot) * 180.0 / np.pi
+
+        # 计算 dir1 和 dir2 关于 x 轴的夹角
+        x_axis = np.array([1.0, 0.0])
+        angle_dir1_x = np.arccos(np.clip(np.dot(dir1, x_axis), -1.0, 1.0)) 
+        angle_dir2_x = np.arccos(np.clip(np.dot(dir2, x_axis), -1.0, 1.0)) 
+        self.get_logger().info(f'dir1 与 x 轴夹角: {angle_dir1_x:.2f}rad, dir2 与 x 轴夹角: {angle_dir2_x:.2f}rad')
+        dot = np.clip(np.dot(dir1, dir2), -1.0, 1.0)
+        angle_deg = np.arccos(dot) * 180.0 / np.pi
+
+        # --- Step 3: 根据夹角选择主轴 ---
+        if abs(angle_deg - 90) < angle_thresh_deg:
+            used_axes = axes
+        else:
+            used_axes = axes[:1]
+
+        # --- Step 4: 投影到主轴并计算中心 ---
+        projected = pts_centered @ used_axes.T
+        min_proj = projected.min(axis=0)
+        max_proj = projected.max(axis=0)
+        center_proj = (min_proj + max_proj) / 2
+        center = mean + center_proj @ used_axes  # 回到原坐标系
+
+        # --- Step 5: 判断第一主轴对应长度还是宽度 ---
+        length_proj = projected[:,0].max() - projected[:,0].min()
+        width_proj  = projected[:,1].max() - projected[:,1].min() if projected.shape[1] > 1 else length_proj
+
+        print(f'length_proj: {length_proj:.3f}, width_proj: {width_proj:.3f}')
+
+        if length_proj >= width_proj:
+            # 第一主轴对应长度 → 第二主轴对应宽度
+            box_length = box_size[0]
+            box_width  = box_size[1]
+        else:
+            # 第一主轴对应宽度 → 交换主轴
+            used_axes = used_axes[::-1]
+            box_length = box_size[1]
+            box_width  = box_size[0]
+
+        # --- Step 6: 沿另一边方向平移半个距离 ---
+        if projected.shape[1] > 1:
+            if box_length >= box_width:
+                shift_vec = used_axes[1] * (box_width / 2)  # 沿宽度方向平移
+                yaw = angle_dir1_x
+
+            else:
+                shift_vec = used_axes[1] * (box_length / 2)  # 沿长度方向平移
+                yaw = angle_dir1_x + np.pi/2 if angle_dir1_x < np.pi/2 else angle_dir1_x - np.pi/2
+
+        else:
+            yaw = 0
+            self.get_logger().info('Unexpected case: only one axis found, treating as length direction.')
+            
+        center_shifted = center + shift_vec
+
+        # # --- Step 7: 计算 yaw（绕 z 轴旋转） ---
+        # yaw = np.arctan2(used_axes[0,1], used_axes[0,0])
+
+        return center_shifted, yaw, used_axes
  
 def main():
     rclpy.init()
@@ -496,7 +615,7 @@ def is_wood(h,s,v):
     return True if 20 <= h <= 60 and 0 < s < 0.6 and v > 0.4 else False
 
 def is_grey(h,s,v):
-    return True if s < 1 and v > 0 and v < 1 else False
+    return True if s < 0.25 and v > 0.1 and v < 0.25 else False
 
 if __name__ == '__main__':
     main()
