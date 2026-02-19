@@ -19,6 +19,8 @@ from visualization_msgs.msg import Marker
 from sensor_msgs.msg import PointCloud2
 import sensor_msgs_py.point_cloud2 as pc2
 
+from sklearn.cluster import DBSCAN
+
 import ctypes
 import struct
 
@@ -495,102 +497,163 @@ class Detection(Node):
         cloud = pc2.create_cloud_xyz32(h, pts)
         self._pub.publish(cloud)
 
-    def estimate_box_from_points(self, points, box_size=(0.24, 0.16), angle_thresh_deg=20):
-        """
-        Estimate box position and yaw from a set of 2D points (x, y) on the ground.
+    def estimate_box_from_points(self, points, box_size=(0.24, 0.16), angle_thresh_deg=20): 
+        " Estimate box position and yaw from a set of 2D points (x, y) on the ground. "
+        "points: Nx2 array, points in x-y plane "
+        "box_size: (length, width) in meters "
+        "angle_thresh_deg: allowable deviation from 90deg to consider a corner "
         
-        points: Nx2 array, points in x-y plane
-        box_size: (length, width) in meters
-        angle_thresh_deg: allowable deviation from 90deg to consider a corner
+        "Returns: "
+        "center_shifted: (x, y) box center shifted along another axis "
+        "yaw: rotation around z in radians "
+        "axes: principal axes vectors (2x2) """ 
         
-        Returns:
-            center_shifted: (x, y) box center shifted along another axis
-            yaw: rotation around z in radians
-            axes: principal axes vectors (2x2)
-        """
-        if len(points) < 2:
-            return None, None, None  # 不够点无法估计
-
-        pts = np.array(points)
+        if len(points) < 2: 
+            return None, None, None # 不够点无法估计 
         
-        # --- Step 0: 去除离群点（IQR法） ---
-        Q1 = np.percentile(pts, 25, axis=0)
-        Q3 = np.percentile(pts, 75, axis=0)
-        IQR = Q3 - Q1
-        mask = np.all((pts >= Q1 - 1.5 * IQR) & (pts <= Q3 + 1.5 * IQR), axis=1)
-        pts = pts[mask]
-        if len(pts) < 2:
-            return None, None, None
-
-        # --- Step 1: PCA ---
-        mean = np.mean(pts, axis=0)
-        pts_centered = pts - mean
-        U, S, Vt = np.linalg.svd(pts_centered, full_matrices=False)
-        axes = Vt[:2]  # 两个主轴
-
-        # --- Step 2: 判断角度 ---
-        dir1 = axes[0]
-        dir2 = axes[1]
-        dot = np.clip(np.dot(dir1, dir2), -1.0, 1.0)
-        angle_deg = np.arccos(dot) * 180.0 / np.pi
-
-        # 计算 dir1 和 dir2 关于 x 轴的夹角
-        x_axis = np.array([1.0, 0.0])
+        pts = np.array(points) 
+        
+        # --- Step 0: 去除离群点（IQR法） --- 
+        
+        # Q1 = np.percentile(pts, 25, axis=0) 
+        # Q3 = np.percentile(pts, 75, axis=0) 
+        # IQR = Q3 - Q1 
+        # mask = np.all((pts >= Q1 - 1.5 * IQR) & (pts <= Q3 + 1.5 * IQR), axis=1) 
+        # pts = pts[mask] 
+        
+        if len(pts) < 2: 
+            return None, None, None 
+        
+        # --- Step 1: PCA --- 
+        mean = np.mean(pts, axis=0) 
+        pts_centered = pts - mean 
+        U, S, Vt = np.linalg.svd(pts_centered, full_matrices=False) 
+        axes = Vt[:2] # 两个主轴 
+        
+        # --- Step 2: 判断角度 --- 
+        dir1 = axes[0] 
+        dir2 = axes[1] 
+        dir1 /= np.linalg.norm(dir1) 
+        dir2 /= np.linalg.norm(dir2) 
+        dir1 = dir1 if dir1[1] >= 0 else -dir1 # 保持第一主轴朝上 
+        dir2 = dir2 if dir2[1] >= 0 else -dir2 # 保持第二主轴朝上 
+        
+        # 计算 dir1 和 dir2 关于 x 轴的夹角 
+        x_axis = np.array([1.0, 0.0]) 
         angle_dir1_x = np.arccos(np.clip(np.dot(dir1, x_axis), -1.0, 1.0)) 
         angle_dir2_x = np.arccos(np.clip(np.dot(dir2, x_axis), -1.0, 1.0)) 
-        self.get_logger().info(f'dir1 与 x 轴夹角: {angle_dir1_x:.2f}rad, dir2 与 x 轴夹角: {angle_dir2_x:.2f}rad')
-        dot = np.clip(np.dot(dir1, dir2), -1.0, 1.0)
-        angle_deg = np.arccos(dot) * 180.0 / np.pi
+        
+        # Step 3: 判断是否是角 
+        
+        ratio = S[1] / S[0] 
+        self.get_logger().info(f'主成分方差比: {ratio:.3f}') 
 
-        # --- Step 3: 根据夹角选择主轴 ---
-        if abs(angle_deg - 90) < angle_thresh_deg:
-            used_axes = axes
-        else:
-            used_axes = axes[:1]
+        if ratio > 0.1:
+            used_axes = axes  # 有角 
+            projected = pts_centered @ used_axes.T
 
-        # --- Step 4: 投影到主轴并计算中心 ---
-        projected = pts_centered @ used_axes.T
-        min_proj = projected.min(axis=0)
-        max_proj = projected.max(axis=0)
-        center_proj = (min_proj + max_proj) / 2
-        center = mean + center_proj @ used_axes  # 回到原坐标系
+            mask1 = np.abs(projected[:,0]) > np.abs(projected[:,1])
+            mask2 = ~mask1
 
-        # --- Step 5: 判断第一主轴对应长度还是宽度 ---
-        length_proj = projected[:,0].max() - projected[:,0].min()
-        width_proj  = projected[:,1].max() - projected[:,1].min() if projected.shape[1] > 1 else length_proj
+            edge1 = pts[mask1]
+            edge2 = pts[mask2]
 
-        print(f'length_proj: {length_proj:.3f}, width_proj: {width_proj:.3f}')
+            def fit_line(points):
+                m = np.mean(points, axis=0)
+                U, S, Vt = np.linalg.svd(points - m)
+                return Vt[0]
 
-        if length_proj >= width_proj:
-            # 第一主轴对应长度 → 第二主轴对应宽度
-            box_length = box_size[0]
-            box_width  = box_size[1]
-        else:
-            # 第一主轴对应宽度 → 交换主轴
-            used_axes = used_axes[::-1]
-            box_length = box_size[1]
-            box_width  = box_size[0]
+            dir1 = fit_line(edge1)
+            dir2 = fit_line(edge2)
 
-        # --- Step 6: 沿另一边方向平移半个距离 ---
-        if projected.shape[1] > 1:
-            if box_length >= box_width:
-                shift_vec = used_axes[1] * (box_width / 2)  # 沿宽度方向平移
-                yaw = angle_dir1_x
+            dir1 = dir1 if dir1[1] >= 0 else -dir1  # 保持第一主轴朝上 
+            dir2 = dir2 if dir2[1] >= 0 else -dir2  # 保持第二主轴朝上 
 
-            else:
-                shift_vec = used_axes[1] * (box_length / 2)  # 沿长度方向平移
-                yaw = angle_dir1_x + np.pi/2 if angle_dir1_x < np.pi/2 else angle_dir1_x - np.pi/2
+            angle_dir1_x = np.arccos(np.clip(np.dot(dir1, x_axis), -1.0, 1.0)) 
+            angle_dir2_x = np.arccos(np.clip(np.dot(dir2, x_axis), -1.0, 1.0)) 
 
-        else:
-            yaw = 0
-            self.get_logger().info('Unexpected case: only one axis found, treating as length direction.')
+            used_axes = np.vstack([dir1, dir2])
+
+            # ===== 方案1：法向投影均值法求角点 =====
+            # 计算垂直于方向向量的法向量（二维旋转90°）
+            n1 = np.array([-dir1[1], dir1[0]])   # 垂直于 dir1
+            n2 = np.array([-dir2[1], dir2[0]])   # 垂直于 dir2
+            # 计算点云在法向上的投影均值
+            c1 = np.mean(pts @ n1)
+            c2 = np.mean(pts @ n2)
+            # 解线性方程组求交点
+            A = np.vstack([n1, n2])
+            b = np.array([c1, c2])
+            corner = np.linalg.solve(A, b)        # 角点坐标（精确交点）
+            # =====================================
+
+            self.get_logger().info(f'dir1 与 x 轴夹角: {angle_dir1_x:.2f}rad, dir2 与 x 轴夹角: {angle_dir2_x:.2f}rad') 
+            min_proj = projected.min(axis=0) 
+            max_proj = projected.max(axis=0) 
+            center_proj = (min_proj + max_proj) / 2 
+
+            length_proj = projected[:,0].max() - projected[:,0].min() 
+            width_proj = projected[:,1].max() - projected[:,1].min()   
+
+            self.get_logger().info(f'length_proj: {length_proj:.3f}, width_proj: {width_proj:.3f}') 
+
+            if length_proj >= width_proj: 
+                # 第一主轴对应长度 → 第二主轴对应宽度 
+                box_length = box_size[0] 
+                box_width = box_size[1] 
+            else: 
+                # 第一主轴对应宽度 → 交换主轴 
+                used_axes = used_axes[::-1] 
+                box_length = box_size[1] 
+                box_width = box_size[0] 
             
-        center_shifted = center + shift_vec
+            if length_proj >= box_width: 
+                shift_vec = used_axes[0] * (box_length / 2)
+                yaw = angle_dir1_x 
+            else: 
+                shift_vec = used_axes[1] * (box_length / 2)  # 沿长度方向平移 
+                yaw = angle_dir1_x + np.pi/2 if angle_dir1_x < np.pi/2 else angle_dir1_x - np.pi/2 
+            
+            center_shifted = corner + shift_vec 
 
-        # # --- Step 7: 计算 yaw（绕 z 轴旋转） ---
-        # yaw = np.arctan2(used_axes[0,1], used_axes[0,0])
+            return center_shifted, yaw, used_axes
+        else: 
+            used_axes = axes[:1] # 单边 
+            normal = axes[1] if np.dot(axes[1], x_axis) > 0 else -axes[1] 
+            is_corner = False 
+            projected = pts_centered @ used_axes.T 
 
-        return center_shifted, yaw, used_axes
+            self.get_logger().info(f'dir1 与 x 轴夹角: {angle_dir1_x:.2f}rad, dir2 与 x 轴夹角: {angle_dir2_x:.2f}rad') 
+            min_proj = projected.min(axis=0) 
+            max_proj = projected.max(axis=0) 
+            center_proj = (min_proj + max_proj) / 2 
+            center = mean + center_proj @ used_axes # 回到原坐标系 
+            length_proj = projected[:,0].max() - projected[:,0].min()
+            width_proj = length_proj # 如果不是角，则将宽度设为长度
+
+            self.get_logger().info(f'length_proj: {length_proj:.3f}, width_proj: {width_proj:.3f}') 
+
+            if length_proj >= width_proj: 
+                # 第一主轴对应长度 → 第二主轴对应宽度 
+                box_length = box_size[0] 
+                box_width = box_size[1] 
+            else: 
+                # 第一主轴对应宽度 → 交换主轴 
+                used_axes = used_axes[::-1] 
+                box_length = box_size[1] 
+                box_width = box_size[0] 
+            
+            if length_proj >= box_width: 
+                shift_vec = normal * (box_width / 2) # 沿宽度方向平移 
+                yaw = angle_dir1_x 
+            else: 
+                shift_vec = normal * (box_length / 2) # 沿长度方向平移 
+                yaw = angle_dir1_x - np.pi/2 if angle_dir1_x < np.pi/2 - 0.01 else angle_dir1_x - np.pi/2 
+
+            center_shifted = center + shift_vec 
+
+            return center_shifted, yaw, used_axes
+
  
 def main():
     rclpy.init()
@@ -615,7 +678,7 @@ def is_wood(h,s,v):
     return True if 20 <= h <= 60 and 0 < s < 0.6 and v > 0.4 else False
 
 def is_grey(h,s,v):
-    return True if s < 0.25 and v > 0.1 and v < 0.25 else False
+    return True if s < 0.15 and v > 0.1 and v < 0.25 else False
 
 if __name__ == '__main__':
     main()
