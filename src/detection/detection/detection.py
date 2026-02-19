@@ -19,7 +19,6 @@ from visualization_msgs.msg import Marker
 from sensor_msgs.msg import PointCloud2
 import sensor_msgs_py.point_cloud2 as pc2
 
-from sklearn.cluster import DBSCAN
 
 import ctypes
 import struct
@@ -549,74 +548,132 @@ class Detection(Node):
         self.get_logger().info(f'主成分方差比: {ratio:.3f}') 
 
         if ratio > 0.1:
-            used_axes = axes  # 有角 
-            projected = pts_centered @ used_axes.T
+            # =========================================================
+            # RANSAC 拟合两条边 → 求角点
+            # =========================================================
 
-            mask1 = np.abs(projected[:,0]) > np.abs(projected[:,1])
-            mask2 = ~mask1
+            pts_np = pts.copy()
 
-            edge1 = pts[mask1]
-            edge2 = pts[mask2]
+            def fit_line_ransac(points, threshold=0.008, max_iter=200):
+                best_inliers = []
+                best_model = None
 
-            def fit_line(points):
-                m = np.mean(points, axis=0)
-                U, S, Vt = np.linalg.svd(points - m)
-                return Vt[0]
+                if len(points) < 2:
+                    return None, []
 
-            dir1 = fit_line(edge1)
-            dir2 = fit_line(edge2)
+                for _ in range(max_iter):
+                    i1, i2 = np.random.choice(len(points), 2, replace=False)
+                    p1, p2 = points[i1], points[i2]
 
-            dir1 = dir1 if dir1[1] >= 0 else -dir1  # 保持第一主轴朝上 
-            dir2 = dir2 if dir2[1] >= 0 else -dir2  # 保持第二主轴朝上 
+                    dir_vec = p2 - p1
+                    norm = np.linalg.norm(dir_vec)
+                    if norm < 1e-6:
+                        continue
+                    dir_vec /= norm
 
-            angle_dir1_x = np.arccos(np.clip(np.dot(dir1, x_axis), -1.0, 1.0)) 
-            angle_dir2_x = np.arccos(np.clip(np.dot(dir2, x_axis), -1.0, 1.0)) 
+                    normal = np.array([-dir_vec[1], dir_vec[0]])
+                    d = -np.dot(normal, p1)
+
+                    dist = np.abs(points @ normal + d)
+                    inliers = points[dist < threshold]
+
+                    if len(inliers) > len(best_inliers):
+                        best_inliers = inliers
+                        best_model = (normal, d)
+
+                return best_model, best_inliers
+
+            def intersect_lines(model1, model2):
+                n1, d1 = model1
+                n2, d2 = model2
+                A = np.vstack([n1, n2])
+                b = -np.array([d1, d2])
+                return np.linalg.solve(A, b)
+
+            # 第一条边
+            model1, inliers1 = fit_line_ransac(pts_np)
+
+            if model1 is None or len(inliers1) < 5:
+                return None, None, None
+
+            # 删除第一条边点
+            mask = np.ones(len(pts_np), dtype=bool)
+            for p in inliers1:
+                idx = np.where((pts_np == p).all(axis=1))[0]
+                mask[idx] = False
+
+            remaining = pts_np[mask]
+
+            # 第二条边
+            model2, inliers2 = fit_line_ransac(remaining)
+
+            if model2 is None or len(inliers2) < 5:
+                return None, None, None
+
+            # 角点
+            corner = intersect_lines(model1, model2)
+
+            # =========================================================
+            # 方向向量（从直线法向恢复）
+            # =========================================================
+            n1, _ = model1
+            n2, _ = model2
+
+            dir1 = np.array([n1[1], -n1[0]])
+            dir2 = np.array([n2[1], -n2[0]])
+
+            dir1 /= np.linalg.norm(dir1)
+            dir2 /= np.linalg.norm(dir2)
+
+            # 保持朝前
+            if dir1[1] < 0:
+                dir1 = -dir1
+            if dir2[1] < 0:
+                dir2 = -dir2
 
             used_axes = np.vstack([dir1, dir2])
 
-            # ===== 方案1：法向投影均值法求角点 =====
-            # 计算垂直于方向向量的法向量（二维旋转90°）
-            n1 = np.array([-dir1[1], dir1[0]])   # 垂直于 dir1
-            n2 = np.array([-dir2[1], dir2[0]])   # 垂直于 dir2
-            # 计算点云在法向上的投影均值
-            c1 = np.mean(pts @ n1)
-            c2 = np.mean(pts @ n2)
-            # 解线性方程组求交点
-            A = np.vstack([n1, n2])
-            b = np.array([c1, c2])
-            corner = np.linalg.solve(A, b)        # 角点坐标（精确交点）
-            # =====================================
+            # =========================================================
+            # 计算长度方向
+            # =========================================================
+            proj1 = pts_np @ dir1
+            proj2 = pts_np @ dir2
 
-            self.get_logger().info(f'dir1 与 x 轴夹角: {angle_dir1_x:.2f}rad, dir2 与 x 轴夹角: {angle_dir2_x:.2f}rad') 
-            min_proj = projected.min(axis=0) 
-            max_proj = projected.max(axis=0) 
-            center_proj = (min_proj + max_proj) / 2 
+            length1 = proj1.max() - proj1.min()
+            length2 = proj2.max() - proj2.min()
 
-            length_proj = projected[:,0].max() - projected[:,0].min() 
-            width_proj = projected[:,1].max() - projected[:,1].min()   
+            self.get_logger().info(
+                f'RANSAC length1: {length1:.3f}, length2: {length2:.3f}'
+            )
 
-            self.get_logger().info(f'length_proj: {length_proj:.3f}, width_proj: {width_proj:.3f}') 
+            # 判断哪条是长边
+            if length1 > length2:
+                main_dir = dir1
+                side_dir = dir2
+                box_length = box_size[0]
+                box_width = box_size[1]
+            else:
+                main_dir = dir2
+                side_dir = dir1
+                box_length = box_size[0]
+                box_width = box_size[1]
 
-            if length_proj >= width_proj: 
-                # 第一主轴对应长度 → 第二主轴对应宽度 
-                box_length = box_size[0] 
-                box_width = box_size[1] 
-            else: 
-                # 第一主轴对应宽度 → 交换主轴 
-                used_axes = used_axes[::-1] 
-                box_length = box_size[1] 
-                box_width = box_size[0] 
-            
-            if length_proj >= box_width: 
-                shift_vec = used_axes[0] * (box_length / 2)
-                yaw = angle_dir1_x 
-            else: 
-                shift_vec = used_axes[1] * (box_length / 2)  # 沿长度方向平移 
-                yaw = angle_dir1_x + np.pi/2 if angle_dir1_x < np.pi/2 else angle_dir1_x - np.pi/2 
-            
-            center_shifted = corner + shift_vec 
+            # =========================================================
+            # 计算中心
+            # =========================================================
+            # center_shifted = corner + main_dir * (box_length / 2)
+            center_shifted = corner - main_dir * (box_length / 2) + side_dir * (box_width / 2) # 沿宽度方向平移到箱子中心
+            # center_shifted = corner
+
+            # yaw
+            yaw = np.arctan2(main_dir[1], main_dir[0])
+
+            self.get_logger().info(
+                f'Corner: {corner}, Center: {center_shifted}, yaw: {yaw:.3f}'
+            )
 
             return center_shifted, yaw, used_axes
+
         else: 
             used_axes = axes[:1] # 单边 
             normal = axes[1] if np.dot(axes[1], x_axis) > 0 else -axes[1] 
