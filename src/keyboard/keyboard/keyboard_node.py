@@ -9,6 +9,8 @@ class KeyboardTeleop(Node):
         super().__init__('keyboard_teleop')
         self.pub = self.create_publisher(DutyCycles, '/phidgets/motor/duty_cycles', 10)
 
+        
+
     def get_key(self):
         fd = sys.stdin.fileno()
         old = termios.tcgetattr(fd)
@@ -35,6 +37,11 @@ class KeyboardTeleop(Node):
             elif key == 'd':
                 msg.duty_cycle_left = 0.1
                 msg.duty_cycle_right = -0.1
+            elif key == 'c' or key == '\x03':
+                msg.duty_cycle_left = 0.0
+                msg.duty_cycle_right = 0.0
+                self.pub.publish(msg)
+                break
             else:
                 msg.duty_cycle_left = 0.0
                 msg.duty_cycle_right = 0.0
@@ -52,3 +59,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+# comment to test Git
