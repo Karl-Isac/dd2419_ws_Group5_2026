@@ -82,8 +82,6 @@ def draw_cs_on_image(image,centerpoint,angle):
     cv2.arrowedLine(image, (int(cx), int(cy)), (int(cx-arrow_length*math.sin(theta)),int(cy+arrow_length*math.cos(theta))),(0,255,0),2)
 
 def saturate_difference(current,previous,limit):
-    print(previous + limit)
-    print(previous - limit)
     if abs(current - previous) > limit:
         if (current - previous) > 0:
             return previous + limit
@@ -113,7 +111,7 @@ class Pickup(Node):
             Image, '/arm/camera/image_raw', self.image_callback, 10)
         
         # Initialize the arm position
-        self.init_position = [10,120,30,180,100,120]            # [10,120,30,180,180,120] used during debug
+        self.init_position = [10,120,20,190,120,120]            # [10,120,30,180,180,120] used during debug
         msg = ArmControl()
         msg.header.stamp = self.get_clock().now().to_msg()
         msg.time = [1000,1000,1000,1000,1000,1000]
@@ -126,11 +124,12 @@ class Pickup(Node):
 
         self.joint5target = 120
         self.joint1target = 120
+        self.reach_target = 20             # joint2target, but other joints depend on it
 
         self.sideways_integral_term = 0
 
         # Send out a control action every 0.1 seconds
-        timer_period = 0.1   #debug 0.1  # seconds
+        timer_period = 0.1      # seconds
         self.timer = self.create_timer(timer_period, self.timer_callback)
 
 
@@ -142,12 +141,15 @@ class Pickup(Node):
                 k_sideways = 0.01#0.05                  commented values work with 0.5 sec timer
                 k_sideways_integral = 0.01#0.1
                 k_rotation = 1
+                k_reach = 0.01
 
                 # Previous targets:
                 prev_joint1target = self.joint1target
                 prev_joint5target = self.joint5target
+                prev_reach_target = self.reach_target
 
                 image_half_width = self.image_shape[1]/2
+                image_half_height = self.image_shape[0]/2
                 cx,cy = self.cube_position_in_frame
                 rotation = self.cube_orientation_in_frame
                 self.cube_position_available = False
@@ -170,6 +172,18 @@ class Pickup(Node):
                     rotation_error = rotation_error - 90
                 self.joint1target = 120 + k_rotation*rotation_error
 
+                # Reach control (arm extend/contract, P)
+                reach_error = image_half_height-cy
+                self.reach_target = 20 + k_reach*reach_error
+
+                if self.reach_target > 50:          # saturate to avoid collisions
+                    self.reach_target = 50
+                elif self.reach_target < 20:
+                    self.reach_target = 20
+                
+
+                
+
                 # Max motor speed: 60 deg / 0.22 sec (from github)
                 # => 25 deg per 0.1 tick
                 limit = 25
@@ -178,12 +192,18 @@ class Pickup(Node):
                 assert all(isinstance(v, (int, float)) for v in (self.joint1target,prev_joint1target,self.joint5target,prev_joint5target,limit))
                 self.joint1target = saturate_difference(self.joint1target,prev_joint1target,limit)
                 self.joint5target = saturate_difference(self.joint5target,prev_joint5target,limit)
-                self.get_logger().info("Previous target: " + str(prev_joint5target))
-                self.get_logger().info("Current target: " + str(self.joint5target))
-                self.get_logger().info("Integral term: " + str(self.sideways_integral_term)+"\n")
+                self.reach_target = saturate_difference(self.reach_target,prev_reach_target,limit/2)    # half the limit because reach translates to 2*reach degrees on one of the motors
+                assert((self.reach_target > 20) and (self.reach_target < 50))
 
+                # Translate reach into joint targets:
+                joint2target = self.reach_target
+                joint3target = 210-self.reach_target
+                joint4target = 160-2*self.reach_target
+
+                self.get_logger().info('Joint 2,3,4 targets: '+ str(joint2target) +", "+ str(joint3target) +", "+ str(joint4target))
                 
-
+                # debug
+                return
                 msg = ArmControl()
                 msg.header.stamp = self.get_clock().now().to_msg()
                 msg.time = [100]*6  # move all joints in 100 ms (timer period), safe bcuz of saturation just above
