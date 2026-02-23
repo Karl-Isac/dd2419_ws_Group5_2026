@@ -13,6 +13,8 @@ import numpy as np
 from cv_bridge import CvBridge      # to convert between ros2 image and numpy array (for opencv)
 import time
 
+from learning_tf2_py.arm_safe_republisher import jointmin,jointMAX
+
 def approx_to_polygon(contour):
     # Approximate contour to polygon
     peri = cv2.arcLength(contour, True)
@@ -111,7 +113,7 @@ class Pickup(Node):
             Image, '/arm/camera/image_raw', self.image_callback, 10)
         
         # Initialize the arm position
-        self.init_position = [10,120,30,180,180,120]            # debug so it cannot collide [10,120,30,180,100,120]
+        self.init_position = [10,120,30,180,100,120]            # [10,120,30,180,180,120] used during debug
         msg = ArmControl()
         msg.header.stamp = self.get_clock().now().to_msg()
         msg.time = [1000,1000,1000,1000,1000,1000]
@@ -137,8 +139,8 @@ class Pickup(Node):
             try:
                 start = time.perf_counter()
                 # Control gains:
-                k_sideways = 0.01#0.05                  TODO tune a bit more, commented values work with 0.5 sec timer, maybe add D
-                k_sideways_integral = 0.02#0.1
+                k_sideways = 0.01#0.05                  commented values work with 0.5 sec timer
+                k_sideways_integral = 0.01#0.1
                 k_rotation = 1
 
                 # Previous targets:
@@ -153,6 +155,14 @@ class Pickup(Node):
                 sideways_error = image_half_width-cx
                 self.sideways_integral_term = self.sideways_integral_term + k_sideways_integral*sideways_error
                 self.joint5target = 120 + k_sideways*sideways_error + self.sideways_integral_term
+                # Anti integral windup -> simple clamping
+                k_sideways_anti_windup = 100 * k_sideways_integral        # tunable
+                if self.joint5target > jointMAX[5]:
+                    sat_amount = self.joint5target - jointMAX[5]
+                    self.sideways_integral_term = self.sideways_integral_term - sat_amount * k_sideways_anti_windup
+                    self.joint5target = jointMAX[5]
+                elif self.joint5target < jointmin[5]:
+                    self.joint5target = jointmin[5]
                 
                 # Rotation control (P)
                 rotation_error = rotation % 90
@@ -160,17 +170,19 @@ class Pickup(Node):
                     rotation_error = rotation_error - 90
                 self.joint1target = 120 + k_rotation*rotation_error
 
-                # Max motor speed 60 deg / 0.22 sec
+                # Max motor speed: 60 deg / 0.22 sec (from github)
                 # => 25 deg per 0.1 tick
                 limit = 25
-
+                # If the position target is too far from the previous one, lower it
                 # Check whether all of these are reals, had some issues previously:
                 assert all(isinstance(v, (int, float)) for v in (self.joint1target,prev_joint1target,self.joint5target,prev_joint5target,limit))
-
                 self.joint1target = saturate_difference(self.joint1target,prev_joint1target,limit)
                 self.joint5target = saturate_difference(self.joint5target,prev_joint5target,limit)
                 self.get_logger().info("Previous target: " + str(prev_joint5target))
-                self.get_logger().info("Current target: " + str(self.joint5target)+"\n")
+                self.get_logger().info("Current target: " + str(self.joint5target))
+                self.get_logger().info("Integral term: " + str(self.sideways_integral_term)+"\n")
+
+                
 
                 msg = ArmControl()
                 msg.header.stamp = self.get_clock().now().to_msg()
@@ -180,6 +192,7 @@ class Pickup(Node):
                 self._pub_control.publish(msg)
                 end = time.perf_counter()
                 print(f"Execution time: {end - start:.6f} seconds")
+
             except Exception as e:
                 # If something breaks in the controller, goto initial position, assumed to be safe:
                 self.get_logger().fatal("Error in controller code, moving to safe state and shutting down")

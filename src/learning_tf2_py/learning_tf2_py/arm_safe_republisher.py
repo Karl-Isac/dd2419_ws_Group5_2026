@@ -5,6 +5,9 @@ import sys, termios, tty
 from robp_interfaces.msg import ArmControl
 import time
 
+jointmin = [0,0,15,10,40,0]               # min and max allowed angles, 0 - gripper, 5 - rotating base
+jointMAX = [105,240,230,230,200,160]
+
 class ArmSafeRepublisher(Node):
     def __init__(self):
         super().__init__('arm_safe_republisher')
@@ -20,8 +23,7 @@ class ArmSafeRepublisher(Node):
 
         # Separate joint limits:
         joints = msg.position
-        jointmin = [0,0,15,10,40,0]               # min and max allowed angles, 0 - gripper, 5 - rotating base
-        jointMAX = [105,240,230,230,200,160]
+
         for i in range(6):
             if joints[i] < jointmin[i]:
                 joints[i] = jointmin[i]
