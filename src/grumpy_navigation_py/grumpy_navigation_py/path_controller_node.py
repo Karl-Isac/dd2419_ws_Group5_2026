@@ -44,6 +44,10 @@ class PathControllerNode(Node):
         self.declare_parameter("duty_forward", 0.20)
         self.declare_parameter("duty_turn", 0.15)
         self.declare_parameter("max_duty", 0.35)
+        self.declare_parameter("min_forward_duty", 0.12)
+        self.declare_parameter("creep_band", 0.20)
+        self.declare_parameter("slow_band", 0.50)        # meters
+        self.declare_parameter("min_turn_scale", 0.30)   # keep some turning authority near goal
 
         self.world_frame = self.get_parameter("world_frame").value
         self.base_frame = self.get_parameter("base_frame").value
@@ -133,6 +137,7 @@ class PathControllerNode(Node):
 
         pose = self.get_pose()
         if pose is None:
+            self.stop()
             return
 
         x, y, yaw = pose
@@ -187,24 +192,58 @@ class PathControllerNode(Node):
         duty_turn = float(self.get_parameter("duty_turn").value)
         max_duty = float(self.get_parameter("max_duty").value)
 
-        # Slow down as we approach stop distance to avoid overshoot
-        # When d_final == stop_dist => scale ~0
-        slow_band = max(0.10, 0.50)  # meters of slowdown band
-        scale = clamp((d_final - stop_dist) / slow_band, 0.0, 1.0)
+        # # Slow down as we approach stop distance to avoid overshoot
+        # # When d_final == stop_dist => scale ~0
+        # slow_band = max(0.10, 0.50)  # meters of slowdown band
+        # scale = clamp((d_final - stop_dist) / slow_band, 0.0, 1.0)
+        #
+        # if abs(err) > angle_tol:
+        #     if err > 0.0:
+        #         left, right = -duty_turn, +duty_turn
+        #     else:
+        #         left, right = +duty_turn, -duty_turn
+        # else:
+        #     left = duty_fwd * scale
+        #     right = duty_fwd * scale
+        #
+        # self.publish_duty(
+        #     clamp(left, -max_duty, max_duty),
+        #     clamp(right, -max_duty, max_duty),
+        # )
+
+        # --- Slowdown / creep logic (avoid deadband stall) ---
+        slow_band = max(0.10, float(self.get_parameter("slow_band").value))
+        creep_band = max(0.0, float(self.get_parameter("creep_band").value))
+        min_fwd = float(self.get_parameter("min_forward_duty").value)
+        min_turn_scale = float(self.get_parameter("min_turn_scale").value)
+
+        gap = d_final - stop_dist              # > 0 here (since reached-case returned earlier)
+
+        # scale goes 1 far away -> 0 at stop_dist
+        scale = clamp(gap / slow_band, 0.0, 1.0)
+
+        # forward command: scaled far away, but creep with a minimum duty near goal
+        if gap <= creep_band:
+            fwd_cmd = min_fwd
+        else:
+            fwd_cmd = duty_fwd * scale
+
+        # also reduce turning a bit near goal (optional but helps)
+        turn_cmd = duty_turn * max(min_turn_scale, scale)
 
         if abs(err) > angle_tol:
             if err > 0.0:
-                left, right = -duty_turn, +duty_turn
+                left, right = -turn_cmd, +turn_cmd
             else:
-                left, right = +duty_turn, -duty_turn
+                left, right = +turn_cmd, -turn_cmd
         else:
-            left = duty_fwd * scale
-            right = duty_fwd * scale
+            left, right = fwd_cmd, fwd_cmd
 
         self.publish_duty(
             clamp(left, -max_duty, max_duty),
             clamp(right, -max_duty, max_duty),
         )
+
 
 
 def main():
