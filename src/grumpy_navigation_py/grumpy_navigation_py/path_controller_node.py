@@ -44,7 +44,7 @@ class PathControllerNode(Node):
         self.declare_parameter("duty_forward", 0.20)
         self.declare_parameter("duty_turn", 0.15)
         self.declare_parameter("max_duty", 0.35)
-        self.declare_parameter("min_forward_duty", 0.20)
+        self.declare_parameter("min_forward_duty", 0.15)
         self.declare_parameter("creep_band", 0.20)
         self.declare_parameter("slow_band", 0.50)        # meters
         self.declare_parameter("min_turn_scale", 0.30)   # keep some turning authority near goal
