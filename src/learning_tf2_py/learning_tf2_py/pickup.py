@@ -81,6 +81,9 @@ def draw_cs_on_image(image,centerpoint,angle):
     # Y axis:
     cv2.arrowedLine(image, (int(cx), int(cy)), (int(cx-arrow_length*math.sin(theta)),int(cy+arrow_length*math.cos(theta))),(0,255,0),2)
 
+def draw_target_on_image(image,x,y):
+    cv2.drawMarker(image,(int(x),int(y)),(0,0,255),cv2.MARKER_CROSS,15,2)
+
 def saturate_difference(current,previous,limit):
     if abs(current - previous) > limit:
         if (current - previous) > 0:
@@ -141,20 +144,20 @@ class Pickup(Node):
                 k_sideways = 0.01#0.05                  commented values work with 0.5 sec timer
                 k_sideways_integral = 0.01#0.1
                 k_rotation = 1
-                k_reach = 0.01
+                k_reach = 0.5
 
                 # Previous targets:
                 prev_joint1target = self.joint1target
                 prev_joint5target = self.joint5target
                 prev_reach_target = self.reach_target
 
-                image_half_width = self.image_shape[1]/2
-                image_half_height = self.image_shape[0]/2
+                
+
                 cx,cy = self.cube_position_in_frame
                 rotation = self.cube_orientation_in_frame
                 self.cube_position_available = False
                 # Sideways control (PI)
-                sideways_error = image_half_width-cx
+                sideways_error = self.width_target-cx
                 self.sideways_integral_term = self.sideways_integral_term + k_sideways_integral*sideways_error
                 self.joint5target = 120 + k_sideways*sideways_error + self.sideways_integral_term
                 # Anti integral windup -> simple clamping
@@ -173,7 +176,7 @@ class Pickup(Node):
                 self.joint1target = 120 + k_rotation*rotation_error
 
                 # Reach control (arm extend/contract, P)
-                reach_error = image_half_height-cy
+                reach_error = self.height_target-cy
                 self.reach_target = 20 + k_reach*reach_error
 
                 if self.reach_target > 50:          # saturate to avoid collisions
@@ -192,8 +195,9 @@ class Pickup(Node):
                 assert all(isinstance(v, (int, float)) for v in (self.joint1target,prev_joint1target,self.joint5target,prev_joint5target,limit))
                 self.joint1target = saturate_difference(self.joint1target,prev_joint1target,limit)
                 self.joint5target = saturate_difference(self.joint5target,prev_joint5target,limit)
-                self.reach_target = saturate_difference(self.reach_target,prev_reach_target,limit/2)    # half the limit because reach translates to 2*reach degrees on one of the motors
-                assert((self.reach_target > 20) and (self.reach_target < 50))
+                #self.reach_target = saturate_difference(self.reach_target,prev_reach_target,limit/2)    # half the limit because reach translates to 2*reach degrees on one of the motors
+                self.reach_target = saturate_difference(self.reach_target,prev_reach_target,limit/100)    # half the limit because reach translates to 2*reach degrees on one of the motors
+                assert((self.reach_target >= 20) and (self.reach_target <= 50))
 
                 # Translate reach into joint targets:
                 joint2target = self.reach_target
@@ -202,12 +206,10 @@ class Pickup(Node):
 
                 self.get_logger().info('Joint 2,3,4 targets: '+ str(joint2target) +", "+ str(joint3target) +", "+ str(joint4target))
                 
-                # debug
-                return
                 msg = ArmControl()
                 msg.header.stamp = self.get_clock().now().to_msg()
                 msg.time = [100]*6  # move all joints in 100 ms (timer period), safe bcuz of saturation just above
-                msg.position = [self.init_position[0],self.joint1target,self.init_position[2],self.init_position[3],self.init_position[4],self.joint5target]
+                msg.position = [self.init_position[0],self.joint1target,joint2target,joint3target,joint4target,self.joint5target]
 
                 self._pub_control.publish(msg)
                 end = time.perf_counter()
@@ -243,10 +245,18 @@ class Pickup(Node):
         gray = cv2.cvtColor(raw_image, cv2.COLOR_YUV2GRAY_YUY2)
         gray = cv2.GaussianBlur(gray, (5, 5), 1.5)
         canny = cv2.Canny(gray, 50, 150)
-        self.image_shape = gray.shape
 
         if publish_debug_images:
             bgr_image = cv2.cvtColor(raw_image,cv2.COLOR_YUV2BGR_YUY2)
+
+        # Define arm target in the image frame - its here due to debug reasons
+        image_shape = gray.shape
+        image_half_width = image_shape[1]/2
+        image_half_height = image_shape[0]/2
+        self.width_target = image_half_width
+        self.height_target = image_half_height+100       # tunable, keep in mind that axis is flipped
+        if publish_debug_images:
+            draw_target_on_image(bgr_image,self.width_target,self.height_target)
 
         # Thicken edges so cube faces become distinctly separate
         kernel = np.ones((5,5), np.uint8)
