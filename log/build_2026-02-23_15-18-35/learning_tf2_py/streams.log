@@ -1,0 +1,56 @@
+[0.650s] Invoking command in '/home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py': DEBUGINFOD_URLS=https://debuginfod.ubuntu.com PIXI_PROMPT=(dd2419_ws) PS1=(dd2419_ws) \[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ PYTHONPATH=/home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/prefix_override:/home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 setup.py develop --editable --build-directory /home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/build --no-deps install_data
+[0.862s] running develop
+[0.862s] /home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/lib/python3.12/site-packages/setuptools/command/develop.py:41: EasyInstallDeprecationWarning: easy_install command is deprecated.
+[0.862s] !!
+[0.863s] 
+[0.863s]         ********************************************************************************
+[0.863s]         Please avoid running ``setup.py`` and ``easy_install``.
+[0.863s]         Instead, use pypa/build, pypa/installer or other
+[0.863s]         standards-based tools.
+[0.863s] 
+[0.863s]         See https://github.com/pypa/setuptools/issues/917 for details.
+[0.863s]         ********************************************************************************
+[0.863s] 
+[0.863s] !!
+[0.863s]   easy_install.initialize_options(self)
+[0.890s] /home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/lib/python3.12/site-packages/setuptools/_distutils/cmd.py:90: SetuptoolsDeprecationWarning: setup.py install is deprecated.
+[0.890s] !!
+[0.890s] 
+[0.890s]         ********************************************************************************
+[0.890s]         Please avoid running ``setup.py`` directly.
+[0.890s]         Instead, use pypa/build, pypa/installer or other
+[0.890s]         standards-based tools.
+[0.890s] 
+[0.890s]         See https://blog.ganssle.io/articles/2021/10/setup-py-deprecated.html for details.
+[0.890s]         ********************************************************************************
+[0.890s] 
+[0.890s] !!
+[0.890s]   self.initialize_options()
+[0.967s] /home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/lib/python3.12/site-packages/setuptools/command/easy_install.py:334: UserWarning: Unbuilt egg for pytest-repeat [unknown version] (/usr/lib/python3/dist-packages)
+[0.967s]   self.local_index = Environment(self.shadow_path + sys.path)
+[0.985s] running egg_info
+[0.998s] writing learning_tf2_py.egg-info/PKG-INFO
+[0.999s] writing dependency_links to learning_tf2_py.egg-info/dependency_links.txt
+[0.999s] writing entry points to learning_tf2_py.egg-info/entry_points.txt
+[0.999s] writing requirements to learning_tf2_py.egg-info/requires.txt
+[0.999s] writing top-level names to learning_tf2_py.egg-info/top_level.txt
+[1.028s] reading manifest file 'learning_tf2_py.egg-info/SOURCES.txt'
+[1.029s] writing manifest file 'learning_tf2_py.egg-info/SOURCES.txt'
+[1.043s] running build_ext
+[1.043s] Creating /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/python3.12/site-packages/learning-tf2-py.egg-link (link to .)
+[1.043s] Installing arm_safe_republisher script to /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/learning_tf2_py
+[1.043s] Installing executors script to /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/learning_tf2_py
+[1.043s] Installing interpolation script to /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/learning_tf2_py
+[1.044s] Installing keyboard script to /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/learning_tf2_py
+[1.044s] Installing pickup script to /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/learning_tf2_py
+[1.044s] Installing pickup_hardcoded script to /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/learning_tf2_py
+[1.044s] Installing random_nav script to /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/learning_tf2_py
+[1.044s] Installing threading script to /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/learning_tf2_py
+[1.044s] Installing timestamp script to /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/learning_tf2_py
+[1.044s] 
+[1.044s] Installed /home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py
+[1.044s] running install_data
+[1.044s] copying resource/learning_tf2_py -> /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/share/ament_index/resource_index/packages
+[1.044s] copying package.xml -> /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/share/learning_tf2_py
+[1.045s] copying launch/arm_init.xml -> /home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/share/learning_tf2_py/launch
+[1.069s] Invoked command in '/home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py' returned '0': DEBUGINFOD_URLS=https://debuginfod.ubuntu.com PIXI_PROMPT=(dd2419_ws) PS1=(dd2419_ws) \[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ PYTHONPATH=/home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/prefix_override:/home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 setup.py develop --editable --build-directory /home/grumpy/dd2419_ws_Group5_2026/build/learning_tf2_py/build --no-deps install_data

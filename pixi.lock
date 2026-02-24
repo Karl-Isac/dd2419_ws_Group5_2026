@@ -14952,7 +14952,7 @@ packages:
   - libglu
   - libglu >=9.0.3,<9.1.0a0
   - xorg-libx11
-  - xorg-libx11 >=1.8.13,<2.0a0
+  - xorg-libx11 >=1.8.12,<2.0a0
   - xorg-xorgproto
   - glfw 3.*
   - glfw >=3.4,<4.0a0

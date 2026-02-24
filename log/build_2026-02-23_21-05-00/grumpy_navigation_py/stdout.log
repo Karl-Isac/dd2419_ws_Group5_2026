@@ -1,0 +1,30 @@
+running egg_info
+writing ../../build/grumpy_navigation_py/grumpy_navigation_py.egg-info/PKG-INFO
+writing dependency_links to ../../build/grumpy_navigation_py/grumpy_navigation_py.egg-info/dependency_links.txt
+writing entry points to ../../build/grumpy_navigation_py/grumpy_navigation_py.egg-info/entry_points.txt
+writing requirements to ../../build/grumpy_navigation_py/grumpy_navigation_py.egg-info/requires.txt
+writing top-level names to ../../build/grumpy_navigation_py/grumpy_navigation_py.egg-info/top_level.txt
+reading manifest file '../../build/grumpy_navigation_py/grumpy_navigation_py.egg-info/SOURCES.txt'
+writing manifest file '../../build/grumpy_navigation_py/grumpy_navigation_py.egg-info/SOURCES.txt'
+running build
+running build_py
+copying grumpy_navigation_py/controller_node.py -> /home/grumpy/dd2419_ws_Group5_2026/build/grumpy_navigation_py/build/lib/grumpy_navigation_py
+copying grumpy_navigation_py/planner_node.py -> /home/grumpy/dd2419_ws_Group5_2026/build/grumpy_navigation_py/build/lib/grumpy_navigation_py
+copying grumpy_navigation_py/__init__.py -> /home/grumpy/dd2419_ws_Group5_2026/build/grumpy_navigation_py/build/lib/grumpy_navigation_py
+copying grumpy_navigation_py/path_controller_node.py -> /home/grumpy/dd2419_ws_Group5_2026/build/grumpy_navigation_py/build/lib/grumpy_navigation_py
+copying grumpy_navigation_py/simple_planner_node.py -> /home/grumpy/dd2419_ws_Group5_2026/build/grumpy_navigation_py/build/lib/grumpy_navigation_py
+running install
+running install_lib
+copying /home/grumpy/dd2419_ws_Group5_2026/build/grumpy_navigation_py/build/lib/grumpy_navigation_py/path_controller_node.py -> /home/grumpy/dd2419_ws_Group5_2026/install/grumpy_navigation_py/lib/python3.12/site-packages/grumpy_navigation_py
+byte-compiling /home/grumpy/dd2419_ws_Group5_2026/install/grumpy_navigation_py/lib/python3.12/site-packages/grumpy_navigation_py/path_controller_node.py to path_controller_node.cpython-312.pyc
+running install_data
+copying resource/grumpy_navigation_py -> /home/grumpy/dd2419_ws_Group5_2026/install/grumpy_navigation_py/share/ament_index/resource_index/packages
+copying package.xml -> /home/grumpy/dd2419_ws_Group5_2026/install/grumpy_navigation_py/share/grumpy_navigation_py
+copying launch/nav.launch.py -> /home/grumpy/dd2419_ws_Group5_2026/install/grumpy_navigation_py/share/grumpy_navigation_py/launch
+running install_egg_info
+removing '/home/grumpy/dd2419_ws_Group5_2026/install/grumpy_navigation_py/lib/python3.12/site-packages/grumpy_navigation_py-0.0.0-py3.12.egg-info' (and everything under it)
+Copying ../../build/grumpy_navigation_py/grumpy_navigation_py.egg-info to /home/grumpy/dd2419_ws_Group5_2026/install/grumpy_navigation_py/lib/python3.12/site-packages/grumpy_navigation_py-0.0.0-py3.12.egg-info
+running install_scripts
+Installing controller script to /home/grumpy/dd2419_ws_Group5_2026/install/grumpy_navigation_py/lib/grumpy_navigation_py
+Installing planner script to /home/grumpy/dd2419_ws_Group5_2026/install/grumpy_navigation_py/lib/grumpy_navigation_py
+writing list of installed files to '/home/grumpy/dd2419_ws_Group5_2026/build/grumpy_navigation_py/install.log'

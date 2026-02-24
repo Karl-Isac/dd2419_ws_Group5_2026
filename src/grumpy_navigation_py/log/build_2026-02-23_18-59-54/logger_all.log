@@ -1,0 +1,80 @@
+[0.788s] DEBUG:colcon:Command line arguments: ['/usr/bin/colcon', 'build', '--packages-select', 'grumpy_navigation_py', '--symlink-install']
+[0.788s] DEBUG:colcon:Parsed command line arguments: Namespace(log_base=None, log_level=None, verb_name='build', build_base='build', install_base='install', merge_install=False, symlink_install=True, test_result_base=None, continue_on_error=False, executor='parallel', parallel_workers=8, event_handlers=None, ignore_user_meta=False, metas=['./colcon.meta'], base_paths=['.'], packages_ignore=None, packages_ignore_regex=None, paths=None, packages_up_to=None, packages_up_to_regex=None, packages_above=None, packages_above_and_dependencies=None, packages_above_depth=None, packages_select_by_dep=None, packages_skip_by_dep=None, packages_skip_up_to=None, packages_select_build_failed=False, packages_skip_build_finished=False, packages_select_test_failures=False, packages_skip_test_passed=False, packages_select=['grumpy_navigation_py'], packages_skip=None, packages_select_regex=None, packages_skip_regex=None, packages_start=None, packages_end=None, cmake_args=None, cmake_target=None, cmake_target_skip_unavailable=False, cmake_clean_cache=False, cmake_clean_first=False, cmake_force_configure=False, ament_cmake_args=None, catkin_cmake_args=None, catkin_skip_building_tests=False, verb_parser=<colcon_defaults.argument_parser.defaults.DefaultArgumentsDecorator object at 0x7c5f30cfb9e0>, verb_extension=<colcon_core.verb.build.BuildVerb object at 0x7c5f30cfb620>, main=<bound method BuildVerb.main of <colcon_core.verb.build.BuildVerb object at 0x7c5f30cfb620>>)
+[0.836s] Level 1:colcon.colcon_core.package_discovery:discover_packages(colcon_meta) check parameters
+[0.836s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) check parameters
+[0.836s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) check parameters
+[0.836s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) check parameters
+[0.836s] Level 1:colcon.colcon_core.package_discovery:discover_packages(colcon_meta) discover
+[0.836s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) discover
+[0.836s] INFO:colcon.colcon_core.package_discovery:Crawling recursively for packages in '/home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py'
+[0.837s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['ignore', 'ignore_ament_install']
+[0.837s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ignore'
+[0.837s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ignore_ament_install'
+[0.837s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['colcon_pkg']
+[0.837s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'colcon_pkg'
+[0.837s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['colcon_meta']
+[0.837s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'colcon_meta'
+[0.837s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['ros']
+[0.837s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ros'
+[0.859s] DEBUG:colcon.colcon_core.package_identification:Package '.' with type 'ros.ament_python' and name 'grumpy_navigation_py'
+[0.859s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) using defaults
+[0.859s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) discover
+[0.859s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) using defaults
+[0.859s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) discover
+[0.859s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) using defaults
+[0.925s] Level 5:colcon.colcon_core.verb:set package 'grumpy_navigation_py' build argument 'cmake_args' from command line to 'None'
+[0.925s] Level 5:colcon.colcon_core.verb:set package 'grumpy_navigation_py' build argument 'cmake_target' from command line to 'None'
+[0.925s] Level 5:colcon.colcon_core.verb:set package 'grumpy_navigation_py' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[0.925s] Level 5:colcon.colcon_core.verb:set package 'grumpy_navigation_py' build argument 'cmake_clean_cache' from command line to 'False'
+[0.925s] Level 5:colcon.colcon_core.verb:set package 'grumpy_navigation_py' build argument 'cmake_clean_first' from command line to 'False'
+[0.925s] Level 5:colcon.colcon_core.verb:set package 'grumpy_navigation_py' build argument 'cmake_force_configure' from command line to 'False'
+[0.925s] Level 5:colcon.colcon_core.verb:set package 'grumpy_navigation_py' build argument 'ament_cmake_args' from command line to 'None'
+[0.926s] Level 5:colcon.colcon_core.verb:set package 'grumpy_navigation_py' build argument 'catkin_cmake_args' from command line to 'None'
+[0.926s] Level 5:colcon.colcon_core.verb:set package 'grumpy_navigation_py' build argument 'catkin_skip_building_tests' from command line to 'False'
+[0.926s] DEBUG:colcon.colcon_core.verb:Building package 'grumpy_navigation_py' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/build/grumpy_navigation_py', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/install/grumpy_navigation_py', 'merge_install': False, 'path': '/home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py', 'symlink_install': True, 'test_result_base': None}
+[0.939s] INFO:colcon.colcon_core.executor:Executing jobs using 'parallel' executor
+[0.952s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:run_until_complete
+[0.953s] INFO:colcon.colcon_ros.task.ament_python.build:Building ROS package in '/home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py' with build type 'ament_python'
+[0.953s] Level 1:colcon.colcon_core.shell:create_environment_hook('grumpy_navigation_py', 'ament_prefix_path')
+[0.968s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_core.shell.bat': Not used on non-Windows systems
+[0.968s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/install/grumpy_navigation_py/share/grumpy_navigation_py/hook/ament_prefix_path.dsv'
+[0.968s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/install/grumpy_navigation_py/share/grumpy_navigation_py/hook/ament_prefix_path.sh'
+[0.982s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[1.185s] INFO:colcon.colcon_core.task.python.build:Building Python package in '/home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py'
+[1.199s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[1.602s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/build/grumpy_navigation_py': DEBUGINFOD_URLS=https://debuginfod.ubuntu.com PIXI_PROMPT=(dd2419_ws) PS1=(dd2419_ws) ${debian_chroot:+($debian_chroot)}\u@\h:\w\$ PYTHONPATH=/home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/build/grumpy_navigation_py/prefix_override:/home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/install/grumpy_navigation_py/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 setup.py develop --editable --build-directory /home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/build/grumpy_navigation_py/build --no-deps install_data
+[2.019s] Level 1:colcon.colcon_core.shell:create_environment_hook('grumpy_navigation_py', 'pythonpath_develop')
+[2.019s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/build/grumpy_navigation_py' returned '0': DEBUGINFOD_URLS=https://debuginfod.ubuntu.com PIXI_PROMPT=(dd2419_ws) PS1=(dd2419_ws) ${debian_chroot:+($debian_chroot)}\u@\h:\w\$ PYTHONPATH=/home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/build/grumpy_navigation_py/prefix_override:/home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/install/grumpy_navigation_py/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 setup.py develop --editable --build-directory /home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/build/grumpy_navigation_py/build --no-deps install_data
+[2.035s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/build/grumpy_navigation_py/share/grumpy_navigation_py/hook/pythonpath_develop.dsv'
+[2.035s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/build/grumpy_navigation_py/share/grumpy_navigation_py/hook/pythonpath_develop.sh'
+[2.050s] Level 1:colcon.colcon_core.environment:checking '/home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/install/grumpy_navigation_py' for CMake module files
+[2.050s] Level 1:colcon.colcon_core.environment:checking '/home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/install/grumpy_navigation_py' for CMake config files
+[2.050s] Level 1:colcon.colcon_core.environment:checking '/home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/install/grumpy_navigation_py/lib'
+[2.050s] Level 1:colcon.colcon_core.environment:checking '/home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/install/grumpy_navigation_py/bin'
+[2.051s] Level 1:colcon.colcon_core.environment:checking '/home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/install/grumpy_navigation_py/lib/pkgconfig/grumpy_navigation_py.pc'
+[2.051s] Level 1:colcon.colcon_core.environment:checking '/home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/install/grumpy_navigation_py/lib/python3.12/site-packages'
+[2.051s] Level 1:colcon.colcon_core.shell:create_environment_hook('grumpy_navigation_py', 'pythonpath')
+[2.065s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/install/grumpy_navigation_py/share/grumpy_navigation_py/hook/pythonpath.dsv'
+[2.065s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/install/grumpy_navigation_py/share/grumpy_navigation_py/hook/pythonpath.sh'
+[2.065s] Level 1:colcon.colcon_core.environment:checking '/home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/install/grumpy_navigation_py/bin'
+[2.065s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(grumpy_navigation_py)
+[2.079s] INFO:colcon.colcon_core.shell:Creating package descriptor '/home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/install/grumpy_navigation_py/share/grumpy_navigation_py/package.dsv'
+[2.079s] INFO:colcon.colcon_core.shell:Creating package script '/home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/install/grumpy_navigation_py/share/grumpy_navigation_py/package.sh'
+[2.079s] INFO:colcon.colcon_core.shell:Creating package script '/home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/install/grumpy_navigation_py/share/grumpy_navigation_py/package.bash'
+[2.080s] INFO:colcon.colcon_core.shell:Creating package script '/home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/install/grumpy_navigation_py/share/grumpy_navigation_py/package.zsh'
+[2.080s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/install/grumpy_navigation_py/share/colcon-core/packages/grumpy_navigation_py)
+[2.080s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:closing loop
+[2.080s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:loop closed
+[2.080s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:run_until_complete finished with '0'
+[2.080s] DEBUG:colcon.colcon_core.event_reactor:joining thread
+[2.098s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_notification.desktop_notification.terminal_notifier': Not used on non-Darwin systems
+[2.098s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_notification.desktop_notification.win32': Not used on non-Windows systems
+[2.098s] INFO:colcon.colcon_notification.desktop_notification:Sending desktop notification using 'notify2'
+[2.108s] DEBUG:colcon.colcon_core.event_reactor:joined thread
+[2.123s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/install/local_setup.sh'
+[2.123s] INFO:colcon.colcon_core.shell:Creating prefix util module '/home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/install/_local_setup_util_sh.py'
+[2.124s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/install/setup.sh'
+[2.139s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/install/local_setup.bash'
+[2.139s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/install/setup.bash'
+[2.153s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/install/local_setup.zsh'
+[2.154s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/install/setup.zsh'

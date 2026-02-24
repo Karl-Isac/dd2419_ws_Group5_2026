@@ -1,0 +1,98 @@
+[0.000000] (-) TimerEvent: {}
+[0.000211] (-) JobUnselected: {'identifier': 'aruco'}
+[0.000240] (-) JobUnselected: {'identifier': 'aruco_msgs'}
+[0.000263] (-) JobUnselected: {'identifier': 'aruco_ros'}
+[0.000276] (-) JobUnselected: {'identifier': 'detection'}
+[0.000294] (-) JobUnselected: {'identifier': 'display_markers'}
+[0.000303] (-) JobUnselected: {'identifier': 'keyboard'}
+[0.000311] (-) JobUnselected: {'identifier': 'learning_tf2_py'}
+[0.000320] (-) JobUnselected: {'identifier': 'libphidget22'}
+[0.000328] (-) JobUnselected: {'identifier': 'librealsense2'}
+[0.000337] (-) JobUnselected: {'identifier': 'odometry'}
+[0.000346] (-) JobUnselected: {'identifier': 'phidgets_accelerometer'}
+[0.000355] (-) JobUnselected: {'identifier': 'phidgets_analog_inputs'}
+[0.000363] (-) JobUnselected: {'identifier': 'phidgets_analog_outputs'}
+[0.000372] (-) JobUnselected: {'identifier': 'phidgets_api'}
+[0.000380] (-) JobUnselected: {'identifier': 'phidgets_digital_inputs'}
+[0.000388] (-) JobUnselected: {'identifier': 'phidgets_digital_outputs'}
+[0.000397] (-) JobUnselected: {'identifier': 'phidgets_drivers'}
+[0.000406] (-) JobUnselected: {'identifier': 'phidgets_gyroscope'}
+[0.000414] (-) JobUnselected: {'identifier': 'phidgets_high_speed_encoder'}
+[0.000426] (-) JobUnselected: {'identifier': 'phidgets_ik'}
+[0.000434] (-) JobUnselected: {'identifier': 'phidgets_magnetometer'}
+[0.000443] (-) JobUnselected: {'identifier': 'phidgets_motors'}
+[0.000451] (-) JobUnselected: {'identifier': 'phidgets_msgs'}
+[0.000460] (-) JobUnselected: {'identifier': 'phidgets_spatial'}
+[0.000468] (-) JobUnselected: {'identifier': 'phidgets_stepper'}
+[0.000477] (-) JobUnselected: {'identifier': 'phidgets_temperature'}
+[0.000486] (-) JobUnselected: {'identifier': 'realsense2_camera'}
+[0.000494] (-) JobUnselected: {'identifier': 'realsense2_camera_msgs'}
+[0.000502] (-) JobUnselected: {'identifier': 'realsense2_description'}
+[0.000511] (-) JobUnselected: {'identifier': 'realsense2_ros_mqtt_bridge'}
+[0.000519] (-) JobUnselected: {'identifier': 'realsense2_rviz_plugin'}
+[0.000528] (-) JobUnselected: {'identifier': 'robp_arm'}
+[0.000536] (-) JobUnselected: {'identifier': 'robp_autocomplete'}
+[0.000544] (-) JobUnselected: {'identifier': 'robp_boot_camp_launch'}
+[0.000553] (-) JobUnselected: {'identifier': 'robp_interfaces'}
+[0.000561] (-) JobUnselected: {'identifier': 'robp_launch'}
+[0.000570] (-) JobUnselected: {'identifier': 'robp_phidgets'}
+[0.000578] (-) JobUnselected: {'identifier': 'rplidar_ros'}
+[0.000589] (grumpy_navigation_py) JobQueued: {'identifier': 'grumpy_navigation_py', 'dependencies': OrderedDict()}
+[0.000743] (grumpy_navigation_py) JobStarted: {'identifier': 'grumpy_navigation_py'}
+[0.099852] (-) TimerEvent: {}
+[0.200080] (-) TimerEvent: {}
+[0.300283] (-) TimerEvent: {}
+[0.400489] (-) TimerEvent: {}
+[0.500709] (-) TimerEvent: {}
+[0.600925] (-) TimerEvent: {}
+[0.647233] (grumpy_navigation_py) Command: {'cmd': ['/usr/bin/python3', 'setup.py', 'egg_info', '--egg-base', '../../build/grumpy_navigation_py', 'build', '--build-base', '/home/grumpy/dd2419_ws_Group5_2026/build/grumpy_navigation_py/build', 'install', '--record', '/home/grumpy/dd2419_ws_Group5_2026/build/grumpy_navigation_py/install.log', '--single-version-externally-managed'], 'cwd': '/home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py', 'env': {'LESSOPEN': '| /usr/bin/lesspipe %s', 'PIXI_ENVIRONMENT_NAME': 'default', 'USER': 'grumpy', 'SSH_CLIENT': '192.168.1.6 40922 22', 'XDG_SESSION_TYPE': 'tty', 'PIXI_EXE': '/home/grumpy/.pixi/bin/pixi', 'ROS_ETC_DIR': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/etc/ros', 'SHLVL': '2', 'LD_LIBRARY_PATH': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/opt/rviz_ogre_vendor/lib:/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/opt/libphidget22/lib:/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/lib', 'HOME': '/home/grumpy', 'CONDA_SHLVL': '1', 'OLDPWD': '/home/grumpy', 'SSH_TTY': '/dev/pts/1', 'ROS_PYTHON_VERSION': '3', 'PS1': '(dd2419_ws) ${debian_chroot:+($debian_chroot)}\\u@\\h:\\w\\$', 'PIXI_IN_SHELL': '1', 'DBUS_SESSION_BUS_ADDRESS': 'unix:path=/run/user/1000/bus', 'DEBUGINFOD_URLS': 'https://debuginfod.ubuntu.com', 'COLCON_PREFIX_PATH': '/home/grumpy/dd2419_ws_Group5_2026/install', 'ROS_DISTRO': 'jazzy', 'LOGNAME': 'grumpy', '_': '/usr/bin/colcon', 'ROS_VERSION': '2', 'XDG_SESSION_CLASS': 'user', 'TERM': 'alacritty', 'XDG_SESSION_ID': '10', 'PIXI_ENVIRONMENT_PLATFORMS': 'linux-64,win-64,osx-arm64', 'ROS_OS_OVERRIDE': 'conda:linux', 'PATH': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/bin:/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/bin:/home/grumpy/dd2419_ws_Group5_2026/bin:/home/grumpy/.pixi/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin', 'PIXI_PROJECT_VERSION': '1.0.0', 'XDG_RUNTIME_DIR': '/run/user/1000', 'DISPLAY': ':0', 'LANG': 'en_US.UTF-8', 'RMW_IMPLEMENTATION': 'rmw_cyclonedds_cpp', 'LS_COLORS': '', 'PIXI_PROMPT': '(dd2419_ws)', 'PIXI_WS': '/home/grumpy/dd2419_ws_Group5_2026', 'XML_CATALOG_FILES': 'file:///home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/etc/xml/catalog file:///etc/xml/catalog', 'GSETTINGS_SCHEMA_DIR': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/share/glib-2.0/schemas', 'ROS_DOMAIN_ID': '5', 'AMENT_PREFIX_PATH': '/home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py:/home/grumpy/dd2419_ws_Group5_2026/install/keyboard:/home/grumpy/dd2419_ws_Group5_2026/install/grumpy_navigation_py:/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default', 'SHELL': '/bin/bash', 'LESSCLOSE': '/usr/bin/lesspipe %s %s', 'CONDA_DEFAULT_ENV': 'dd2419_ws', 'PIXI_PROJECT_ROOT': '/home/grumpy/dd2419_ws_Group5_2026', 'PIXI_PROJECT_MANIFEST': '/home/grumpy/dd2419_ws_Group5_2026/pixi.toml', 'ROS_AUTOMATIC_DISCOVERY_RANGE': 'SUBNET', 'PWD': '/home/grumpy/dd2419_ws_Group5_2026/build/grumpy_navigation_py', 'PIXI_PROJECT_NAME': 'dd2419_ws', 'SSH_CONNECTION': '192.168.1.6 40922 192.168.1.102 22', 'CONDA_ENV_SHLVL_1_ROS_AUTOMATIC_DISCOVERY_RANGE': 'SUBNET', 'XDG_DATA_DIRS': '/usr/share/gnome:/usr/local/share:/usr/share:/var/lib/snapd/desktop', 'PYTHONPATH': '/home/grumpy/dd2419_ws_Group5_2026/build/grumpy_navigation_py/prefix_override:/home/grumpy/dd2419_ws_Group5_2026/install/grumpy_navigation_py/lib/python3.12/site-packages:/home/grumpy/dd2419_ws_Group5_2026/install/learning_tf2_py/lib/python3.12/site-packages:/home/grumpy/dd2419_ws_Group5_2026/install/keyboard/lib/python3.12/site-packages:/home/grumpy/dd2419_ws_Group5_2026/install/grumpy_navigation_py/lib/python3.12/site-packages:/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/lib/python/site-packages:/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/lib/python3.12/site-packages', 'CONDA_PREFIX': '/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default', 'GSETTINGS_SCHEMA_DIR_CONDA_BACKUP': '', 'COLCON': '1'}, 'shell': False}
+[0.701029] (-) TimerEvent: {}
+[0.801254] (-) TimerEvent: {}
+[0.832642] (grumpy_navigation_py) StdoutLine: {'line': b'running egg_info\n'}
+[0.846515] (grumpy_navigation_py) StdoutLine: {'line': b'writing ../../build/grumpy_navigation_py/grumpy_navigation_py.egg-info/PKG-INFO\n'}
+[0.846745] (grumpy_navigation_py) StdoutLine: {'line': b'writing dependency_links to ../../build/grumpy_navigation_py/grumpy_navigation_py.egg-info/dependency_links.txt\n'}
+[0.846860] (grumpy_navigation_py) StdoutLine: {'line': b'writing entry points to ../../build/grumpy_navigation_py/grumpy_navigation_py.egg-info/entry_points.txt\n'}
+[0.847012] (grumpy_navigation_py) StdoutLine: {'line': b'writing requirements to ../../build/grumpy_navigation_py/grumpy_navigation_py.egg-info/requires.txt\n'}
+[0.847080] (grumpy_navigation_py) StdoutLine: {'line': b'writing top-level names to ../../build/grumpy_navigation_py/grumpy_navigation_py.egg-info/top_level.txt\n'}
+[0.876785] (grumpy_navigation_py) StdoutLine: {'line': b"reading manifest file '../../build/grumpy_navigation_py/grumpy_navigation_py.egg-info/SOURCES.txt'\n"}
+[0.877626] (grumpy_navigation_py) StdoutLine: {'line': b"writing manifest file '../../build/grumpy_navigation_py/grumpy_navigation_py.egg-info/SOURCES.txt'\n"}
+[0.877749] (grumpy_navigation_py) StdoutLine: {'line': b'running build\n'}
+[0.877817] (grumpy_navigation_py) StdoutLine: {'line': b'running build_py\n'}
+[0.877903] (grumpy_navigation_py) StdoutLine: {'line': b'copying grumpy_navigation_py/controller_node.py -> /home/grumpy/dd2419_ws_Group5_2026/build/grumpy_navigation_py/build/lib/grumpy_navigation_py\n'}
+[0.878017] (grumpy_navigation_py) StdoutLine: {'line': b'copying grumpy_navigation_py/planner_node.py -> /home/grumpy/dd2419_ws_Group5_2026/build/grumpy_navigation_py/build/lib/grumpy_navigation_py\n'}
+[0.878187] (grumpy_navigation_py) StdoutLine: {'line': b'copying grumpy_navigation_py/__init__.py -> /home/grumpy/dd2419_ws_Group5_2026/build/grumpy_navigation_py/build/lib/grumpy_navigation_py\n'}
+[0.878290] (grumpy_navigation_py) StdoutLine: {'line': b'copying grumpy_navigation_py/path_controller_node.py -> /home/grumpy/dd2419_ws_Group5_2026/build/grumpy_navigation_py/build/lib/grumpy_navigation_py\n'}
+[0.878366] (grumpy_navigation_py) StdoutLine: {'line': b'copying grumpy_navigation_py/simple_planner_node.py -> /home/grumpy/dd2419_ws_Group5_2026/build/grumpy_navigation_py/build/lib/grumpy_navigation_py\n'}
+[0.878515] (grumpy_navigation_py) StdoutLine: {'line': b'running install\n'}
+[0.878764] (grumpy_navigation_py) StderrLine: {'line': b'/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/lib/python3.12/site-packages/setuptools/_distutils/cmd.py:90: SetuptoolsDeprecationWarning: setup.py install is deprecated.\n'}
+[0.878871] (grumpy_navigation_py) StderrLine: {'line': b'!!\n'}
+[0.878926] (grumpy_navigation_py) StderrLine: {'line': b'\n'}
+[0.878975] (grumpy_navigation_py) StderrLine: {'line': b'        ********************************************************************************\n'}
+[0.879023] (grumpy_navigation_py) StderrLine: {'line': b'        Please avoid running ``setup.py`` directly.\n'}
+[0.879070] (grumpy_navigation_py) StderrLine: {'line': b'        Instead, use pypa/build, pypa/installer or other\n'}
+[0.879125] (grumpy_navigation_py) StderrLine: {'line': b'        standards-based tools.\n'}
+[0.879171] (grumpy_navigation_py) StderrLine: {'line': b'\n'}
+[0.879213] (grumpy_navigation_py) StderrLine: {'line': b'        See https://blog.ganssle.io/articles/2021/10/setup-py-deprecated.html for details.\n'}
+[0.879256] (grumpy_navigation_py) StderrLine: {'line': b'        ********************************************************************************\n'}
+[0.879301] (grumpy_navigation_py) StderrLine: {'line': b'\n'}
+[0.879351] (grumpy_navigation_py) StderrLine: {'line': b'!!\n'}
+[0.879396] (grumpy_navigation_py) StderrLine: {'line': b'  self.initialize_options()\n'}
+[0.882864] (grumpy_navigation_py) StdoutLine: {'line': b'running install_lib\n'}
+[0.897200] (grumpy_navigation_py) StdoutLine: {'line': b'copying /home/grumpy/dd2419_ws_Group5_2026/build/grumpy_navigation_py/build/lib/grumpy_navigation_py/path_controller_node.py -> /home/grumpy/dd2419_ws_Group5_2026/install/grumpy_navigation_py/lib/python3.12/site-packages/grumpy_navigation_py\n'}
+[0.897687] (grumpy_navigation_py) StdoutLine: {'line': b'byte-compiling /home/grumpy/dd2419_ws_Group5_2026/install/grumpy_navigation_py/lib/python3.12/site-packages/grumpy_navigation_py/path_controller_node.py to path_controller_node.cpython-312.pyc\n'}
+[0.899427] (grumpy_navigation_py) StdoutLine: {'line': b'running install_data\n'}
+[0.901310] (-) TimerEvent: {}
+[0.913671] (grumpy_navigation_py) StdoutLine: {'line': b'copying resource/grumpy_navigation_py -> /home/grumpy/dd2419_ws_Group5_2026/install/grumpy_navigation_py/share/ament_index/resource_index/packages\n'}
+[0.913770] (grumpy_navigation_py) StdoutLine: {'line': b'copying package.xml -> /home/grumpy/dd2419_ws_Group5_2026/install/grumpy_navigation_py/share/grumpy_navigation_py\n'}
+[0.913910] (grumpy_navigation_py) StdoutLine: {'line': b'copying launch/nav.launch.py -> /home/grumpy/dd2419_ws_Group5_2026/install/grumpy_navigation_py/share/grumpy_navigation_py/launch\n'}
+[0.913996] (grumpy_navigation_py) StdoutLine: {'line': b'running install_egg_info\n'}
+[0.928488] (grumpy_navigation_py) StdoutLine: {'line': b"removing '/home/grumpy/dd2419_ws_Group5_2026/install/grumpy_navigation_py/lib/python3.12/site-packages/grumpy_navigation_py-0.0.0-py3.12.egg-info' (and everything under it)\n"}
+[0.928621] (grumpy_navigation_py) StdoutLine: {'line': b'Copying ../../build/grumpy_navigation_py/grumpy_navigation_py.egg-info to /home/grumpy/dd2419_ws_Group5_2026/install/grumpy_navigation_py/lib/python3.12/site-packages/grumpy_navigation_py-0.0.0-py3.12.egg-info\n'}
+[0.929158] (grumpy_navigation_py) StdoutLine: {'line': b'running install_scripts\n'}
+[0.999691] (grumpy_navigation_py) StdoutLine: {'line': b'Installing controller script to /home/grumpy/dd2419_ws_Group5_2026/install/grumpy_navigation_py/lib/grumpy_navigation_py\n'}
+[1.001444] (-) TimerEvent: {}
+[1.001513] (grumpy_navigation_py) StdoutLine: {'line': b'Installing planner script to /home/grumpy/dd2419_ws_Group5_2026/install/grumpy_navigation_py/lib/grumpy_navigation_py\n'}
+[1.001747] (grumpy_navigation_py) StdoutLine: {'line': b"writing list of installed files to '/home/grumpy/dd2419_ws_Group5_2026/build/grumpy_navigation_py/install.log'\n"}
+[1.023502] (grumpy_navigation_py) CommandEnded: {'returncode': 0}
+[1.070858] (grumpy_navigation_py) JobEnded: {'identifier': 'grumpy_navigation_py', 'rc': 0}
+[1.071430] (-) EventReactorShutdown: {}
