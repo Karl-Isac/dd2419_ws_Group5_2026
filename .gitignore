@@ -60,3 +60,10 @@ bags/*
 
 # VS Code
 .vscode
+
+build/
+install/
+log/
+**/build/
+**/install/
+**/log/
