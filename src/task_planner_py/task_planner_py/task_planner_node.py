@@ -48,7 +48,13 @@ class TaskPlannerNode(Node):
         dt = 1.0 / float(self.get_parameter("rate_hz").value)
         self.timer = self.create_timer(dt, self.step)
 
+        self.pick_done = False
+        self.create_subscription(Bool, "/arm/done_pick", self.on_pick_done, 10)
+
         self.get_logger().info("TaskPlannerNode up.")
+
+    def on_pick_done(self):
+        self.pick_done = True
 
     def on_reached(self, msg: Bool):
         self.nav_reached = bool(msg.data)
@@ -81,6 +87,8 @@ class TaskPlannerNode(Node):
         self._published_this_state = False
         self.get_logger().info(f"State -> {new_state}")
 
+
+
     def step(self):
         robot = self.lookup_xy(self.base_frame)
         obj = self.lookup_xy(self.object_frame)
@@ -110,12 +118,15 @@ class TaskPlannerNode(Node):
 
         elif self.state == "PICK_OBJECT":
             if not self._published_this_state:
-                self.arm_pub.publish(String(data="pick"))  # adapt to your arm/gripper API
+                self.pick_done = False
+                self.arm_pub.publish(String(data="pick"))
                 self._published_this_state = True
-                # For MS2 you can assume success or wait for an arm feedback topic
 
-            # move on immediately (or after arm feedback)
-            self.enter_state("NAV_TO_BOX")
+            # move on immediately for testing
+            # self.enter_state("NAV_TO_BOX")
+
+            if self.pick_done:
+                self.enter_state("NAV_TO_BOX")
 
         elif self.state == "NAV_TO_BOX":
             if not self._published_this_state:
