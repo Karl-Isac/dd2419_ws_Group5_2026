@@ -23,14 +23,14 @@ def generate_launch_description():
         package='tf2_ros',
         executable='static_transform_publisher',
         name='map_to_object_0',
-        arguments=['1.0', '0.0', '0', '0', '0', '0', 'map', 'object_0']
+        arguments=['1.0', '1.0', '0', '0', '0', '0', 'map', 'object_0']
     )
 
     tf_box = Node(
         package='tf2_ros',
         executable='static_transform_publisher',
         name='map_to_box_0',
-        arguments=['2.0', '0.0', '0', '0', '0', '0', 'map', 'box_0']
+        arguments=['0.0', '-1.0', '0', '0', '0', '0', 'map', 'box_0']
     )
 
     tf_odom = Node(
@@ -53,7 +53,7 @@ def generate_launch_description():
     )
 
     fake_arm = Node(
-        package='task_planner',
+        package='task_planner_py',
         executable='fake_arm_node',
         name='fake_arm_node',
         output='screen'

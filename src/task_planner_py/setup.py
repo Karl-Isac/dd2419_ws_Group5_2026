@@ -1,4 +1,6 @@
 from setuptools import find_packages, setup
+import os
+from glob import glob
 
 package_name = 'task_planner_py'
 
@@ -10,6 +12,7 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
+        (os.path.join('share', package_name, 'launch'), glob('launch/*.launch.py')),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -24,7 +27,8 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'task_planner_node = task_planner.task_planner_node:main',
+            'task_planner_node = task_planner_py.task_planner_node:main',
+            'fake_arm_node = task_planner_py.fake_arm_node:main',
         ],
     },
 )

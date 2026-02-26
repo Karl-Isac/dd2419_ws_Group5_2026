@@ -53,7 +53,7 @@ class TaskPlannerNode(Node):
 
         self.get_logger().info("TaskPlannerNode up.")
 
-    def on_pick_done(self):
+    def on_pick_done(self, msg: Bool):
         self.pick_done = True
 
     def on_reached(self, msg: Bool):
