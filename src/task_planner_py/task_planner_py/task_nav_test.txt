@@ -11,6 +11,8 @@ ros2 run odometry odometry
 
 pixi run phidgets
 
+ros2 run task_planner fake_arm_node
+
 
 
 
