@@ -13,7 +13,7 @@ from tf2_ros import PointStamped, TransformBroadcaster, TransformListener, Trans
 from tf2_ros.buffer import Buffer
 from tf2_ros.static_transform_broadcaster import StaticTransformBroadcaster
 from tf_transformations import quaternion_from_euler
-from geometry_msgs.msg import TransformStamped, Point
+from geometry_msgs.msg import TransformStamped, Point, Vector3Stamped
 from visualization_msgs.msg import Marker
 
 from sensor_msgs.msg import PointCloud2
@@ -144,33 +144,33 @@ class Detection(Node):
             h, s, v = self.rgb_to_hsv(r, g, b)
             if y > 0 and z > 0 and z < 0.5:
                 # red
-                # if is_red(h, s, v):
-                #     red_counter += 1
-                #     red_points.append([x,y,z])
-                #     red_sum_x += x
-                #     red_sum_y += y
-                #     red_sum_z += z
-                # # blue
-                # elif is_blue(h,s,v):
-                #     blue_counter += 1
-                #     blue_points.append([x,y,z])
-                #     blue_sum_x += x
-                #     blue_sum_y += y
-                #     blue_sum_z += z
-                # # green
-                # elif is_green(h,s,v):
-                #     green_counter += 1
-                #     green_points.append([x,y,z])
-                #     green_sum_x += x
-                #     green_sum_y += y
-                #     green_sum_z += z
-                # # wood
-                # elif is_wood(h,s,v):
-                #     wood_counter += 1
-                #     wood_points.append([x,y,z])
-                #     wood_sum_x += x
-                #     wood_sum_y += y
-                #     wood_sum_z += z
+                if is_red(h, s, v):
+                    red_counter += 1
+                    red_points.append([x,y,z])
+                    red_sum_x += x
+                    red_sum_y += y
+                    red_sum_z += z
+                # blue
+                elif is_blue(h,s,v):
+                    blue_counter += 1
+                    blue_points.append([x,y,z])
+                    blue_sum_x += x
+                    blue_sum_y += y
+                    blue_sum_z += z
+                # green
+                elif is_green(h,s,v):
+                    green_counter += 1
+                    green_points.append([x,y,z])
+                    green_sum_x += x
+                    green_sum_y += y
+                    green_sum_z += z
+                # wood
+                elif is_wood(h,s,v):
+                    wood_counter += 1
+                    wood_points.append([x,y,z])
+                    wood_sum_x += x
+                    wood_sum_y += y
+                    wood_sum_z += z
 
                 if is_grey(h,s,v):
                     grey_points.append([z ,-x])
@@ -194,7 +194,7 @@ class Detection(Node):
         if self.red_available and not self.red_published:
             msg_time = rclpy.time.Time.from_msg(self.red_timestamp)
             if not self.tf_buffer.can_transform(
-                'realsense_camera_link',
+                'map',
                 self.red.header.frame_id,
                 msg_time,
                 timeout=rclpy.duration.Duration(seconds=1)
@@ -204,7 +204,7 @@ class Detection(Node):
             try:
                 red_map = self.tf_buffer.transform(
                     self.red,
-                    'realsense_camera_link',
+                    'map',
                     timeout=rclpy.duration.Duration(seconds=1)
                 )
             except TransformException as ex:
@@ -216,7 +216,7 @@ class Detection(Node):
             
             tf_red.header.stamp = self.red_timestamp
 
-            tf_red.header.frame_id = 'realsense_camera_link'
+            tf_red.header.frame_id = 'map'
             tf_red.child_frame_id = 'red_object'
 
             tf_red.transform.translation.x = red_map.pose.position.x
@@ -230,6 +230,8 @@ class Detection(Node):
 
             self.static_broadcaster.sendTransform(tf_red)
             self.red_published = True
+
+            self.get_logger().info(f'Map box: Red {red_map.pose.position.x} {red_map.pose.position.y} N/A')
 
         # blue
         if blue_counter > 15 and not self.blue_available:
@@ -250,7 +252,7 @@ class Detection(Node):
         if self.blue_available and not self.blue_published:
             msg_time = rclpy.time.Time.from_msg(self.blue_timestamp)
             if not self.tf_buffer.can_transform(
-                'realsense_camera_link',
+                'map',
                 self.blue.header.frame_id,
                 msg_time,
                 timeout=rclpy.duration.Duration(seconds=1)
@@ -260,7 +262,7 @@ class Detection(Node):
             try:
                 blue_map = self.tf_buffer.transform(
                     self.blue,
-                    'realsense_camera_link',
+                    'map',
                     timeout=rclpy.duration.Duration(seconds=1)
                 )
             except TransformException as ex:
@@ -272,7 +274,7 @@ class Detection(Node):
             
             tf_blue.header.stamp = self.blue_timestamp
 
-            tf_blue.header.frame_id = 'realsense_camera_link'
+            tf_blue.header.frame_id = 'map'
             tf_blue.child_frame_id = 'blue_object'
 
             tf_blue.transform.translation.x = blue_map.pose.position.x
@@ -286,6 +288,8 @@ class Detection(Node):
 
             self.static_broadcaster.sendTransform(tf_blue)
             self.blue_published = True
+
+            self.get_logger().info(f'Map box: Blue {blue_map.pose.position.x} {blue_map.pose.position.y} N/A')
         
         # green
         if green_counter > 15 and not self.green_available:
@@ -306,7 +310,7 @@ class Detection(Node):
         if self.green_available and not self.green_published:
             msg_time = rclpy.time.Time.from_msg(self.green_timestamp)
             if not self.tf_buffer.can_transform(
-                'realsense_camera_link',
+                'map',
                 self.green.header.frame_id,
                 msg_time,
                 timeout=rclpy.duration.Duration(seconds=1)
@@ -316,7 +320,7 @@ class Detection(Node):
             try:
                 green_map = self.tf_buffer.transform(
                     self.green,
-                    'realsense_camera_link',
+                    'map',
                     timeout=rclpy.duration.Duration(seconds=1)
                 )
             except TransformException as ex:
@@ -328,7 +332,7 @@ class Detection(Node):
             
             tf_green.header.stamp = self.green_timestamp
 
-            tf_green.header.frame_id = 'realsense_camera_link'
+            tf_green.header.frame_id = 'map'
             tf_green.child_frame_id = 'green_object'
 
             tf_green.transform.translation.x = green_map.pose.position.x
@@ -342,6 +346,8 @@ class Detection(Node):
 
             self.static_broadcaster.sendTransform(tf_green)
             self.green_published = True
+
+            self.get_logger().info(f'Map box: Green {green_map.pose.position.x} {green_map.pose.position.y} N/A')
 
         # wood
         if wood_counter > 15 and not self.wood_available:
@@ -362,7 +368,7 @@ class Detection(Node):
         if self.wood_available and not self.wood_published:
             msg_time = rclpy.time.Time.from_msg(self.wood_timestamp)
             if not self.tf_buffer.can_transform(
-                'realsense_camera_link',
+                'map',
                 self.wood.header.frame_id,
                 msg_time,
                 timeout=rclpy.duration.Duration(seconds=1)
@@ -372,7 +378,7 @@ class Detection(Node):
             try:
                 wood_map = self.tf_buffer.transform(
                     self.wood,
-                    'realsense_camera_link',
+                    'map',
                     timeout=rclpy.duration.Duration(seconds=1)
                 )
             except TransformException as ex:
@@ -384,7 +390,7 @@ class Detection(Node):
             
             tf_wood.header.stamp = self.wood_timestamp
 
-            tf_wood.header.frame_id = 'realsense_camera_link'
+            tf_wood.header.frame_id = 'map'
             tf_wood.child_frame_id = 'wood_object'
 
             tf_wood.transform.translation.x = wood_map.pose.position.x
@@ -398,6 +404,8 @@ class Detection(Node):
 
             self.static_broadcaster.sendTransform(tf_wood)
             self.wood_published = True
+
+            self.get_logger().info(f'Map box: Wood {wood_map.pose.position.x} {wood_map.pose.position.y} N/A')
 
         # if self.red_available and not self.red_published:
         #     msg_time = rclpy.time.Time.from_msg(self.red_timestamp)
@@ -422,6 +430,7 @@ class Detection(Node):
         #         )
         #         return
             
+        #     self.get_logger().info(f'Map box: Red {red_map.pose.position.x} {red_map.pose.position.y} N/A')
         #     tf_red.header.stamp = self.red_timestamp
 
         #     tf_red.header.frame_id = 'map'
@@ -442,27 +451,90 @@ class Detection(Node):
         self.publish_2d_cloud(grey_points, msg.header)
 
         box_size = (0.24, 0.16)  # L, W
+        
+        # center, yaw, axes = self.estimate_box_from_points(grey_points, box_size)
+
+        # if center is not None:
+        #     tf_grey = TransformStamped()
+        #     tf_grey.header.stamp = msg.header.stamp
+        #     tf_grey.header.frame_id = 'realsense_camera_link'
+        #     tf_grey.child_frame_id = 'grey_box'
+
+        #     # 位置
+        #     tf_grey.transform.translation.x = float(center[0])
+        #     tf_grey.transform.translation.y = float(center[1])
+        #     tf_grey.transform.translation.z = 0.05  # 高度固定为点云平面上方一点
+
+        #     # 旋转（绕 Z 轴 yaw）
+        #     q = quaternion_from_euler(0.0, 0.0, float(yaw))
+        #     tf_grey.transform.rotation.x = q[0]
+        #     tf_grey.transform.rotation.y = q[1]
+        #     tf_grey.transform.rotation.z = q[2]
+        #     tf_grey.transform.rotation.w = q[3]
+
+        #     self.static_broadcaster.sendTransform(tf_grey)
+
+        # 在 cloud_callback 中 estimate_box_from_points 之后
         center, yaw, axes = self.estimate_box_from_points(grey_points, box_size)
-
         if center is not None:
-            tf_grey = TransformStamped()
-            tf_grey.header.stamp = msg.header.stamp
-            tf_grey.header.frame_id = 'realsense_camera_link'
-            tf_grey.child_frame_id = 'grey_box'
+            # --- 转换到 map 坐标系 ---
+            try:
+                # # 获取变换
+                # transform = self.tf_buffer.lookup_transform(
+                #     'map', 'realsense_camera_link', msg.header.stamp, timeout=rclpy.duration.Duration(seconds=0.5))
+                
+                # 转换位置
+                point_camera = PointStamped()
+                point_camera.header.frame_id = 'realsense_camera_link'
+                point_camera.header.stamp = msg.header.stamp
+                point_camera.point.x = float(center[0])
+                point_camera.point.y = float(center[1])
+                point_camera.point.z = 0.0
+                point_map = self.tf_buffer.transform(point_camera, 'map')
 
-            # 位置
-            tf_grey.transform.translation.x = float(center[0])
-            tf_grey.transform.translation.y = float(center[1])
-            tf_grey.transform.translation.z = 0.05  # 高度固定为点云平面上方一点
+                # 转换方向
+                dir_camera = Vector3Stamped()
+                dir_camera.header.frame_id = 'realsense_camera_link'
+                dir_camera.header.stamp = msg.header.stamp
+                dir_camera.vector.x = np.cos(yaw)
+                dir_camera.vector.y = np.sin(yaw)
+                dir_camera.vector.z = 0.0
+                dir_map = self.tf_buffer.transform(dir_camera, 'map')
+                map_yaw = np.arctan2(dir_map.vector.y, dir_map.vector.x)
 
-            # 旋转（绕 Z 轴 yaw）
-            q = quaternion_from_euler(0.0, 0.0, float(yaw))
-            tf_grey.transform.rotation.x = q[0]
-            tf_grey.transform.rotation.y = q[1]
-            tf_grey.transform.rotation.z = q[2]
-            tf_grey.transform.rotation.w = q[3]
+                # 将 map_yaw 从弧度转换为度
+                map_yaw_deg = np.degrees(map_yaw)
 
-            self.static_broadcaster.sendTransform(tf_grey)
+                # 归一化到 [0, 180) 范围（取模 180）
+                map_yaw_deg = map_yaw_deg % 180
+
+                # 四舍五入取整，并确保在 0~179 之间（取模 180 后自动在 [0,180)，但可能刚好 180 变成 0）
+                angle_int = int(round(map_yaw_deg)) % 180
+
+                # 格式化 x, y 保留两位小数
+                x_str = f"{point_map.point.x*100:.2f}"
+                y_str = f"{point_map.point.y*100:.2f}"
+
+                # 现在你可以将 (x_str, y_str, angle_int) 写入地图文件
+                self.get_logger().info(f'Map box: B {x_str} {y_str} {angle_int}')
+                
+                # 可选：发布一个静态 TF 到 map 下
+                tf_map_box = TransformStamped()
+                tf_map_box.header.stamp = msg.header.stamp
+                tf_map_box.header.frame_id = 'map'
+                tf_map_box.child_frame_id = 'grey_box_map'
+                tf_map_box.transform.translation.x = point_map.point.x
+                tf_map_box.transform.translation.y = point_map.point.y
+                tf_map_box.transform.translation.z = 0.05
+                q = quaternion_from_euler(0.0, 0.0, angle_int * np.pi / 180)
+                tf_map_box.transform.rotation.x = q[0]
+                tf_map_box.transform.rotation.y = q[1]
+                tf_map_box.transform.rotation.z = q[2]
+                tf_map_box.transform.rotation.w = q[3]
+                self.static_broadcaster.sendTransform(tf_map_box)
+
+            except TransformException as ex:
+                self.get_logger().error(f'Transform failed: {ex}')
 
     def rgb_to_hsv(self, r, g, b):
         c_max = max(r, g, b)
