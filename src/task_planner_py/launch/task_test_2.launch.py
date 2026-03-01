@@ -73,6 +73,26 @@ def generate_launch_description():
         output='screen'
     )
 
+    fake_objects = ExecuteProcess(
+        cmd=[
+            'ros2', 'topic', 'pub', '/detected_objects',
+            'geometry_msgs/msg/PoseArray',
+            '{header: {frame_id: map}, poses: [{position: {x: 1.0, y: 0.5, z: 0.0}, orientation: {w: 1.0}}]}',
+            '-r', '1'
+        ],
+        output='screen'
+    )
+
+    fake_boxes = ExecuteProcess(
+        cmd=[
+            'ros2', 'topic', 'pub', '/detected_boxes',
+            'geometry_msgs/msg/PoseArray',
+            '{header: {frame_id: map}, poses: [{position: {x: 2.0, y: 1.5, z: 0.0}, orientation: {w: 1.0}}]}',
+            '-r', '1'
+        ],
+        output='screen'
+    )
+
     return LaunchDescription([
         controller,
         planner,
