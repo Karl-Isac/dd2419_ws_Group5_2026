@@ -29,6 +29,9 @@ class TaskPlannerNode(Node):
         self.latest_box = None
         self.picked_ids = set()
 
+        self.current_object = None
+        self.current_box = None
+
         # TF
         self.tf_buffer = tf2_ros.Buffer()
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, self)
@@ -100,26 +103,54 @@ class TaskPlannerNode(Node):
     def step(self):
         # We still lookup TF so we can publish goals from TF frames
         robot = self.lookup_xy(self.base_frame)
-        obj = self.latest_object
-        box = self.latest_box
-
-        if robot is None or obj is None or box is None:
+        if robot is None:
             return
 
-        ox = obj.pose.position.x
-        oy = obj.pose.position.y
-        bx = box.pose.position.x
-        by = box.pose.position.y
+        # obj = self.latest_object
+        # box = self.latest_box
+
+        # if robot is None or obj is None or box is None:
+        #     return
+
+        # ox = obj.pose.position.x
+        # oy = obj.pose.position.y
+        # bx = box.pose.position.x
+        # by = box.pose.position.y
+
+        # ox = self.current_object.pose.position.x
+        # oy = self.current_object.pose.position.y
+        # bx = self.current_box.pose.position.x
+        # by = self.current_box.pose.position.y
+
+        # if self.state == "SELECT_OBJECT":
+        #     self.enter_state("NAV_TO_OBJECT")
 
         if self.state == "SELECT_OBJECT":
-            # In MS2 you can hardcode object_0 and box_0
-            self.enter_state("NAV_TO_OBJECT")
+            obj = self.latest_object
+            box = self.latest_box
+            if obj is None or box is None:
+                return
 
-        elif self.state == "NAV_TO_OBJECT":
+            self.current_object = obj
+            self.current_box = box
+
+            self.ox = self.current_object.pose.position.x
+            self.oy = self.current_object.pose.position.y
+            self.bx = self.current_box.pose.position.x
+            self.by = self.current_box.pose.position.y
+
+            self.enter_state("NAV_TO_OBJECT")
+            return
+
+        if self.current_object is None or self.current_box is None:
+            return
+
+        # elif self.state == "NAV_TO_OBJECT":
+        if self.state == "NAV_TO_OBJECT":
             if not self._published_this_state:
                 self.phase_pub.publish(String(data="object"))
                 # IMPORTANT: goal should be the object center TF (controller handles standoff)
-                self.publish_goal_xy(ox, oy)
+                self.publish_goal_xy(self.ox, self.oy)
                 self._published_this_state = True
                 self.nav_reached = False
 
@@ -133,15 +164,17 @@ class TaskPlannerNode(Node):
                 self._published_this_state = True
 
             if self.pick_done:
-                if self.latest_object is not None:
-                    self.picked_ids.add(self.latest_object.id)
+                # if self.latest_object is not None:
+                #     self.picked_ids.add(self.latest_object.id)
+                if self.current_object is not None:
+                    self.picked_ids.add(self.current_object.id)
                 self.enter_state("NAV_TO_BOX")
 
         elif self.state == "NAV_TO_BOX":
             if not self._published_this_state:
                 self.phase_pub.publish(String(data="box"))
                 # goal should be the box center TF
-                self.publish_goal_xy(bx, by)
+                self.publish_goal_xy(self.bx, self.by)
                 self._published_this_state = True
                 self.nav_reached = False
 
@@ -152,6 +185,11 @@ class TaskPlannerNode(Node):
             if not self._published_this_state:
                 self.arm_pub.publish(String(data="drop"))
                 self._published_this_state = True
+
+                # Done with this cycle
+                self.current_object = None
+                self.current_box = None
+
             self.enter_state("DONE")
 
         elif self.state == "DONE":
