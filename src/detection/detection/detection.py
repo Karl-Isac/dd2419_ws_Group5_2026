@@ -201,7 +201,7 @@ class Detection(Node):
             g = colors[idx, 1]
             b = colors[idx, 2]
             h, s, v = self.rgb_to_hsv(r, g, b)
-            if y > 0 and z > 0 and z < 0.5:
+            if y > 0 and y < 0.09 and z > 0 and z < 0.5:
                 # red
                 if is_red(h, s, v):
                     red_counter += 1
@@ -638,7 +638,7 @@ class Detection(Node):
         "yaw: rotation around z in radians "
         "axes: principal axes vectors (2x2) """ 
         
-        if len(points) < 2: 
+        if len(points) < 10: 
             return None, None, None # 不够点无法估计 
         
         pts = np.array(points) 
@@ -676,7 +676,7 @@ class Detection(Node):
         # Step 3: 判断是否是角 
         
         ratio = S[1] / S[0] 
-        self.get_logger().info(f'主成分方差比: {ratio:.3f}') 
+        self.get_logger().debug(f'主成分方差比: {ratio:.3f}') 
 
         if ratio > 0.1:
             # =========================================================
@@ -773,7 +773,7 @@ class Detection(Node):
             length1 = proj1.max() - proj1.min()
             length2 = proj2.max() - proj2.min()
 
-            self.get_logger().info(
+            self.get_logger().debug(
                 f'RANSAC length1: {length1:.3f}, length2: {length2:.3f}'
             )
 
@@ -799,7 +799,7 @@ class Detection(Node):
             # yaw
             yaw = np.arctan2(main_dir[1], main_dir[0])
 
-            self.get_logger().info(
+            self.get_logger().debug(
                 f'Corner: {corner}, Center: {center_shifted}, yaw: {yaw:.3f}'
             )
 
@@ -811,7 +811,7 @@ class Detection(Node):
             is_corner = False 
             projected = pts_centered @ used_axes.T 
 
-            self.get_logger().info(f'dir1 与 x 轴夹角: {angle_dir1_x:.2f}rad, dir2 与 x 轴夹角: {angle_dir2_x:.2f}rad') 
+            self.get_logger().debug(f'dir1 与 x 轴夹角: {angle_dir1_x:.2f}rad, dir2 与 x 轴夹角: {angle_dir2_x:.2f}rad') 
             min_proj = projected.min(axis=0) 
             max_proj = projected.max(axis=0) 
             center_proj = (min_proj + max_proj) / 2 
@@ -819,7 +819,7 @@ class Detection(Node):
             length_proj = projected[:,0].max() - projected[:,0].min()
             width_proj = length_proj # 如果不是角，则将宽度设为长度
 
-            self.get_logger().info(f'length_proj: {length_proj:.3f}, width_proj: {width_proj:.3f}') 
+            self.get_logger().debug(f'length_proj: {length_proj:.3f}, width_proj: {width_proj:.3f}') 
 
             if length_proj >= width_proj: 
                 # 第一主轴对应长度 → 第二主轴对应宽度 
@@ -857,7 +857,7 @@ def is_red(h,s,v):
     return True if (h <= 20 or h >= 340) and s > 0.5 and v > 0.4 else False
 
 def is_blue(h,s,v):
-    return True if (h >= 200 and h <= 260) and s > 0.55 and v > 0.45 else False
+    return True if (h >= 200 and h <= 260) and s > 0.5 and v > 0.4 else False
 
 def is_green(h,s,v):
     return True if 120 <= h <= 190 and s > 0.4 and v > 0.4 else False
