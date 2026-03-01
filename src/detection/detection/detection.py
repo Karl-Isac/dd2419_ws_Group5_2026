@@ -75,6 +75,15 @@ class Detection(Node):
         # open and load map file (csv)
         package_path = get_package_share_directory('detection')
         csv_path = os.path.join(package_path, 'config', 'test.csv')
+        self.metadata_rows = []
+
+        # location of final map file (csv)
+        self.output_csv_path = os.path.join(
+            os.path.expanduser('~/dd2419_ws_Group_5_2026/src/detection/config/'),
+            'detection_output.csv'
+        )
+        os.makedirs(os.path.dirname(self.output_csv_path), exist_ok=True)
+        self.get_logger().info(f'Output CSV will be written to {self.output_csv_path}')
 
         self.object_poses = []
         self.box_poses = []
@@ -108,6 +117,8 @@ class Detection(Node):
                 elif type_id == 'B':
                     self.box_poses.append(pose)
                     self.box_lists.append([x, y, angle_deg])
+                else:
+                    self.metadata_rows.append(row)
 
         self.publish_arrays(self.object_poses, self.box_poses)
         print(self.object_lists)
@@ -931,6 +942,21 @@ class Detection(Node):
             center_shifted = center + shift_vec 
 
             return center_shifted, yaw, used_axes
+    
+    def write_csv(self):
+        try:
+            with open(self.output_csv_path, mode='w', encoding='utf-8', newline='') as file:
+                writer = csv.writer(file)
+                writer.writerow(['Type', 'x', 'y', 'angle'])
+                for meta_row in self.metadata_rows:
+                    writer.writerow(meta_row)
+                for obj in self.object_lists:
+                    writer.writerow(['O'] + obj)
+                for box in self.box_lists:
+                    writer.writerow(['B'] + box)
+            self.get_logger().debug(f'CSV file updated: {self.output_csv_path}')
+        except Exception as e:
+            self.get_logger().error(f'Failed to write CSV: {e}')
 
  
 def main():
@@ -939,9 +965,11 @@ def main():
     try:
         rclpy.spin(node)
     except KeyboardInterrupt:
-        pass
-
-    rclpy.shutdown()
+        node.get_logger().info('Shutting down, writing CSV...')
+    finally:
+        node.write_csv()
+        node.destroy_node()
+        rclpy.shutdown()
 
 def is_red(h,s,v):
     return True if (h <= 20 or h >= 340) and s > 0.5 and v > 0.4 else False
