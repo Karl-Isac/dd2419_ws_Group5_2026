@@ -12,12 +12,12 @@ class Pickup(Node):
     def __init__(self):
         super().__init__('pickup')
 
-        frequency = 10
+        frequency = 1000
         self._pub_control = self.create_publisher(
-            ArmControl, '/arm/safe_control', frequency)
+            ArmControl, '/arm/safe_control', frequency)    
         
         # Initialize the arm position
-        self.init_position = [10,120,20,190,120,120]            # [10,120,30,180,180,120] used during debug
+        self.init_position = [10,120,40,150,90,120]            # [10,120,30,180,180,120] used during debug
         msg = ArmControl()
         msg.header.stamp = self.get_clock().now().to_msg()
         msg.time = [1000,1000,1000,1000,1000,1000]
@@ -41,13 +41,13 @@ class Pickup(Node):
             # Maybe vary the msg.time too
             #################################################################################
             # Test 1 - no noise, same command all the time:
-            msg.position = [self.init_position[0],self.init_position[1],self.init_position[2],self.init_position[3],self.init_position[4],self.init_position[5]]
+            #msg.position = [self.init_position[0],self.init_position[1],self.init_position[2],self.init_position[3],self.init_position[4],self.init_position[5]]
             # Test 2 - add noise to base rotation:
             msg.position = [self.init_position[0],self.init_position[1],self.init_position[2],self.init_position[3],self.init_position[4],self.init_position[5]+noise]
             # Test 3 - add noise to gripper rotation:
-            msg.position = [self.init_position[0],self.init_position[1]+noise,self.init_position[2],self.init_position[3],self.init_position[4],self.init_position[5]]
+            #msg.position = [self.init_position[0],self.init_position[1]+noise,self.init_position[2],self.init_position[3],self.init_position[4],self.init_position[5]]
             # Test 4 - add noise to one of the contributing links
-            msg.position = [self.init_position[0],self.init_position[1],self.init_position[2],self.init_position[3],self.init_position[4]+noise,self.init_position[5]]
+            #msg.position = [self.init_position[0],self.init_position[1],self.init_position[2],self.init_position[3],self.init_position[4]+noise,self.init_position[5]]
             
             print(msg.position)
             self._pub_control.publish(msg)
