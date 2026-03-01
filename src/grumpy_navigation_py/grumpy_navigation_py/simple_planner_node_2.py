@@ -9,24 +9,23 @@ from tf2_geometry_msgs import do_transform_pose
 from geometry_msgs.msg import PoseStamped
 from nav_msgs.msg import Path
 
-import yaml  # <-- NEW
+import yaml 
 
 
 class SimplePlannerNode(Node):
     def __init__(self):
         super().__init__("simple_planner_node")
 
-        self.declare_parameter("world_frame", "map")       # "map" or "odom"
+        self.declare_parameter("world_frame", "map")
         self.declare_parameter("base_frame", "base_link")
         self.declare_parameter("num_points", 40)
 
-        self.declare_parameter("workspace_file", "workspace.yaml")  # <-- NEW
+        self.declare_parameter("workspace_file", "workspace.yaml")  
 
         self.world_frame = self.get_parameter("world_frame").value
         self.base_frame = self.get_parameter("base_frame").value
         self.num_points = int(self.get_parameter("num_points").value)
 
-        # Load workspace polygon from map file  <-- NEW
         self.workspace_poly = None
         try:
             path = self.get_parameter("workspace_file").value
