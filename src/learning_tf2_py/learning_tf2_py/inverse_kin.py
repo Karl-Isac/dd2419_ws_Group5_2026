@@ -2,6 +2,8 @@ import math
 from math import sin,cos
 from numpy import arange
 
+# Arm camera pointing downwards is assumed in all of these equations
+
 l2= 0.065       # link lengths in meters
 l3= 0.094
 l4= 0.101
@@ -28,7 +30,7 @@ def forward_kinematics(alpha,beta):
     return z,rho
 
 def inverse_kinematics(z,rho):
-    # Calculate joint angles (diff from hardware coord system) corresponding to an arm height and extension 
+    # Calculate joint angles (diff from hardware coord system) corresponding to an arm height and extension
     abs_tolerance = 1e-9  # meters, for z and rho
     rel_tolerance = 1e-6
 
@@ -51,7 +53,7 @@ def inverse_kinematics(z,rho):
     print("Inverse kinematics failed")
 
 if __name__ == "__main__":
-    alpha, beta = inverse_kinematics(z = 0.2, rho = 0.1)
+    alpha, beta = inverse_kinematics(z = 0.2, rho = 0.17)
     print(alpha*180/math.pi)
     print(beta*180/math.pi)
     # for alpha in arange(0,math.pi,math.pi/12):
