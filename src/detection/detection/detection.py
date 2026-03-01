@@ -13,12 +13,15 @@ from tf2_ros import PointStamped, TransformBroadcaster, TransformListener, Trans
 from tf2_ros.buffer import Buffer
 from tf2_ros.static_transform_broadcaster import StaticTransformBroadcaster
 from tf_transformations import quaternion_from_euler
-from geometry_msgs.msg import TransformStamped, Point, Vector3Stamped
+from geometry_msgs.msg import TransformStamped, Point, Vector3Stamped, PoseArray, Pose
 from visualization_msgs.msg import Marker
 
 from sensor_msgs.msg import PointCloud2
 import sensor_msgs_py.point_cloud2 as pc2
 
+import csv
+from ament_index_python.packages import get_package_share_directory
+import os
 
 import ctypes
 import struct
@@ -60,7 +63,46 @@ class Detection(Node):
         self.wood_published = False
         self.wood_available = False
         self.wood_timestamp = None
+        
+        # initialize topic publisher
+        self.objects_pub = self.create_publisher(PoseArray, '/detected_objects', 10)
+        self.boxes_pub = self.create_publisher(PoseArray, '/detected_boxes', 10)
 
+        # open and load map file (csv)
+        package_path = get_package_share_directory('detection')
+        csv_path = os.path.join(package_path, 'config', 'map_1_1.csv')
+
+        object_poses = []
+        box_poses = []
+
+        with open(csv_path, mode='r', encoding='utf-8') as file:
+            reader = csv.reader(file)
+            # skip the first line (header)
+            header = next(reader)
+            for row in reader:
+                type_id = row[0]
+                x = float(row[1])
+                y = float(row[2])
+                angle_deg = float(row[3])   
+                angle_rad = math.radians(angle_deg)
+
+                pose = Pose()
+                pose.position.x = x
+                pose.position.y = y
+                pose.position.z = 0.0        # z is 0
+                q = quaternion_from_euler(0, 0, angle_rad)
+                pose.orientation.x = q[0]
+                pose.orientation.y = q[1]
+                pose.orientation.z = q[2]
+                pose.orientation.w = q[3]
+
+                if type_id == 'O':
+                    object_poses.append(pose)
+                elif type_id == 'B':
+                    box_poses.append(pose)
+
+        self.publish_arrays(object_poses, box_poses)
+    
         # static_tf = TransformStamped()
         # static_tf.header.stamp = self.get_clock().now().to_msg()
         # static_tf.header.frame_id = 'base_link'
@@ -76,6 +118,23 @@ class Detection(Node):
 
         # self.static_broadcaster.sendTransform(static_tf)
 
+    def publish_arrays(self, object_poses, box_poses):
+        """publish object and box poses from map file to ROS topics."""
+        # objects
+        obj_msg = PoseArray()
+        obj_msg.header.stamp = self.get_clock().now().to_msg()
+        obj_msg.header.frame_id = 'map'      
+        obj_msg.poses = object_poses
+        self.objects_pub.publish(obj_msg)
+
+        # boxes
+        box_msg = PoseArray()
+        box_msg.header.stamp = self.get_clock().now().to_msg()
+        box_msg.header.frame_id = 'map'
+        box_msg.poses = box_poses
+        self.boxes_pub.publish(box_msg)
+
+        self.get_logger().info(f'Published {len(object_poses)} objects and {len(box_poses)} boxes')
 
     def cloud_callback(self, msg: PointCloud2):
         """Takes point cloud readings to detect objects.
@@ -199,7 +258,7 @@ class Detection(Node):
                 msg_time,
                 timeout=rclpy.duration.Duration(seconds=1)
             ):
-                return
+                self.get_logger().warn(f'Failed to publish red object')
 
             try:
                 red_map = self.tf_buffer.transform(
@@ -257,7 +316,7 @@ class Detection(Node):
                 msg_time,
                 timeout=rclpy.duration.Duration(seconds=1)
             ):
-                return
+                self.get_logger().warn(f'Failed to publish blue object')
 
             try:
                 blue_map = self.tf_buffer.transform(
@@ -315,7 +374,7 @@ class Detection(Node):
                 msg_time,
                 timeout=rclpy.duration.Duration(seconds=1)
             ):
-                return
+                self.get_logger().warn(f'Failed to publish green object')
 
             try:
                 green_map = self.tf_buffer.transform(
@@ -373,7 +432,7 @@ class Detection(Node):
                 msg_time,
                 timeout=rclpy.duration.Duration(seconds=1)
             ):
-                return
+                self.get_logger().warn(f'Failed to publish wood object')
 
             try:
                 wood_map = self.tf_buffer.transform(
@@ -451,7 +510,7 @@ class Detection(Node):
         self.publish_2d_cloud(grey_points, msg.header)
 
         box_size = (0.24, 0.16)  # L, W
-        
+
         # center, yaw, axes = self.estimate_box_from_points(grey_points, box_size)
 
         # if center is not None:
@@ -525,7 +584,7 @@ class Detection(Node):
                 tf_map_box.child_frame_id = 'grey_box_map'
                 tf_map_box.transform.translation.x = point_map.point.x
                 tf_map_box.transform.translation.y = point_map.point.y
-                tf_map_box.transform.translation.z = 0.05
+                tf_map_box.transform.translation.z = 0
                 q = quaternion_from_euler(0.0, 0.0, angle_int * np.pi / 180)
                 tf_map_box.transform.rotation.x = q[0]
                 tf_map_box.transform.rotation.y = q[1]

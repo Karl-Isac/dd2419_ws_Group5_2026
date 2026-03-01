@@ -7,17 +7,17 @@ def generate_launch_description():
     package_dir = get_package_share_directory('detection')
     rviz_config = os.path.join(package_dir, 'rviz', 'view.rviz')
 
-    # 静态变换发布器：map -> realsense_camera_link
-    # 请将下面的平移和旋转参数替换为你的实际数值
+    # static tf brodcaster：map -> realsense_camera_link
+
     static_tf_node = Node(
         package='tf2_ros',
         executable='static_transform_publisher',
         name='static_map_to_realsense',
         arguments=[
-            '1', '1', '0',        # x, y, z (平移，单位：米)
-            '1', '0', '0',        # yaw, pitch, roll (旋转，单位：弧度)
-            'map',                # 父坐标系
-            'realsense_camera_link'  # 子坐标系
+            '0', '0', '0',        # x, y, z (in meters)
+            '0', '0', '0',        # yaw, pitch, roll (in rads)
+            'map',                # parent frame
+            'realsense_camera_link'  # child frame
         ],
         output='screen'
     )

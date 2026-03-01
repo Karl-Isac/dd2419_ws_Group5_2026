@@ -13,6 +13,7 @@ setup(
         ('share/' + package_name, ['package.xml']),
         (os.path.join('share', 'detection', 'launch'), glob('launch/*.py')),
         (os.path.join('share', 'detection', 'rviz'), glob('rviz/*.rviz')),
+        (os.path.join('share', 'detection', 'config'), glob('config/*.csv')),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
