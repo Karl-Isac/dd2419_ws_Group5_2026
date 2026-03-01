@@ -319,10 +319,10 @@ class Detection(Node):
                     self.get_logger().info("repeated red detection, discarded")
                     break
             else:
-                self.object_lists.append([round(red_map.pose.position.x * 100), round(red_map.pose.position.y * 100), 0])
+                self.object_lists.append([int(round(red_map.pose.position.x * 100)), int(round(red_map.pose.position.y * 100)), 0])
                 new_object_msg = Pose()
-                new_object_msg.position.x = round(red_map.pose.position.x * 100)
-                new_object_msg.position.y = round(red_map.pose.position.y * 100)
+                new_object_msg.position.x = int(round(red_map.pose.position.x * 100))
+                new_object_msg.position.y = int(round(red_map.pose.position.y * 100))
                 new_object_msg.position.z = 0.0
                 new_object_msg.orientation.x = 0.0
                 new_object_msg.orientation.y = 0.0
@@ -393,10 +393,10 @@ class Detection(Node):
                     self.get_logger().info("repeated blue detection, discarded")
                     break
             else:
-                self.object_lists.append([round(blue_map.pose.position.x * 100), round(blue_map.pose.position.y * 100), 0])
+                self.object_lists.append([int(round(blue_map.pose.position.x * 100)), int(round(blue_map.pose.position.y * 100)), 0])
                 new_object_msg = Pose()
-                new_object_msg.position.x = round(blue_map.pose.position.x * 100)
-                new_object_msg.position.y = round(blue_map.pose.position.y * 100)
+                new_object_msg.position.x = int(round(blue_map.pose.position.x * 100))
+                new_object_msg.position.y = int(round(blue_map.pose.position.y * 100))
                 new_object_msg.position.z = 0.0
                 new_object_msg.orientation.x = 0.0
                 new_object_msg.orientation.y = 0.0
@@ -467,10 +467,10 @@ class Detection(Node):
                     self.get_logger().info("repeated green detection, discarded")
                     break
             else:
-                self.object_lists.append([round(green_map.pose.position.x * 100), round(green_map.pose.position.y * 100), 0])
+                self.object_lists.append([int(round(green_map.pose.position.x * 100)), int(round(green_map.pose.position.y * 100)), 0])
                 new_object_msg = Pose()
-                new_object_msg.position.x = round(green_map.pose.position.x * 100)
-                new_object_msg.position.y = round(green_map.pose.position.y * 100)
+                new_object_msg.position.x = int(round(green_map.pose.position.x * 100))
+                new_object_msg.position.y = int(round(green_map.pose.position.y * 100))
                 new_object_msg.position.z = 0.0
                 new_object_msg.orientation.x = 0.0
                 new_object_msg.orientation.y = 0.0
@@ -541,10 +541,10 @@ class Detection(Node):
                     self.get_logger().info("repeated wood detection, discarded")
                     break
             else:
-                self.object_lists.append([round(wood_map.pose.position.x * 100), round(wood_map.pose.position.y * 100), 0])
+                self.object_lists.append([int(round(wood_map.pose.position.x * 100)), int(round(wood_map.pose.position.y * 100)), 0])
                 new_object_msg = Pose()
-                new_object_msg.position.x = round(wood_map.pose.position.x * 100)
-                new_object_msg.position.y = round(wood_map.pose.position.y * 100)
+                new_object_msg.position.x = int(round(wood_map.pose.position.x * 100))
+                new_object_msg.position.y = int(round(wood_map.pose.position.y * 100))
                 new_object_msg.position.z = 0.0
                 new_object_msg.orientation.x = 0.0
                 new_object_msg.orientation.y = 0.0
@@ -656,8 +656,8 @@ class Detection(Node):
                 # 四舍五入取整，并确保在 0~179 之间（取模 180 后自动在 [0,180)，但可能刚好 180 变成 0）
                 angle_int = int(round(map_yaw_deg)) % 180
 
-                x_str = round(point_map.point.x * 100)
-                y_str = round(point_map.point.y * 100)
+                x_str = int(round(point_map.point.x * 100))
+                y_str = int(round(point_map.point.y * 100))
 
                 # 现在你可以将 (x_str, y_str, angle_int) 写入地图文件
                 self.get_logger().info(f'Map box: B {x_str} {y_str} {angle_int}')
