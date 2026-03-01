@@ -20,3 +20,7 @@ ros2 topic pub /nav/goal geometry_msgs/PoseStamped "header:
 pose:
   position: {x: -0.5, y: 0.2, z: 0.0}
   orientation: {w: 1.0}" -1
+
+
+# test with fake workspace
+ros2 run grumpy_navigation_py planner --ros-args -p workspace_file:=/absolute/path/to/workspace.yaml
