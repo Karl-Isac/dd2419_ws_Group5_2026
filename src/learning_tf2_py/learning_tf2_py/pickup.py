@@ -117,7 +117,11 @@ class Pickup(Node):
             Image, '/arm/camera/image_raw', self.image_callback, 10)
         
         # Initialize the arm position
-        self.init_position = [10,120,20,190,120,120]            # [10,120,30,180,180,120] used during debug
+        self.init_position = [10,120,50,150,100,120]            # [10,120,30,180,180,120] used during debug
+        # Initial z, rho to move to rigth after
+        self.z = 0.18
+        self.rho = 0.175
+
         msg = ArmControl()
         msg.header.stamp = self.get_clock().now().to_msg()
         msg.time = [1000,1000,1000,1000,1000,1000]
@@ -128,18 +132,19 @@ class Pickup(Node):
         
         self.cube_position_available = False
 
-        self.joint5target = 120
-        self.joint1target = 120
-        #self.reach_target = 20             # joint2target, but other joints depend on it
+        self.joint1target = self.init_position[1]
+        self.joint2target = self.init_position[2]
+        self.joint3target = self.init_position[3]
+        self.joint4target = self.init_position[4]
+        self.joint5target = self.init_position[5]
 
         self.sideways_integral_term = 0
 
         # Send out a control action every 0.1 seconds
-        timer_period = 0.2      # seconds               TODO change back
+        timer_period = 0.1      # seconds               TODO change back
         self.timer = self.create_timer(timer_period, self.timer_callback)
 
-        self.z = 0.24
-        self.rho = 0.11
+
 
         # Subscriptions
         self.subscription_1 = self.create_subscription(
@@ -170,10 +175,13 @@ class Pickup(Node):
                 k_sideways = 0.01#0.05                  commented values work with 0.5 sec timer
                 k_sideways_integral = 0.01#0.1
                 k_rotation = 1
-                #k_reach = 0.5
+                k_extension = 0.001
 
                 # Previous targets:
                 prev_joint1target = self.joint1target
+                prev_joint2target = self.joint2target
+                prev_joint3target = self.joint3target
+                prev_joint4target = self.joint4target
                 prev_joint5target = self.joint5target
                 #prev_reach_target = self.reach_target
 
@@ -202,29 +210,28 @@ class Pickup(Node):
                 self.joint1target = 120 + k_rotation*rotation_error
 
                 # z-rho control (arm extend/contract + up-down, P)
-                # z = 0.24, rho = 0.11
-                #z_target = 0.2
-                #rho_target = 0.15
+                extension_error = self.height_target-cy
+                self.rho = 0.175 + k_extension*extension_error
+                # Saturate
+                self.z = max(0.16, min(self.z, 0.175))
+                self.rho = max(0.175, min(self.rho, 0.185))          # problem if value changes right after this line
+                print("rho= "+str(self.rho))
                 try:
                     result = inverse_kinematics(z=self.z,rho=self.rho)
-                except:
-                    pass
-                if result:  
                     alpha,beta = result
-                else:
-                    self.get_logger().warn("Inverse kinematics failed, target might be unreachable")        # what TODO if no result
+                    gamma = math.pi/2+alpha-beta            # arm camera pointing downwards constraint
+                except:
+                    self.get_logger().warn("Inverse kinematics failed for z={}, rho={}, target might be unreachable".format(self.z,self.rho))
+                    # what TODO if no result
 
-                # Translate alpha, beta into joint targets in the hardware's CS:
-                gamma = math.pi/2+alpha-beta            # arm camera pointing downwards constraint
-                
+                # Translate alpha, beta, gamma into joint targets in the hardware's CS:
                 self.get_logger().info('Alpha, beta, gamma: {}, {}, {}'.format(alpha*180/math.pi,beta*180/math.pi,gamma*180/math.pi))
-                joint4target = 210-(alpha*180/math.pi)
-                joint3target = 300-(beta*180/math.pi)
-                joint2target = (gamma*180/math.pi)-60
+                self.joint4target = 210-(alpha*180/math.pi)
+                self.joint3target = 300-(beta*180/math.pi)
+                self.joint2target = (gamma*180/math.pi)-60
                 # Add hardcoded offset:
-                joint2target = joint2target + 15
+                self.joint2target = self.joint2target + 15
 
-                self.get_logger().info('Joint 2,3,4 targets: '+ str(joint2target) +", "+ str(joint3target) +", "+ str(joint4target))
 
 
                 # reach_error = self.height_target-cy         # height in image, forwards/backwards on the floor
@@ -245,19 +252,22 @@ class Pickup(Node):
                 # Check whether all of these are reals, had some issues previously:
                 assert all(isinstance(v, (int, float)) for v in (self.joint1target,prev_joint1target,self.joint5target,prev_joint5target,limit))
                 self.joint1target = saturate_difference(self.joint1target,prev_joint1target,limit)
+                self.joint2target = saturate_difference(self.joint2target,prev_joint2target,limit/10)
+                self.joint3target = saturate_difference(self.joint3target,prev_joint3target,limit/10)
+                self.joint4target = saturate_difference(self.joint4target,prev_joint4target,limit/10)
                 self.joint5target = saturate_difference(self.joint5target,prev_joint5target,limit)
                 #self.reach_target = saturate_difference(self.reach_target,prev_reach_target,limit/2)    # half the limit because reach translates to 2*reach degrees on one of the motors
                 #self.reach_target = saturate_difference(self.reach_target,prev_reach_target,limit/100)    # half the limit because reach translates to 2*reach degrees on one of the motors
                 #assert((self.reach_target >= 20) and (self.reach_target <= 50))
                 
+                self.get_logger().info('Joint 2,3,4 targets: '+ str(self.joint2target) +", "+ str(self.joint3target) +", "+ str(self.joint4target))
 
                 
                 
                 msg = ArmControl()
                 msg.header.stamp = self.get_clock().now().to_msg()
-                #msg.time = [100]*6  # move all joints in 100 ms (timer period), safe bcuz of saturation just above
-                msg.time = [1000]*6     # debug
-                msg.position = [self.init_position[0],self.joint1target,joint2target,joint3target,joint4target,self.joint5target]
+                msg.time = [100]*6  # move all joints in 100 ms (timer period), safe bcuz of saturation just above
+                msg.position = [self.init_position[0],self.joint1target,self.joint2target,self.joint3target,self.joint4target,self.joint5target]
 
                 self._pub_control.publish(msg)
 

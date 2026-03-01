@@ -53,7 +53,7 @@ def inverse_kinematics(z,rho):
     print("Inverse kinematics failed")
 
 if __name__ == "__main__":
-    alpha, beta = inverse_kinematics(z = 0.2, rho = 0.17)
+    alpha, beta = inverse_kinematics(z = 0.175, rho = 0.185)
     print(alpha*180/math.pi)
     print(beta*180/math.pi)
     # for alpha in arange(0,math.pi,math.pi/12):

@@ -12,9 +12,8 @@ class Pickup(Node):
     def __init__(self):
         super().__init__('pickup')
 
-        frequency = 1000
         self._pub_control = self.create_publisher(
-            ArmControl, '/arm/safe_control', frequency)    
+            ArmControl, '/arm/safe_control', 10)    
         
         # Initialize the arm position
         self.init_position = [10,120,40,150,90,120]            # [10,120,30,180,180,120] used during debug
@@ -25,7 +24,7 @@ class Pickup(Node):
         self._pub_control.publish(msg)
         time.sleep(1)
 
-        timer_period = 1/frequency      # seconds  
+        timer_period = 0.01      # seconds  
         self.timer = self.create_timer(timer_period, self.timer_callback)
 
 
@@ -33,7 +32,7 @@ class Pickup(Node):
         try:
             msg = ArmControl()
             msg.header.stamp = self.get_clock().now().to_msg()
-            msg.time = [1000]*6 
+            msg.time = [100]*6 
             noise = random.uniform(-0.1,0.1)        # add on 0.1 degree noise
             #################################################################################
             # Test all of these with varying timer period and publishing rate too
@@ -49,7 +48,7 @@ class Pickup(Node):
             # Test 4 - add noise to one of the contributing links
             #msg.position = [self.init_position[0],self.init_position[1],self.init_position[2],self.init_position[3],self.init_position[4]+noise,self.init_position[5]]
             
-            print(msg.position)
+            #print(msg.position)
             self._pub_control.publish(msg)
 
         except Exception as e:
