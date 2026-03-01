@@ -55,6 +55,7 @@ CATKIN_IGNORE
 
 # Rosbags
 bags/*
+rosbags/
 *.db3
 *.mcap
 
