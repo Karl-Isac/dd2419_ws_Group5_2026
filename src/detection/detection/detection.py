@@ -74,10 +74,12 @@ class Detection(Node):
 
         # open and load map file (csv)
         package_path = get_package_share_directory('detection')
-        csv_path = os.path.join(package_path, 'config', 'map_1_1.csv')
+        csv_path = os.path.join(package_path, 'config', 'test.csv')
 
         self.object_poses = []
         self.box_poses = []
+        self.object_lists = []
+        self.box_lists = []
 
         with open(csv_path, mode='r', encoding='utf-8') as file:
             reader = csv.reader(file)
@@ -102,10 +104,13 @@ class Detection(Node):
 
                 if type_id == 'O':
                     self.object_poses.append(pose)
+                    self.object_lists.append([x, y, angle_deg])
                 elif type_id == 'B':
                     self.box_poses.append(pose)
+                    self.box_lists.append([x, y, angle_deg])
 
         self.publish_arrays(self.object_poses, self.box_poses)
+        print(self.object_lists)
     
         # static_tf = TransformStamped()
         # static_tf.header.stamp = self.get_clock().now().to_msg()
@@ -140,7 +145,7 @@ class Detection(Node):
             box_msg.poses = box_poses
             self.boxes_pub.publish(box_msg)
 
-        self.get_logger().info(f'Published {len(object_poses)} objects and {len(box_poses)} boxes')
+        # self.get_logger().info(f'Published {len(object_poses)} objects and {len(box_poses)} boxes')
 
     def cloud_callback(self, msg: PointCloud2):
         """Takes point cloud readings to detect objects.
@@ -207,7 +212,7 @@ class Detection(Node):
             g = colors[idx, 1]
             b = colors[idx, 2]
             h, s, v = self.rgb_to_hsv(r, g, b)
-            if y > 0 and y < 0.09 and z > 0 and z < 0.5:
+            if y > 0 and y < 0.09 and z > 0 and z < 0.4:
                 # red
                 if is_red(h, s, v):
                     red_counter += 1
@@ -298,11 +303,12 @@ class Detection(Node):
 
             self.get_logger().info(f'Map box: Red {red_map.pose.position.x} {red_map.pose.position.y} N/A')
 
-            for item in self.object_poses:
-                if np.abs(item[0] - red_map.pose.position.x * 100) < 5 and np.abs(item[1] - red_map.pose.position.y * 100) < 5:
+            for item in self.object_lists:
+                if np.abs(item[0] - red_map.pose.position.x * 100) < 3 and np.abs(item[1] - red_map.pose.position.y * 100) < 3:
+                    self.get_logger().info("repeated red detection, discarded")
                     break
             else:
-                self.object_poses.append([round(red_map.pose.position.x * 100), round(red_map.pose.position.y * 100), 0])
+                self.object_lists.append([round(red_map.pose.position.x * 100), round(red_map.pose.position.y * 100), 0])
                 new_object_msg = Pose()
                 new_object_msg.position.x = round(red_map.pose.position.x * 100)
                 new_object_msg.position.y = round(red_map.pose.position.y * 100)
@@ -311,7 +317,7 @@ class Detection(Node):
                 new_object_msg.orientation.y = 0.0
                 new_object_msg.orientation.z = 0.0
                 new_object_msg.orientation.w = 1.0
-                self.publish_arrays(new_object_msg, None)
+                self.publish_arrays([new_object_msg], None)
 
         # blue
         if blue_counter > 15 and not self.blue_available:
@@ -371,11 +377,12 @@ class Detection(Node):
 
             self.get_logger().info(f'Map box: Blue {blue_map.pose.position.x} {blue_map.pose.position.y} N/A')
 
-            for item in self.object_poses:
-                if np.abs(item[0] - blue_map.pose.position.x * 100) < 5 and np.abs(item[1] - blue_map.pose.position.y * 100) < 5:
+            for item in self.object_lists:
+                if np.abs(item[0] - blue_map.pose.position.x * 100) < 3 and np.abs(item[1] - blue_map.pose.position.y * 100) < 3:
+                    self.get_logger().info("repeated blue detection, discarded")
                     break
             else:
-                self.object_poses.append([round(blue_map.pose.position.x * 100), round(blue_map.pose.position.y * 100), 0])
+                self.object_lists.append([round(blue_map.pose.position.x * 100), round(blue_map.pose.position.y * 100), 0])
                 new_object_msg = Pose()
                 new_object_msg.position.x = round(blue_map.pose.position.x * 100)
                 new_object_msg.position.y = round(blue_map.pose.position.y * 100)
@@ -384,7 +391,7 @@ class Detection(Node):
                 new_object_msg.orientation.y = 0.0
                 new_object_msg.orientation.z = 0.0
                 new_object_msg.orientation.w = 1.0
-                self.publish_arrays(new_object_msg, None)
+                self.publish_arrays([new_object_msg], None)
         
         # green
         if green_counter > 15 and not self.green_available:
@@ -444,11 +451,12 @@ class Detection(Node):
 
             self.get_logger().info(f'Map box: Green {green_map.pose.position.x} {green_map.pose.position.y} N/A')
 
-            for item in self.object_poses:
-                if np.abs(item[0] - green_map.pose.position.x * 100) < 5 and np.abs(item[1] - green_map.pose.position.y * 100) < 5:
+            for item in self.object_lists:
+                if np.abs(item[0] - green_map.pose.position.x * 100) < 3 and np.abs(item[1] - green_map.pose.position.y * 100) < 3:
+                    self.get_logger().info("repeated green detection, discarded")
                     break
             else:
-                self.object_poses.append([round(green_map.pose.position.x * 100), round(green_map.pose.position.y * 100), 0])
+                self.object_lists.append([round(green_map.pose.position.x * 100), round(green_map.pose.position.y * 100), 0])
                 new_object_msg = Pose()
                 new_object_msg.position.x = round(green_map.pose.position.x * 100)
                 new_object_msg.position.y = round(green_map.pose.position.y * 100)
@@ -457,7 +465,7 @@ class Detection(Node):
                 new_object_msg.orientation.y = 0.0
                 new_object_msg.orientation.z = 0.0
                 new_object_msg.orientation.w = 1.0
-                self.publish_arrays(new_object_msg, None)
+                self.publish_arrays([new_object_msg], None)
 
         # wood
         if wood_counter > 15 and not self.wood_available:
@@ -517,11 +525,12 @@ class Detection(Node):
 
             self.get_logger().info(f'Map box: Wood {wood_map.pose.position.x} {wood_map.pose.position.y} N/A')
 
-            for item in self.object_poses:
-                if np.abs(item[0] - wood_map.pose.position.x * 100) < 5 and np.abs(item[1] - wood_map.pose.position.y * 100) < 5:
+            for item in self.object_lists:
+                if np.abs(item[0] - wood_map.pose.position.x * 100) < 3 and np.abs(item[1] - wood_map.pose.position.y * 100) < 3:
+                    self.get_logger().info("repeated wood detection, discarded")
                     break
             else:
-                self.object_poses.append([round(wood_map.pose.position.x * 100), round(wood_map.pose.position.y * 100), 0])
+                self.object_lists.append([round(wood_map.pose.position.x * 100), round(wood_map.pose.position.y * 100), 0])
                 new_object_msg = Pose()
                 new_object_msg.position.x = round(wood_map.pose.position.x * 100)
                 new_object_msg.position.y = round(wood_map.pose.position.y * 100)
@@ -530,7 +539,7 @@ class Detection(Node):
                 new_object_msg.orientation.y = 0.0
                 new_object_msg.orientation.z = 0.0
                 new_object_msg.orientation.w = 1.0
-                self.publish_arrays(new_object_msg, None)
+                self.publish_arrays([new_object_msg], None)
 
         # if self.red_available and not self.red_published:
         #     msg_time = rclpy.time.Time.from_msg(self.red_timestamp)
@@ -657,11 +666,12 @@ class Detection(Node):
                 tf_map_box.transform.rotation.w = q[3]
                 self.static_broadcaster.sendTransform(tf_map_box)
 
-                for item in self.box_poses:
-                    if np.abs(item[0] - x_str) < 10 and np.abs(item[1] - y_str) < 10:
+                for item in self.box_lists:
+                    if np.abs(item[0] - x_str) < 5 and np.abs(item[1] - y_str) < 5:
+                        self.get_logger().info("repeated box detection, discarded")
                         break
                 else:
-                    self.box_poses.append([x_str, y_str, angle_int])
+                    self.box_lists.append([x_str, y_str, angle_int])
                     new_box_msg = Pose()
                     new_box_msg.position.x = x_str
                     new_box_msg.position.y = y_str
@@ -670,7 +680,7 @@ class Detection(Node):
                     new_box_msg.orientation.y = tf_map_box.transform.rotation.y
                     new_box_msg.orientation.z = tf_map_box.transform.rotation.z
                     new_box_msg.orientation.w = tf_map_box.transform.rotation.w
-                    self.publish_arrays(None, new_box_msg)
+                    self.publish_arrays(None, [new_box_msg])
 
             except TransformException as ex:
                 self.get_logger().error(f'Transform failed: {ex}')
