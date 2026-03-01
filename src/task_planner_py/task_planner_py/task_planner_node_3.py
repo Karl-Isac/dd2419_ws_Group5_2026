@@ -7,6 +7,8 @@ import tf2_ros
 from std_msgs.msg import Bool, String
 from geometry_msgs.msg import PoseStamped
 
+from grumpy_interfaces.msg import Item, ItemArray
+
 
 class TaskPlannerNode(Node):
     def __init__(self):
@@ -22,6 +24,10 @@ class TaskPlannerNode(Node):
         self.base_frame = self.get_parameter("base_frame").value
         self.object_frame = self.get_parameter("object_frame").value
         self.box_frame = self.get_parameter("box_frame").value
+
+        self.latest_object = None
+        self.latest_box = None
+        self.picked_ids = set()
 
         # TF
         self.tf_buffer = tf2_ros.Buffer()
@@ -42,10 +48,24 @@ class TaskPlannerNode(Node):
         self.create_subscription(Bool, "/nav/reached", self.on_reached, 10)
         self.create_subscription(Bool, "/arm/done_pick", self.on_pick_done, 10)
 
+        self.create_subscription(ItemArray, "/detected_objects", self.on_objects, 10)
+        self.create_subscription(ItemArray, "/detected_boxes", self.on_boxes, 10)
+
         dt = 1.0 / float(self.get_parameter("rate_hz").value)
         self.timer = self.create_timer(dt, self.step)
 
         self.get_logger().info("TaskPlannerNode up. Pub: /nav/goal, /nav/phase, /arm/cmd  Sub: /nav/reached, /arm/done_pick")
+
+    def on_objects(self, msg: ItemArray):
+        # self.latest_object = msg.items[0] if len(msg.items) > 0 else None
+        self.latest_object = None
+        for it in msg.items:
+            if it.id not in self.picked_ids:
+                self.latest_object = it
+                break
+
+    def on_boxes(self, msg: ItemArray):
+        self.latest_box = msg.items[0] if len(msg.items) > 0 else None
 
     def on_pick_done(self, msg: Bool):
         self.pick_done = bool(msg.data)
@@ -80,14 +100,16 @@ class TaskPlannerNode(Node):
     def step(self):
         # We still lookup TF so we can publish goals from TF frames
         robot = self.lookup_xy(self.base_frame)
-        obj = self.lookup_xy(self.object_frame)
-        box = self.lookup_xy(self.box_frame)
+        obj = self.latest_object
+        box = self.latest_box
 
         if robot is None or obj is None or box is None:
             return
 
-        ox, oy = obj
-        bx, by = box
+        ox = obj.pose.position.x
+        oy = obj.pose.position.y
+        bx = box.pose.position.x
+        by = box.pose.position.y
 
         if self.state == "SELECT_OBJECT":
             # In MS2 you can hardcode object_0 and box_0
@@ -111,6 +133,8 @@ class TaskPlannerNode(Node):
                 self._published_this_state = True
 
             if self.pick_done:
+                if self.latest_object is not None:
+                    self.picked_ids.add(self.latest_object.id)
                 self.enter_state("NAV_TO_BOX")
 
         elif self.state == "NAV_TO_BOX":
@@ -131,7 +155,7 @@ class TaskPlannerNode(Node):
             self.enter_state("DONE")
 
         elif self.state == "DONE":
-            pass
+            self.enter_state("SELECT_OBJECT")
 
 
 def main():
