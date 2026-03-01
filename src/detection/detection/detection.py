@@ -28,6 +28,10 @@ import struct
 
 # Criteria of colors are at Line 468-478
 
+######################################################################################################
+# TODO: discuss the unit of the communication (PoseArray), cm or m?
+######################################################################################################
+
 class Detection(Node):
 
     def __init__(self):
@@ -72,8 +76,8 @@ class Detection(Node):
         package_path = get_package_share_directory('detection')
         csv_path = os.path.join(package_path, 'config', 'map_1_1.csv')
 
-        object_poses = []
-        box_poses = []
+        self.object_poses = []
+        self.box_poses = []
 
         with open(csv_path, mode='r', encoding='utf-8') as file:
             reader = csv.reader(file)
@@ -97,11 +101,11 @@ class Detection(Node):
                 pose.orientation.w = q[3]
 
                 if type_id == 'O':
-                    object_poses.append(pose)
+                    self.object_poses.append(pose)
                 elif type_id == 'B':
-                    box_poses.append(pose)
+                    self.box_poses.append(pose)
 
-        self.publish_arrays(object_poses, box_poses)
+        self.publish_arrays(self.object_poses, self.box_poses)
     
         # static_tf = TransformStamped()
         # static_tf.header.stamp = self.get_clock().now().to_msg()
@@ -121,18 +125,20 @@ class Detection(Node):
     def publish_arrays(self, object_poses, box_poses):
         """publish object and box poses from map file to ROS topics."""
         # objects
-        obj_msg = PoseArray()
-        obj_msg.header.stamp = self.get_clock().now().to_msg()
-        obj_msg.header.frame_id = 'map'      
-        obj_msg.poses = object_poses
-        self.objects_pub.publish(obj_msg)
+        if object_poses is not None:
+            obj_msg = PoseArray()
+            obj_msg.header.stamp = self.get_clock().now().to_msg()
+            obj_msg.header.frame_id = 'map'      
+            obj_msg.poses = object_poses
+            self.objects_pub.publish(obj_msg)
 
         # boxes
-        box_msg = PoseArray()
-        box_msg.header.stamp = self.get_clock().now().to_msg()
-        box_msg.header.frame_id = 'map'
-        box_msg.poses = box_poses
-        self.boxes_pub.publish(box_msg)
+        if box_poses is not None:
+            box_msg = PoseArray()
+            box_msg.header.stamp = self.get_clock().now().to_msg()
+            box_msg.header.frame_id = 'map'
+            box_msg.poses = box_poses
+            self.boxes_pub.publish(box_msg)
 
         self.get_logger().info(f'Published {len(object_poses)} objects and {len(box_poses)} boxes')
 
@@ -292,6 +298,21 @@ class Detection(Node):
 
             self.get_logger().info(f'Map box: Red {red_map.pose.position.x} {red_map.pose.position.y} N/A')
 
+            for item in self.object_poses:
+                if np.abs(item[0] - red_map.pose.position.x * 100) < 5 and np.abs(item[1] - red_map.pose.position.y * 100) < 5:
+                    break
+            else:
+                self.object_poses.append([round(red_map.pose.position.x * 100), round(red_map.pose.position.y * 100), 0])
+                new_object_msg = Pose()
+                new_object_msg.position.x = round(red_map.pose.position.x * 100)
+                new_object_msg.position.y = round(red_map.pose.position.y * 100)
+                new_object_msg.position.z = 0.0
+                new_object_msg.orientation.x = 0.0
+                new_object_msg.orientation.y = 0.0
+                new_object_msg.orientation.z = 0.0
+                new_object_msg.orientation.w = 1.0
+                self.publish_arrays(new_object_msg, None)
+
         # blue
         if blue_counter > 15 and not self.blue_available:
             self.get_logger().info('Blue object detected.')
@@ -349,6 +370,21 @@ class Detection(Node):
             self.blue_published = True
 
             self.get_logger().info(f'Map box: Blue {blue_map.pose.position.x} {blue_map.pose.position.y} N/A')
+
+            for item in self.object_poses:
+                if np.abs(item[0] - blue_map.pose.position.x * 100) < 5 and np.abs(item[1] - blue_map.pose.position.y * 100) < 5:
+                    break
+            else:
+                self.object_poses.append([round(blue_map.pose.position.x * 100), round(blue_map.pose.position.y * 100), 0])
+                new_object_msg = Pose()
+                new_object_msg.position.x = round(blue_map.pose.position.x * 100)
+                new_object_msg.position.y = round(blue_map.pose.position.y * 100)
+                new_object_msg.position.z = 0.0
+                new_object_msg.orientation.x = 0.0
+                new_object_msg.orientation.y = 0.0
+                new_object_msg.orientation.z = 0.0
+                new_object_msg.orientation.w = 1.0
+                self.publish_arrays(new_object_msg, None)
         
         # green
         if green_counter > 15 and not self.green_available:
@@ -408,6 +444,21 @@ class Detection(Node):
 
             self.get_logger().info(f'Map box: Green {green_map.pose.position.x} {green_map.pose.position.y} N/A')
 
+            for item in self.object_poses:
+                if np.abs(item[0] - green_map.pose.position.x * 100) < 5 and np.abs(item[1] - green_map.pose.position.y * 100) < 5:
+                    break
+            else:
+                self.object_poses.append([round(green_map.pose.position.x * 100), round(green_map.pose.position.y * 100), 0])
+                new_object_msg = Pose()
+                new_object_msg.position.x = round(green_map.pose.position.x * 100)
+                new_object_msg.position.y = round(green_map.pose.position.y * 100)
+                new_object_msg.position.z = 0.0
+                new_object_msg.orientation.x = 0.0
+                new_object_msg.orientation.y = 0.0
+                new_object_msg.orientation.z = 0.0
+                new_object_msg.orientation.w = 1.0
+                self.publish_arrays(new_object_msg, None)
+
         # wood
         if wood_counter > 15 and not self.wood_available:
             self.get_logger().info('Wood object detected.')   
@@ -465,6 +516,21 @@ class Detection(Node):
             self.wood_published = True
 
             self.get_logger().info(f'Map box: Wood {wood_map.pose.position.x} {wood_map.pose.position.y} N/A')
+
+            for item in self.object_poses:
+                if np.abs(item[0] - wood_map.pose.position.x * 100) < 5 and np.abs(item[1] - wood_map.pose.position.y * 100) < 5:
+                    break
+            else:
+                self.object_poses.append([round(wood_map.pose.position.x * 100), round(wood_map.pose.position.y * 100), 0])
+                new_object_msg = Pose()
+                new_object_msg.position.x = round(wood_map.pose.position.x * 100)
+                new_object_msg.position.y = round(wood_map.pose.position.y * 100)
+                new_object_msg.position.z = 0.0
+                new_object_msg.orientation.x = 0.0
+                new_object_msg.orientation.y = 0.0
+                new_object_msg.orientation.z = 0.0
+                new_object_msg.orientation.w = 1.0
+                self.publish_arrays(new_object_msg, None)
 
         # if self.red_available and not self.red_published:
         #     msg_time = rclpy.time.Time.from_msg(self.red_timestamp)
@@ -570,9 +636,8 @@ class Detection(Node):
                 # 四舍五入取整，并确保在 0~179 之间（取模 180 后自动在 [0,180)，但可能刚好 180 变成 0）
                 angle_int = int(round(map_yaw_deg)) % 180
 
-                # 格式化 x, y 保留两位小数
-                x_str = f"{point_map.point.x*100:.2f}"
-                y_str = f"{point_map.point.y*100:.2f}"
+                x_str = round(point_map.point.x * 100)
+                y_str = round(point_map.point.y * 100)
 
                 # 现在你可以将 (x_str, y_str, angle_int) 写入地图文件
                 self.get_logger().info(f'Map box: B {x_str} {y_str} {angle_int}')
@@ -591,6 +656,21 @@ class Detection(Node):
                 tf_map_box.transform.rotation.z = q[2]
                 tf_map_box.transform.rotation.w = q[3]
                 self.static_broadcaster.sendTransform(tf_map_box)
+
+                for item in self.box_poses:
+                    if np.abs(item[0] - x_str) < 10 and np.abs(item[1] - y_str) < 10:
+                        break
+                else:
+                    self.box_poses.append([x_str, y_str, angle_int])
+                    new_box_msg = Pose()
+                    new_box_msg.position.x = x_str
+                    new_box_msg.position.y = y_str
+                    new_box_msg.position.z = 0.0
+                    new_box_msg.orientation.x = tf_map_box.transform.rotation.x
+                    new_box_msg.orientation.y = tf_map_box.transform.rotation.y
+                    new_box_msg.orientation.z = tf_map_box.transform.rotation.z
+                    new_box_msg.orientation.w = tf_map_box.transform.rotation.w
+                    self.publish_arrays(None, new_box_msg)
 
             except TransformException as ex:
                 self.get_logger().error(f'Transform failed: {ex}')
