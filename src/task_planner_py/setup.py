@@ -29,6 +29,7 @@ setup(
         'console_scripts': [
             'task_planner_node = task_planner_py.task_planner_node:main',
             'task_planner_node_2 = task_planner_py.task_planner_node_2:main',
+            'task_planner_node_3 = task_planner_py.task_planner_node_3:main',
             'fake_arm_node = task_planner_py.fake_arm_node:main',
         ],
     },
