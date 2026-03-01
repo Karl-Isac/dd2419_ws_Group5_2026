@@ -29,7 +29,7 @@ import struct
 # Criteria of colors are at Line 468-478
 
 ######################################################################################################
-# TODO: discuss the unit of the communication (PoseArray), cm or m?
+# TODO: discuss the unit of the communication (PoseArray): m
 ######################################################################################################
 
 class Detection(Node):
@@ -96,14 +96,14 @@ class Detection(Node):
             header = next(reader)
             for row in reader:
                 type_id = row[0]
-                x = float(row[1])
-                y = float(row[2])
+                x = row[1]
+                y = row[2]
                 angle_deg = float(row[3])   
                 angle_rad = math.radians(angle_deg)
 
                 pose = Pose()
-                pose.position.x = x
-                pose.position.y = y
+                pose.position.x = x / 100.0  # convert cm to m
+                pose.position.y = y / 100.0  # convert cm to m
                 pose.position.z = 0.0        # z is 0
                 q = quaternion_from_euler(0, 0, angle_rad)
                 pose.orientation.x = q[0]
@@ -321,8 +321,8 @@ class Detection(Node):
             else:
                 self.object_lists.append([int(round(red_map.pose.position.x * 100)), int(round(red_map.pose.position.y * 100)), 0])
                 new_object_msg = Pose()
-                new_object_msg.position.x = int(round(red_map.pose.position.x * 100))
-                new_object_msg.position.y = int(round(red_map.pose.position.y * 100))
+                new_object_msg.position.x = red_map.pose.position.x
+                new_object_msg.position.y = red_map.pose.position.y
                 new_object_msg.position.z = 0.0
                 new_object_msg.orientation.x = 0.0
                 new_object_msg.orientation.y = 0.0
@@ -395,8 +395,8 @@ class Detection(Node):
             else:
                 self.object_lists.append([int(round(blue_map.pose.position.x * 100)), int(round(blue_map.pose.position.y * 100)), 0])
                 new_object_msg = Pose()
-                new_object_msg.position.x = int(round(blue_map.pose.position.x * 100))
-                new_object_msg.position.y = int(round(blue_map.pose.position.y * 100))
+                new_object_msg.position.x = blue_map.pose.position.x
+                new_object_msg.position.y = blue_map.pose.position.y
                 new_object_msg.position.z = 0.0
                 new_object_msg.orientation.x = 0.0
                 new_object_msg.orientation.y = 0.0
@@ -469,8 +469,8 @@ class Detection(Node):
             else:
                 self.object_lists.append([int(round(green_map.pose.position.x * 100)), int(round(green_map.pose.position.y * 100)), 0])
                 new_object_msg = Pose()
-                new_object_msg.position.x = int(round(green_map.pose.position.x * 100))
-                new_object_msg.position.y = int(round(green_map.pose.position.y * 100))
+                new_object_msg.position.x = green_map.pose.position.x
+                new_object_msg.position.y = green_map.pose.position.y
                 new_object_msg.position.z = 0.0
                 new_object_msg.orientation.x = 0.0
                 new_object_msg.orientation.y = 0.0
@@ -543,8 +543,8 @@ class Detection(Node):
             else:
                 self.object_lists.append([int(round(wood_map.pose.position.x * 100)), int(round(wood_map.pose.position.y * 100)), 0])
                 new_object_msg = Pose()
-                new_object_msg.position.x = int(round(wood_map.pose.position.x * 100))
-                new_object_msg.position.y = int(round(wood_map.pose.position.y * 100))
+                new_object_msg.position.x = wood_map.pose.position.x
+                new_object_msg.position.y = wood_map.pose.position.y
                 new_object_msg.position.z = 0.0
                 new_object_msg.orientation.x = 0.0
                 new_object_msg.orientation.y = 0.0
@@ -597,38 +597,10 @@ class Detection(Node):
 
         box_size = (0.24, 0.16)  # L, W
 
-        # center, yaw, axes = self.estimate_box_from_points(grey_points, box_size)
-
-        # if center is not None:
-        #     tf_grey = TransformStamped()
-        #     tf_grey.header.stamp = msg.header.stamp
-        #     tf_grey.header.frame_id = 'realsense_camera_link'
-        #     tf_grey.child_frame_id = 'grey_box'
-
-        #     # 位置
-        #     tf_grey.transform.translation.x = float(center[0])
-        #     tf_grey.transform.translation.y = float(center[1])
-        #     tf_grey.transform.translation.z = 0.05  # 高度固定为点云平面上方一点
-
-        #     # 旋转（绕 Z 轴 yaw）
-        #     q = quaternion_from_euler(0.0, 0.0, float(yaw))
-        #     tf_grey.transform.rotation.x = q[0]
-        #     tf_grey.transform.rotation.y = q[1]
-        #     tf_grey.transform.rotation.z = q[2]
-        #     tf_grey.transform.rotation.w = q[3]
-
-        #     self.static_broadcaster.sendTransform(tf_grey)
-
-        # 在 cloud_callback 中 estimate_box_from_points 之后
         center, yaw, axes = self.estimate_box_from_points(grey_points, box_size)
         if center is not None:
-            # --- 转换到 map 坐标系 ---
+            # --- convert to map frame ---
             try:
-                # # 获取变换
-                # transform = self.tf_buffer.lookup_transform(
-                #     'map', 'realsense_camera_link', msg.header.stamp, timeout=rclpy.duration.Duration(seconds=0.5))
-                
-                # 转换位置
                 point_camera = PointStamped()
                 point_camera.header.frame_id = 'realsense_camera_link'
                 point_camera.header.stamp = msg.header.stamp
@@ -637,7 +609,6 @@ class Detection(Node):
                 point_camera.point.z = 0.0
                 point_map = self.tf_buffer.transform(point_camera, 'map')
 
-                # 转换方向
                 dir_camera = Vector3Stamped()
                 dir_camera.header.frame_id = 'realsense_camera_link'
                 dir_camera.header.stamp = msg.header.stamp
@@ -647,22 +618,17 @@ class Detection(Node):
                 dir_map = self.tf_buffer.transform(dir_camera, 'map')
                 map_yaw = np.arctan2(dir_map.vector.y, dir_map.vector.x)
 
-                # 将 map_yaw 从弧度转换为度
                 map_yaw_deg = np.degrees(map_yaw)
-
-                # 归一化到 [0, 180) 范围（取模 180）
                 map_yaw_deg = map_yaw_deg % 180
 
-                # 四舍五入取整，并确保在 0~179 之间（取模 180 后自动在 [0,180)，但可能刚好 180 变成 0）
                 angle_int = int(round(map_yaw_deg)) % 180
 
                 x_str = int(round(point_map.point.x * 100))
                 y_str = int(round(point_map.point.y * 100))
 
-                # 现在你可以将 (x_str, y_str, angle_int) 写入地图文件
                 self.get_logger().info(f'Map box: B {x_str} {y_str} {angle_int}')
                 
-                # 可选：发布一个静态 TF 到 map 下
+                # publish static TF for the box
                 tf_map_box = TransformStamped()
                 tf_map_box.header.stamp = msg.header.stamp
                 tf_map_box.header.frame_id = 'map'
@@ -684,8 +650,8 @@ class Detection(Node):
                 else:
                     self.box_lists.append([x_str, y_str, angle_int])
                     new_box_msg = Pose()
-                    new_box_msg.position.x = x_str
-                    new_box_msg.position.y = y_str
+                    new_box_msg.position.x = point_map.point.x
+                    new_box_msg.position.y = point_map.point.y
                     new_box_msg.position.z = 0.0
                     new_box_msg.orientation.x = tf_map_box.transform.rotation.x
                     new_box_msg.orientation.y = tf_map_box.transform.rotation.y
@@ -717,7 +683,6 @@ class Detection(Node):
         return h, s, v
         
     def publish_2d_cloud(self, points_xz, header):
-        # 新header
         h = std_msgs.msg.Header()
         h.stamp = header.stamp
         h.frame_id = 'realsense_camera_link'
@@ -740,11 +705,11 @@ class Detection(Node):
         "axes: principal axes vectors (2x2) """ 
         
         if len(points) < 10: 
-            return None, None, None # 不够点无法估计 
+            return None, None, None 
         
         pts = np.array(points) 
         
-        # --- Step 0: 去除离群点（IQR法） --- 
+        # --- Step 0: reduce outliers（IQR method） --- 
         
         # Q1 = np.percentile(pts, 25, axis=0) 
         # Q3 = np.percentile(pts, 75, axis=0) 
@@ -759,29 +724,29 @@ class Detection(Node):
         mean = np.mean(pts, axis=0) 
         pts_centered = pts - mean 
         U, S, Vt = np.linalg.svd(pts_centered, full_matrices=False) 
-        axes = Vt[:2] # 两个主轴 
+        axes = Vt[:2] 
         
-        # --- Step 2: 判断角度 --- 
+        # --- Step 2: angle calculation --- 
         dir1 = axes[0] 
         dir2 = axes[1] 
         dir1 /= np.linalg.norm(dir1) 
         dir2 /= np.linalg.norm(dir2) 
-        dir1 = dir1 if dir1[1] >= 0 else -dir1 # 保持第一主轴朝上 
-        dir2 = dir2 if dir2[1] >= 0 else -dir2 # 保持第二主轴朝上 
+        dir1 = dir1 if dir1[1] >= 0 else -dir1 # y > 0
+        dir2 = dir2 if dir2[1] >= 0 else -dir2 # y > 0
         
-        # 计算 dir1 和 dir2 关于 x 轴的夹角 
+        # angle with respect to x-axis
         x_axis = np.array([1.0, 0.0]) 
         angle_dir1_x = np.arccos(np.clip(np.dot(dir1, x_axis), -1.0, 1.0)) 
         angle_dir2_x = np.arccos(np.clip(np.dot(dir2, x_axis), -1.0, 1.0)) 
         
-        # Step 3: 判断是否是角 
+        # Step 3: two edge vs single edge decision based on variance ratio
         
         ratio = S[1] / S[0] 
-        self.get_logger().debug(f'主成分方差比: {ratio:.3f}') 
+        self.get_logger().debug(f'variance ratio: {ratio:.3f}') 
 
         if ratio > 0.1:
             # =========================================================
-            # RANSAC 拟合两条边 → 求角点
+            # RANSAC 
             # =========================================================
 
             pts_np = pts.copy()
@@ -822,13 +787,12 @@ class Detection(Node):
                 b = -np.array([d1, d2])
                 return np.linalg.solve(A, b)
 
-            # 第一条边
+            # first edge
             model1, inliers1 = fit_line_ransac(pts_np)
 
             if model1 is None or len(inliers1) < 5:
                 return None, None, None
 
-            # 删除第一条边点
             mask = np.ones(len(pts_np), dtype=bool)
             for p in inliers1:
                 idx = np.where((pts_np == p).all(axis=1))[0]
@@ -836,17 +800,17 @@ class Detection(Node):
 
             remaining = pts_np[mask]
 
-            # 第二条边
+            # second edge
             model2, inliers2 = fit_line_ransac(remaining)
 
             if model2 is None or len(inliers2) < 5:
                 return None, None, None
 
-            # 角点
+            # corner point
             corner = intersect_lines(model1, model2)
 
             # =========================================================
-            # 方向向量（从直线法向恢复）
+            # direction vectors and used axes
             # =========================================================
             n1, _ = model1
             n2, _ = model2
@@ -857,7 +821,7 @@ class Detection(Node):
             dir1 /= np.linalg.norm(dir1)
             dir2 /= np.linalg.norm(dir2)
 
-            # 保持朝前
+            # keeps x > 0 in camera frame
             if dir1[1] < 0:
                 dir1 = -dir1
             if dir2[1] < 0:
@@ -866,7 +830,7 @@ class Detection(Node):
             used_axes = np.vstack([dir1, dir2])
 
             # =========================================================
-            # 计算长度方向
+            # length estimation along each direction
             # =========================================================
             proj1 = pts_np @ dir1
             proj2 = pts_np @ dir2
@@ -878,7 +842,7 @@ class Detection(Node):
                 f'RANSAC length1: {length1:.3f}, length2: {length2:.3f}'
             )
 
-            # 判断哪条是长边
+            # judge which direction corresponds to length vs width based on variance and box size ratio
             if length1 > length2:
                 main_dir = dir1
                 side_dir = dir2
@@ -891,10 +855,10 @@ class Detection(Node):
                 box_width = box_size[1]
 
             # =========================================================
-            # 计算中心
+            # calculate center by shifting from corner along main_dir and side_dir
             # =========================================================
             # center_shifted = corner + main_dir * (box_length / 2)
-            center_shifted = corner - main_dir * (box_length / 2) + side_dir * (box_width / 2) # 沿宽度方向平移到箱子中心
+            center_shifted = corner - main_dir * (box_length / 2) + side_dir * (box_width / 2) # shift from corner along both directions to get to the center, more robust for partial views
             # center_shifted = corner
 
             # yaw
@@ -907,7 +871,7 @@ class Detection(Node):
             return center_shifted, yaw, used_axes
 
         else: 
-            used_axes = axes[:1] # 单边 
+            used_axes = axes[:1] # only use the first principal axis if it's not a corner 
             normal = axes[1] if np.dot(axes[1], x_axis) > 0 else -axes[1] 
             is_corner = False 
             projected = pts_centered @ used_axes.T 
@@ -916,27 +880,27 @@ class Detection(Node):
             min_proj = projected.min(axis=0) 
             max_proj = projected.max(axis=0) 
             center_proj = (min_proj + max_proj) / 2 
-            center = mean + center_proj @ used_axes # 回到原坐标系 
+            center = mean + center_proj @ used_axes # 
             length_proj = projected[:,0].max() - projected[:,0].min()
-            width_proj = length_proj # 如果不是角，则将宽度设为长度
+            width_proj = length_proj # set width same as length for single edge case, will be corrected by shifting and box size later
 
             self.get_logger().debug(f'length_proj: {length_proj:.3f}, width_proj: {width_proj:.3f}') 
 
             if length_proj >= width_proj: 
-                # 第一主轴对应长度 → 第二主轴对应宽度 
+                # length corresponds to first principal axis → keep order
                 box_length = box_size[0] 
                 box_width = box_size[1] 
             else: 
-                # 第一主轴对应宽度 → 交换主轴 
+                # length corresponds to second principal axis → swap order
                 used_axes = used_axes[::-1] 
                 box_length = box_size[1] 
                 box_width = box_size[0] 
             
             if length_proj >= box_width: 
-                shift_vec = normal * (box_width / 2) # 沿宽度方向平移 
+                shift_vec = normal * (box_width / 2) # shift along normal direction to get to center
                 yaw = angle_dir1_x 
             else: 
-                shift_vec = normal * (box_length / 2) # 沿长度方向平移 
+                shift_vec = normal * (box_length / 2) # shift along normal direction to get to center
                 yaw = angle_dir1_x - np.pi/2 if angle_dir1_x < np.pi/2 - 0.01 else angle_dir1_x - np.pi/2 
 
             center_shifted = center + shift_vec 
