@@ -31,7 +31,7 @@ setup(
             # 'controller = grumpy_navigation_py.controller_node:main',
 
             # 'planner = grumpy_navigation_py.simple_planner_node:main',
-            'planner = grumpy_navigation_py.simple_planner_node_3:main',
+            'planner = grumpy_navigation_py.simple_planner_node_2:main',
 
             'controller = grumpy_navigation_py.path_controller_node:main',
 

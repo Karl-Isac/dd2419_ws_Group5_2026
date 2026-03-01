@@ -62,6 +62,7 @@ class TaskPlannerNode(Node):
         self.timer = self.create_timer(dt, self.step)
 
         self.get_logger().info("TaskPlannerNode up. Pub: /nav/goal, /nav/phase, /arm/cmd  Sub: /nav/reached, /arm/done_pick")
+        self.get_logger().info("TaskPlannerNode up. Pub: /nav/goal, /nav/phase, /arm/cmd  Sub: /nav/reached, /arm/done_pick")
 
     # NEW: small helper for "similar coordinates"
     def _is_picked_xy(self, x: float, y: float) -> bool:
@@ -76,10 +77,13 @@ class TaskPlannerNode(Node):
     # CHANGED: PoseArray callback
     def on_objects(self, msg: PoseArray):
         self.latest_object = None
+        self.get_logger().info("on_objects 1")
         for p in msg.poses:
+            self.get_logger().info("on_objects 2")
             x = float(p.position.x)
             y = float(p.position.y)
             if not self._is_picked_xy(x, y):
+                self.get_logger().info("on_objects 3")
                 self.latest_object = p
                 break
 
@@ -111,6 +115,7 @@ class TaskPlannerNode(Node):
         # yaw not used for MS2; identity is fine
         g.pose.orientation.w = 1.0
         self.goal_pub.publish(g)
+        self.get_logger().info("publish goal xy")
 
     def enter_state(self, new_state: str):
         self.state = new_state
@@ -141,16 +146,20 @@ class TaskPlannerNode(Node):
             self.enter_state("NAV_TO_OBJECT")
             return
 
-        if self.current_object is None or self.current_box is None:
+        # if self.current_object is None or self.current_box is None:
+        if self.current_object is None:
+            self.get_logger().info("here")
             return
 
         if self.state == "NAV_TO_OBJECT":
             if not self._published_this_state:
+                self.get_logger().info("nav to object state")
                 self.phase_pub.publish(String(data="object"))
                 # IMPORTANT: goal should be the object center TF (controller handles standoff)
                 self.publish_goal_xy(self.ox, self.oy)
                 self._published_this_state = True
                 self.nav_reached = False
+                self.get_logger().info("nav to object state 2")
 
             if self.nav_reached:
                 self.enter_state("PICK_OBJECT")
@@ -184,7 +193,7 @@ class TaskPlannerNode(Node):
 
                 # Done with this cycle
                 self.current_object = None
-                self.current_box = None
+                # self.current_box = None
 
             self.enter_state("DONE")
 
