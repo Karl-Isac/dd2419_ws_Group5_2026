@@ -79,7 +79,7 @@ class Detection(Node):
 
         # location of final map file (csv)
         self.output_csv_path = os.path.join(
-            os.path.expanduser('~/dd2419_ws_Group_5_2026/src/detection/config/'),
+            os.path.expanduser('~/dd2419_ws_Group5_2026/src/detection/config/'),
             'detection_output.csv'
         )
         os.makedirs(os.path.dirname(self.output_csv_path), exist_ok=True)
