@@ -121,22 +121,22 @@ class Detection(Node):
                     self.metadata_rows.append(row)
 
         self.publish_arrays(self.object_poses, self.box_poses)
-        print(self.object_lists)
+        # print(self.object_lists)
     
-        # static_tf = TransformStamped()
-        # static_tf.header.stamp = self.get_clock().now().to_msg()
-        # static_tf.header.frame_id = 'base_link'
-        # static_tf.child_frame_id = 'camera_color_optical_frame'
-        # static_tf.transform.translation.x = 0.08987
-        # static_tf.transform.translation.y = 0.0175
-        # static_tf.transform.translation.z = 0.10456
-        # q = quaternion_from_euler(-np.pi/2, 0, -np.pi/2)
-        # static_tf.transform.rotation.x = q[0]
-        # static_tf.transform.rotation.y = q[1]
-        # static_tf.transform.rotation.z = q[2]
-        # static_tf.transform.rotation.w = q[3]
+        static_tf = TransformStamped()
+        static_tf.header.stamp = self.get_clock().now().to_msg()
+        static_tf.header.frame_id = 'base_link'
+        static_tf.child_frame_id = 'realsense_camera_link'
+        static_tf.transform.translation.x = 0.08987
+        static_tf.transform.translation.y = 0.0175
+        static_tf.transform.translation.z = 0.10456
+        q = quaternion_from_euler(-np.pi/2, 0, -np.pi/2)
+        static_tf.transform.rotation.x = q[0]
+        static_tf.transform.rotation.y = q[1]
+        static_tf.transform.rotation.z = q[2]
+        static_tf.transform.rotation.w = q[3]
 
-        # self.static_broadcaster.sendTransform(static_tf)
+        self.static_broadcaster.sendTransform(static_tf)
 
     def publish_arrays(self, object_poses, box_poses):
         """publish object and box poses from map file to ROS topics."""

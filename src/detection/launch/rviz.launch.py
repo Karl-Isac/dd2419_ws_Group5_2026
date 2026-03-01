@@ -17,7 +17,7 @@ def generate_launch_description():
             '0', '0', '0',        # x, y, z (in meters)
             '0', '0', '0',        # yaw, pitch, roll (in rads)
             'map',                # parent frame
-            'realsense_camera_link'  # child frame
+            'base_link'  # child frame
         ],
         output='screen'
     )
