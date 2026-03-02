@@ -1,0 +1,53 @@
+[0.649s] Invoking command in '/home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/build/grumpy_navigation_py': DEBUGINFOD_URLS=https://debuginfod.ubuntu.com PIXI_PROMPT=(dd2419_ws) PS1=(dd2419_ws) ${debian_chroot:+($debian_chroot)}\u@\h:\w\$ PYTHONPATH=/home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/build/grumpy_navigation_py/prefix_override:/home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/install/grumpy_navigation_py/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 setup.py develop --editable --build-directory /home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/build/grumpy_navigation_py/build --no-deps install_data
+[0.861s] running develop
+[0.861s] /home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/lib/python3.12/site-packages/setuptools/command/develop.py:41: EasyInstallDeprecationWarning: easy_install command is deprecated.
+[0.862s] !!
+[0.862s] 
+[0.862s]         ********************************************************************************
+[0.862s]         Please avoid running ``setup.py`` and ``easy_install``.
+[0.862s]         Instead, use pypa/build, pypa/installer or other
+[0.862s]         standards-based tools.
+[0.862s] 
+[0.862s]         See https://github.com/pypa/setuptools/issues/917 for details.
+[0.862s]         ********************************************************************************
+[0.862s] 
+[0.862s] !!
+[0.862s]   easy_install.initialize_options(self)
+[0.889s] /home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/lib/python3.12/site-packages/setuptools/_distutils/cmd.py:90: SetuptoolsDeprecationWarning: setup.py install is deprecated.
+[0.889s] !!
+[0.889s] 
+[0.889s]         ********************************************************************************
+[0.889s]         Please avoid running ``setup.py`` directly.
+[0.889s]         Instead, use pypa/build, pypa/installer or other
+[0.889s]         standards-based tools.
+[0.889s] 
+[0.889s]         See https://blog.ganssle.io/articles/2021/10/setup-py-deprecated.html for details.
+[0.889s]         ********************************************************************************
+[0.889s] 
+[0.889s] !!
+[0.890s]   self.initialize_options()
+[0.966s] /home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/lib/python3.12/site-packages/setuptools/command/easy_install.py:334: UserWarning: Unbuilt egg for pytest-repeat [unknown version] (/usr/lib/python3/dist-packages)
+[0.966s]   self.local_index = Environment(self.shadow_path + sys.path)
+[0.984s] running egg_info
+[0.998s] creating grumpy_navigation_py.egg-info
+[0.998s] writing grumpy_navigation_py.egg-info/PKG-INFO
+[0.998s] writing dependency_links to grumpy_navigation_py.egg-info/dependency_links.txt
+[0.998s] writing entry points to grumpy_navigation_py.egg-info/entry_points.txt
+[0.998s] writing requirements to grumpy_navigation_py.egg-info/requires.txt
+[0.999s] writing top-level names to grumpy_navigation_py.egg-info/top_level.txt
+[0.999s] writing manifest file 'grumpy_navigation_py.egg-info/SOURCES.txt'
+[1.027s] reading manifest file 'grumpy_navigation_py.egg-info/SOURCES.txt'
+[1.027s] writing manifest file 'grumpy_navigation_py.egg-info/SOURCES.txt'
+[1.041s] running build_ext
+[1.041s] Creating /home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/install/grumpy_navigation_py/lib/python3.12/site-packages/grumpy-navigation-py.egg-link (link to .)
+[1.042s] Installing controller script to /home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/install/grumpy_navigation_py/lib/grumpy_navigation_py
+[1.042s] Installing planner script to /home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/install/grumpy_navigation_py/lib/grumpy_navigation_py
+[1.042s] 
+[1.042s] Installed /home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/build/grumpy_navigation_py
+[1.042s] running install_data
+[1.042s] creating /home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/install/grumpy_navigation_py/share/ament_index/resource_index/packages
+[1.042s] copying resource/grumpy_navigation_py -> /home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/install/grumpy_navigation_py/share/ament_index/resource_index/packages
+[1.042s] copying package.xml -> /home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/install/grumpy_navigation_py/share/grumpy_navigation_py
+[1.043s] creating /home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/install/grumpy_navigation_py/share/grumpy_navigation_py/launch
+[1.043s] copying launch/nav.launch.py -> /home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/install/grumpy_navigation_py/share/grumpy_navigation_py/launch
+[1.067s] Invoked command in '/home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/build/grumpy_navigation_py' returned '0': DEBUGINFOD_URLS=https://debuginfod.ubuntu.com PIXI_PROMPT=(dd2419_ws) PS1=(dd2419_ws) ${debian_chroot:+($debian_chroot)}\u@\h:\w\$ PYTHONPATH=/home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/build/grumpy_navigation_py/prefix_override:/home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/install/grumpy_navigation_py/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 setup.py develop --editable --build-directory /home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/build/grumpy_navigation_py/build --no-deps install_data

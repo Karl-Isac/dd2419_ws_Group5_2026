@@ -1,0 +1,23 @@
+running develop
+running egg_info
+creating grumpy_navigation_py.egg-info
+writing grumpy_navigation_py.egg-info/PKG-INFO
+writing dependency_links to grumpy_navigation_py.egg-info/dependency_links.txt
+writing entry points to grumpy_navigation_py.egg-info/entry_points.txt
+writing requirements to grumpy_navigation_py.egg-info/requires.txt
+writing top-level names to grumpy_navigation_py.egg-info/top_level.txt
+writing manifest file 'grumpy_navigation_py.egg-info/SOURCES.txt'
+reading manifest file 'grumpy_navigation_py.egg-info/SOURCES.txt'
+writing manifest file 'grumpy_navigation_py.egg-info/SOURCES.txt'
+running build_ext
+Creating /home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/install/grumpy_navigation_py/lib/python3.12/site-packages/grumpy-navigation-py.egg-link (link to .)
+Installing controller script to /home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/install/grumpy_navigation_py/lib/grumpy_navigation_py
+Installing planner script to /home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/install/grumpy_navigation_py/lib/grumpy_navigation_py
+
+Installed /home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/build/grumpy_navigation_py
+running install_data
+creating /home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/install/grumpy_navigation_py/share/ament_index/resource_index/packages
+copying resource/grumpy_navigation_py -> /home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/install/grumpy_navigation_py/share/ament_index/resource_index/packages
+copying package.xml -> /home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/install/grumpy_navigation_py/share/grumpy_navigation_py
+creating /home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/install/grumpy_navigation_py/share/grumpy_navigation_py/launch
+copying launch/nav.launch.py -> /home/grumpy/dd2419_ws_Group5_2026/src/grumpy_navigation_py/install/grumpy_navigation_py/share/grumpy_navigation_py/launch

@@ -13,17 +13,24 @@ from tf2_ros import PointStamped, TransformBroadcaster, TransformListener, Trans
 from tf2_ros.buffer import Buffer
 from tf2_ros.static_transform_broadcaster import StaticTransformBroadcaster
 from tf_transformations import quaternion_from_euler
-from geometry_msgs.msg import TransformStamped, Point
+from geometry_msgs.msg import TransformStamped, Point, Vector3Stamped, PoseArray, Pose
 from visualization_msgs.msg import Marker
 
 from sensor_msgs.msg import PointCloud2
 import sensor_msgs_py.point_cloud2 as pc2
 
+import csv
+from ament_index_python.packages import get_package_share_directory
+import os
 
 import ctypes
 import struct
 
 # Criteria of colors are at Line 468-478
+
+######################################################################################################
+# TODO: discuss the unit of the communication (PoseArray): m
+######################################################################################################
 
 class Detection(Node):
 
@@ -45,37 +52,102 @@ class Detection(Node):
         # Static TF broadcaster
         self.static_broadcaster = StaticTransformBroadcaster(self)
 
-        self.red_published = False
-        self.red_available = False
         self.red_timestamp = None
-
-        self.blue_published = False
-        self.blue_available = False
         self.blue_timestamp = None
-
-        self.green_published = False
-        self.green_available = False
         self.green_timestamp = None
-
-        self.wood_published = False
-        self.wood_available = False
         self.wood_timestamp = None
+        
+        # initialize topic publisher
+        self.objects_pub = self.create_publisher(PoseArray, '/detected_objects', 10)
+        self.boxes_pub = self.create_publisher(PoseArray, '/detected_boxes', 10)
 
-        # static_tf = TransformStamped()
-        # static_tf.header.stamp = self.get_clock().now().to_msg()
-        # static_tf.header.frame_id = 'base_link'
-        # static_tf.child_frame_id = 'camera_color_optical_frame'
-        # static_tf.transform.translation.x = 0.08987
-        # static_tf.transform.translation.y = 0.0175
-        # static_tf.transform.translation.z = 0.10456
-        # q = quaternion_from_euler(-np.pi/2, 0, -np.pi/2)
-        # static_tf.transform.rotation.x = q[0]
-        # static_tf.transform.rotation.y = q[1]
-        # static_tf.transform.rotation.z = q[2]
-        # static_tf.transform.rotation.w = q[3]
+        # open and load map file (csv)
+        package_path = get_package_share_directory('detection')
+        csv_path = os.path.join(package_path, 'config', 'test.csv')
+        self.metadata_rows = []
 
-        # self.static_broadcaster.sendTransform(static_tf)
+        # location of final map file (csv)
+        self.output_csv_path = os.path.join(
+            os.path.expanduser('~/dd2419_ws_Group5_2026/src/detection/config/'),
+            'detection_output.csv'
+        )
+        os.makedirs(os.path.dirname(self.output_csv_path), exist_ok=True)
+        self.get_logger().info(f'Output CSV will be written to {self.output_csv_path}')
 
+        self.object_poses = []
+        self.box_poses = []
+        self.object_lists = []
+        self.box_lists = []
+
+        self.object_num = 0
+
+        with open(csv_path, mode='r', encoding='utf-8') as file:
+            reader = csv.reader(file)
+            # skip the first line (header)
+            header = next(reader)
+            for row in reader:
+                type_id = row[0]
+                x = int(row[1])
+                y = int(row[2])
+                angle_deg = float(row[3])   
+                angle_rad = math.radians(angle_deg)
+
+                pose = Pose()
+                pose.position.x = x / 100.0  # convert cm to m
+                pose.position.y = y / 100.0  # convert cm to m
+                pose.position.z = 0.0        # z is 0
+                q = quaternion_from_euler(0, 0, angle_rad)
+                pose.orientation.x = q[0]
+                pose.orientation.y = q[1]
+                pose.orientation.z = q[2]
+                pose.orientation.w = q[3]
+
+                if type_id == 'O':
+                    self.object_poses.append(pose)
+                    self.object_lists.append([x, y, angle_deg])
+                elif type_id == 'B':
+                    self.box_poses.append(pose)
+                    self.box_lists.append([x, y, angle_deg])
+                else:
+                    self.metadata_rows.append(row)
+
+        self.publish_arrays(self.object_poses, self.box_poses)
+        # print(self.object_lists)
+    
+        static_tf = TransformStamped()
+        static_tf.header.stamp = self.get_clock().now().to_msg()
+        static_tf.header.frame_id = 'base_link'
+        static_tf.child_frame_id = 'realsense_camera_link'
+        static_tf.transform.translation.x = 0.08987
+        static_tf.transform.translation.y = 0.0175
+        static_tf.transform.translation.z = 0.10456
+        q = quaternion_from_euler(0, 0, 0)
+        static_tf.transform.rotation.x = q[0]
+        static_tf.transform.rotation.y = q[1]
+        static_tf.transform.rotation.z = q[2]
+        static_tf.transform.rotation.w = q[3]
+
+        self.static_broadcaster.sendTransform(static_tf)
+
+    def publish_arrays(self, object_poses, box_poses):
+        """publish object and box poses from map file to ROS topics."""
+        # objects
+        if object_poses is not None:
+            obj_msg = PoseArray()
+            obj_msg.header.stamp = self.get_clock().now().to_msg()
+            obj_msg.header.frame_id = 'map'      
+            obj_msg.poses = object_poses
+            self.objects_pub.publish(obj_msg)
+
+        # boxes
+        if box_poses is not None:
+            box_msg = PoseArray()
+            box_msg.header.stamp = self.get_clock().now().to_msg()
+            box_msg.header.frame_id = 'map'
+            box_msg.poses = box_poses
+            self.boxes_pub.publish(box_msg)
+
+        # self.get_logger().info(f'Published {len(object_poses)} objects and {len(box_poses)} boxes')
 
     def cloud_callback(self, msg: PointCloud2):
         """Takes point cloud readings to detect objects.
@@ -142,41 +214,41 @@ class Detection(Node):
             g = colors[idx, 1]
             b = colors[idx, 2]
             h, s, v = self.rgb_to_hsv(r, g, b)
-            if y > 0 and z > 0 and z < 0.5:
+            if y > 0 and y < 0.09 and z > 0 and z < 1.5:
                 # red
-                # if is_red(h, s, v):
-                #     red_counter += 1
-                #     red_points.append([x,y,z])
-                #     red_sum_x += x
-                #     red_sum_y += y
-                #     red_sum_z += z
-                # # blue
-                # elif is_blue(h,s,v):
-                #     blue_counter += 1
-                #     blue_points.append([x,y,z])
-                #     blue_sum_x += x
-                #     blue_sum_y += y
-                #     blue_sum_z += z
-                # # green
-                # elif is_green(h,s,v):
-                #     green_counter += 1
-                #     green_points.append([x,y,z])
-                #     green_sum_x += x
-                #     green_sum_y += y
-                #     green_sum_z += z
-                # # wood
-                # elif is_wood(h,s,v):
-                #     wood_counter += 1
-                #     wood_points.append([x,y,z])
-                #     wood_sum_x += x
-                #     wood_sum_y += y
-                #     wood_sum_z += z
+                if is_red(h, s, v):
+                    red_counter += 1
+                    red_points.append([x,y,z])
+                    red_sum_x += x
+                    red_sum_y += y
+                    red_sum_z += z
+                # blue
+                elif is_blue(h,s,v):
+                    blue_counter += 1
+                    blue_points.append([x,y,z])
+                    blue_sum_x += x
+                    blue_sum_y += y
+                    blue_sum_z += z
+                # green
+                elif is_green(h,s,v):
+                    green_counter += 1
+                    green_points.append([x,y,z])
+                    green_sum_x += x
+                    green_sum_y += y
+                    green_sum_z += z
+                # wood
+                elif is_wood(h,s,v):
+                    wood_counter += 1
+                    wood_points.append([x,y,z])
+                    wood_sum_x += x
+                    wood_sum_y += y
+                    wood_sum_z += z
 
                 if is_grey(h,s,v):
                     grey_points.append([z ,-x])
 
         # red 
-        if red_counter > 15 and not self.red_available:
+        if red_counter > 12:
             self.get_logger().info('Red object detected.')
             self.red = tf2_geometry_msgs.PoseStamped()
             self.red.header = msg.header
@@ -189,22 +261,20 @@ class Detection(Node):
             self.red.pose.orientation.w = 1.0
 
             self.red_timestamp = msg.header.stamp
-            self.red_available = True
 
-        if self.red_available and not self.red_published:
             msg_time = rclpy.time.Time.from_msg(self.red_timestamp)
             if not self.tf_buffer.can_transform(
-                'realsense_camera_link',
+                'map',
                 self.red.header.frame_id,
                 msg_time,
                 timeout=rclpy.duration.Duration(seconds=1)
             ):
-                return
+                self.get_logger().warn(f'Failed to publish red object')
 
             try:
                 red_map = self.tf_buffer.transform(
                     self.red,
-                    'realsense_camera_link',
+                    'map',
                     timeout=rclpy.duration.Duration(seconds=1)
                 )
             except TransformException as ex:
@@ -216,7 +286,7 @@ class Detection(Node):
             
             tf_red.header.stamp = self.red_timestamp
 
-            tf_red.header.frame_id = 'realsense_camera_link'
+            tf_red.header.frame_id = 'map'
             tf_red.child_frame_id = 'red_object'
 
             tf_red.transform.translation.x = red_map.pose.position.x
@@ -229,10 +299,27 @@ class Detection(Node):
             tf_red.transform.rotation.w = 1.0
 
             self.static_broadcaster.sendTransform(tf_red)
-            self.red_published = True
+
+            self.get_logger().info(f'Map box: Red {red_map.pose.position.x} {red_map.pose.position.y} N/A')
+
+            for item in self.object_lists:
+                if np.abs(item[0] - red_map.pose.position.x * 100) < 3 and np.abs(item[1] - red_map.pose.position.y * 100) < 3:
+                    self.get_logger().info("repeated red detection, discarded")
+                    break
+            else:
+                self.object_lists.append([int(round(red_map.pose.position.x * 100)), int(round(red_map.pose.position.y * 100)), 0])
+                new_object_msg = Pose()
+                new_object_msg.position.x = red_map.pose.position.x
+                new_object_msg.position.y = red_map.pose.position.y
+                new_object_msg.position.z = 0.0
+                new_object_msg.orientation.x = 0.0
+                new_object_msg.orientation.y = 0.0
+                new_object_msg.orientation.z = 0.0
+                new_object_msg.orientation.w = 1.0
+                self.publish_arrays([new_object_msg], None)
 
         # blue
-        if blue_counter > 15 and not self.blue_available:
+        if blue_counter > 12:
             self.get_logger().info('Blue object detected.')
             self.blue = tf2_geometry_msgs.PoseStamped()
             self.blue.header = msg.header
@@ -245,22 +332,20 @@ class Detection(Node):
             self.blue.pose.orientation.w = 1.0
 
             self.blue_timestamp = msg.header.stamp
-            self.blue_available = True
 
-        if self.blue_available and not self.blue_published:
             msg_time = rclpy.time.Time.from_msg(self.blue_timestamp)
             if not self.tf_buffer.can_transform(
-                'realsense_camera_link',
+                'map',
                 self.blue.header.frame_id,
                 msg_time,
                 timeout=rclpy.duration.Duration(seconds=1)
             ):
-                return
+                self.get_logger().warn(f'Failed to publish blue object')
 
             try:
                 blue_map = self.tf_buffer.transform(
                     self.blue,
-                    'realsense_camera_link',
+                    'map',
                     timeout=rclpy.duration.Duration(seconds=1)
                 )
             except TransformException as ex:
@@ -272,7 +357,7 @@ class Detection(Node):
             
             tf_blue.header.stamp = self.blue_timestamp
 
-            tf_blue.header.frame_id = 'realsense_camera_link'
+            tf_blue.header.frame_id = 'map'
             tf_blue.child_frame_id = 'blue_object'
 
             tf_blue.transform.translation.x = blue_map.pose.position.x
@@ -285,10 +370,27 @@ class Detection(Node):
             tf_blue.transform.rotation.w = 1.0
 
             self.static_broadcaster.sendTransform(tf_blue)
-            self.blue_published = True
+
+            self.get_logger().info(f'Map box: Blue {blue_map.pose.position.x} {blue_map.pose.position.y} N/A')
+
+            for item in self.object_lists:
+                if np.abs(item[0] - blue_map.pose.position.x * 100) < 3 and np.abs(item[1] - blue_map.pose.position.y * 100) < 3:
+                    self.get_logger().info("repeated blue detection, discarded")
+                    break
+            else:
+                self.object_lists.append([int(round(blue_map.pose.position.x * 100)), int(round(blue_map.pose.position.y * 100)), 0])
+                new_object_msg = Pose()
+                new_object_msg.position.x = blue_map.pose.position.x
+                new_object_msg.position.y = blue_map.pose.position.y
+                new_object_msg.position.z = 0.0
+                new_object_msg.orientation.x = 0.0
+                new_object_msg.orientation.y = 0.0
+                new_object_msg.orientation.z = 0.0
+                new_object_msg.orientation.w = 1.0
+                self.publish_arrays([new_object_msg], None)
         
         # green
-        if green_counter > 15 and not self.green_available:
+        if green_counter > 12:
             self.get_logger().info('Green object detected.')   
             self.green = tf2_geometry_msgs.PoseStamped()
             self.green.header = msg.header
@@ -301,22 +403,20 @@ class Detection(Node):
             self.green.pose.orientation.w = 1.0
 
             self.green_timestamp = msg.header.stamp
-            self.green_available = True
-        
-        if self.green_available and not self.green_published:
+
             msg_time = rclpy.time.Time.from_msg(self.green_timestamp)
             if not self.tf_buffer.can_transform(
-                'realsense_camera_link',
+                'map',
                 self.green.header.frame_id,
                 msg_time,
                 timeout=rclpy.duration.Duration(seconds=1)
             ):
-                return
+                self.get_logger().warn(f'Failed to publish green object')
 
             try:
                 green_map = self.tf_buffer.transform(
                     self.green,
-                    'realsense_camera_link',
+                    'map',
                     timeout=rclpy.duration.Duration(seconds=1)
                 )
             except TransformException as ex:
@@ -327,24 +427,38 @@ class Detection(Node):
                 return
             
             tf_green.header.stamp = self.green_timestamp
-
-            tf_green.header.frame_id = 'realsense_camera_link'
+            tf_green.header.frame_id = 'map'
             tf_green.child_frame_id = 'green_object'
-
             tf_green.transform.translation.x = green_map.pose.position.x
             tf_green.transform.translation.y = green_map.pose.position.y
             tf_green.transform.translation.z = green_map.pose.position.z
-
             tf_green.transform.rotation.x = 0.0
             tf_green.transform.rotation.y = 0.0
             tf_green.transform.rotation.z = 0.0
             tf_green.transform.rotation.w = 1.0
 
             self.static_broadcaster.sendTransform(tf_green)
-            self.green_published = True
+
+            self.get_logger().info(f'Map box: Green {green_map.pose.position.x} {green_map.pose.position.y} N/A')
+
+            for item in self.object_lists:
+                if np.abs(item[0] - green_map.pose.position.x * 100) < 3 and np.abs(item[1] - green_map.pose.position.y * 100) < 3:
+                    self.get_logger().info("repeated green detection, discarded")
+                    break
+            else:
+                self.object_lists.append([int(round(green_map.pose.position.x * 100)), int(round(green_map.pose.position.y * 100)), 0])
+                new_object_msg = Pose()
+                new_object_msg.position.x = green_map.pose.position.x
+                new_object_msg.position.y = green_map.pose.position.y
+                new_object_msg.position.z = 0.0
+                new_object_msg.orientation.x = 0.0
+                new_object_msg.orientation.y = 0.0
+                new_object_msg.orientation.z = 0.0
+                new_object_msg.orientation.w = 1.0
+                self.publish_arrays([new_object_msg], None)
 
         # wood
-        if wood_counter > 15 and not self.wood_available:
+        if wood_counter > 12:
             self.get_logger().info('Wood object detected.')   
             self.wood = tf2_geometry_msgs.PoseStamped()
             self.wood.header = msg.header
@@ -357,22 +471,20 @@ class Detection(Node):
             self.wood.pose.orientation.w = 1.0
 
             self.wood_timestamp = msg.header.stamp
-            self.wood_available = True
-        
-        if self.wood_available and not self.wood_published:
+
             msg_time = rclpy.time.Time.from_msg(self.wood_timestamp)
             if not self.tf_buffer.can_transform(
-                'realsense_camera_link',
+                'map',
                 self.wood.header.frame_id,
                 msg_time,
                 timeout=rclpy.duration.Duration(seconds=1)
             ):
-                return
+                self.get_logger().warn(f'Failed to publish wood object')
 
             try:
                 wood_map = self.tf_buffer.transform(
                     self.wood,
-                    'realsense_camera_link',
+                    'map',
                     timeout=rclpy.duration.Duration(seconds=1)
                 )
             except TransformException as ex:
@@ -383,21 +495,34 @@ class Detection(Node):
                 return
             
             tf_wood.header.stamp = self.wood_timestamp
-
-            tf_wood.header.frame_id = 'realsense_camera_link'
+            tf_wood.header.frame_id = 'map'
             tf_wood.child_frame_id = 'wood_object'
-
             tf_wood.transform.translation.x = wood_map.pose.position.x
             tf_wood.transform.translation.y = wood_map.pose.position.y
             tf_wood.transform.translation.z = wood_map.pose.position.z
-
             tf_wood.transform.rotation.x = 0.0
             tf_wood.transform.rotation.y = 0.0
             tf_wood.transform.rotation.z = 0.0
             tf_wood.transform.rotation.w = 1.0
-
             self.static_broadcaster.sendTransform(tf_wood)
-            self.wood_published = True
+
+            self.get_logger().info(f'Map box: Wood {wood_map.pose.position.x} {wood_map.pose.position.y} N/A')
+
+            for item in self.object_lists:
+                if np.abs(item[0] - wood_map.pose.position.x * 100) < 3 and np.abs(item[1] - wood_map.pose.position.y * 100) < 3:
+                    self.get_logger().info("repeated wood detection, discarded")
+                    break
+            else:
+                self.object_lists.append([int(round(wood_map.pose.position.x * 100)), int(round(wood_map.pose.position.y * 100)), 0])
+                new_object_msg = Pose()
+                new_object_msg.position.x = wood_map.pose.position.x
+                new_object_msg.position.y = wood_map.pose.position.y
+                new_object_msg.position.z = 0.0
+                new_object_msg.orientation.x = 0.0
+                new_object_msg.orientation.y = 0.0
+                new_object_msg.orientation.z = 0.0
+                new_object_msg.orientation.w = 1.0
+                self.publish_arrays([new_object_msg], None)
 
         # if self.red_available and not self.red_published:
         #     msg_time = rclpy.time.Time.from_msg(self.red_timestamp)
@@ -422,6 +547,7 @@ class Detection(Node):
         #         )
         #         return
             
+        #     self.get_logger().info(f'Map box: Red {red_map.pose.position.x} {red_map.pose.position.y} N/A')
         #     tf_red.header.stamp = self.red_timestamp
 
         #     tf_red.header.frame_id = 'map'
@@ -442,27 +568,71 @@ class Detection(Node):
         self.publish_2d_cloud(grey_points, msg.header)
 
         box_size = (0.24, 0.16)  # L, W
+
         center, yaw, axes = self.estimate_box_from_points(grey_points, box_size)
-
         if center is not None:
-            tf_grey = TransformStamped()
-            tf_grey.header.stamp = msg.header.stamp
-            tf_grey.header.frame_id = 'realsense_camera_link'
-            tf_grey.child_frame_id = 'grey_box'
+            # --- convert to map frame ---
+            try:
+                point_camera = PointStamped()
+                point_camera.header.frame_id = 'realsense_camera_link'
+                point_camera.header.stamp = msg.header.stamp
+                point_camera.point.x = float(center[0])
+                point_camera.point.y = float(center[1])
+                point_camera.point.z = 0.0
+                point_map = self.tf_buffer.transform(point_camera, 'map')
 
-            # 位置
-            tf_grey.transform.translation.x = float(center[0])
-            tf_grey.transform.translation.y = float(center[1])
-            tf_grey.transform.translation.z = 0.05  # 高度固定为点云平面上方一点
+                dir_camera = Vector3Stamped()
+                dir_camera.header.frame_id = 'realsense_camera_link'
+                dir_camera.header.stamp = msg.header.stamp
+                dir_camera.vector.x = np.cos(yaw)
+                dir_camera.vector.y = np.sin(yaw)
+                dir_camera.vector.z = 0.0
+                dir_map = self.tf_buffer.transform(dir_camera, 'map')
+                map_yaw = np.arctan2(dir_map.vector.y, dir_map.vector.x)
 
-            # 旋转（绕 Z 轴 yaw）
-            q = quaternion_from_euler(0.0, 0.0, float(yaw))
-            tf_grey.transform.rotation.x = q[0]
-            tf_grey.transform.rotation.y = q[1]
-            tf_grey.transform.rotation.z = q[2]
-            tf_grey.transform.rotation.w = q[3]
+                map_yaw_deg = np.degrees(map_yaw)
+                map_yaw_deg = map_yaw_deg % 180
 
-            self.static_broadcaster.sendTransform(tf_grey)
+                angle_int = int(round(map_yaw_deg)) % 180
+
+                x_str = int(round(point_map.point.x * 100))
+                y_str = int(round(point_map.point.y * 100))
+
+                self.get_logger().info(f'Map box: B {x_str} {y_str} {angle_int}')
+                
+                # publish static TF for the box
+                tf_map_box = TransformStamped()
+                tf_map_box.header.stamp = msg.header.stamp
+                tf_map_box.header.frame_id = 'map'
+                tf_map_box.child_frame_id = 'grey_box_map'
+                tf_map_box.transform.translation.x = point_map.point.x
+                tf_map_box.transform.translation.y = point_map.point.y
+                tf_map_box.transform.translation.z = 0
+                q = quaternion_from_euler(0.0, 0.0, angle_int * np.pi / 180)
+                tf_map_box.transform.rotation.x = q[0]
+                tf_map_box.transform.rotation.y = q[1]
+                tf_map_box.transform.rotation.z = q[2]
+                tf_map_box.transform.rotation.w = q[3]
+                self.static_broadcaster.sendTransform(tf_map_box)
+
+                for item in self.box_lists:
+                    if np.abs(item[0] - x_str) < 5 and np.abs(item[1] - y_str) < 5:
+                        self.get_logger().info("repeated box detection, discarded")
+                        break
+                else:
+                    self.box_lists.append([x_str, y_str, angle_int])
+                    new_box_msg = Pose()
+                    new_box_msg.position.x = point_map.point.x
+                    new_box_msg.position.y = point_map.point.y
+                    new_box_msg.position.z = 0.0
+                    new_box_msg.orientation.x = tf_map_box.transform.rotation.x
+                    new_box_msg.orientation.y = tf_map_box.transform.rotation.y
+                    new_box_msg.orientation.z = tf_map_box.transform.rotation.z
+                    new_box_msg.orientation.w = tf_map_box.transform.rotation.w
+                    self.publish_arrays(None, [new_box_msg])
+
+            except TransformException as ex:
+                self.get_logger().error(f'Transform failed: {ex}')
 
     def rgb_to_hsv(self, r, g, b):
         c_max = max(r, g, b)
@@ -483,9 +653,76 @@ class Detection(Node):
         v = c_max
 
         return h, s, v
+    
+    def object_detection(self, msg, sum_x, sum_y, sum_z, counter, color):
+        # object_num is the number of detected objects, regardless of color, used for TF frame naming
+        self.get_logger().info(f'{color} object detected.')
+        self.object = tf2_geometry_msgs.PoseStamped()
+        self.object.header = msg.header
+        self.object.pose.position.x = sum_x / counter
+        self.object.pose.position.y = sum_y / counter
+        self.object.pose.position.z = sum_z / counter
+        self.object.pose.orientation.x = 0.0
+        self.object.pose.orientation.y = 0.0
+        self.object.pose.orientation.z = 0.0
+        self.object.pose.orientation.w = 1.0
+
+        msg_time = rclpy.time.Time.from_msg(msg.header.stamp)
+        if not self.tf_buffer.can_transform(
+                'map',
+                self.object.header.frame_id,
+                msg_time,
+                timeout=rclpy.duration.Duration(seconds=1)
+            ):
+                self.get_logger().warn(f'Failed to publish {color} object_{self.object_num}')
+
+        try:
+                object_map = self.tf_buffer.transform(
+                    self.object,
+                    'map',
+                    timeout=rclpy.duration.Duration(seconds=1)
+                )
+        except TransformException as ex:
+            self.get_logger().info(
+                    f'Could not transform {color} object from '
+                    f'{self.object.header.frame_id} to map: {ex}'
+            )
+            return
+        
+        tf = TransformStamped()
+        tf.header.stamp = self.object_timestamp
+        tf.header.frame_id = 'map'
+        tf.child_frame_id = f'object_{self.object_num}'
+        tf.transform.translation.x = object_map.pose.position.x
+        tf.transform.translation.y = object_map.pose.position.y
+        tf.transform.translation.z = object_map.pose.position.z
+        tf.transform.rotation.x = 0.0
+        tf.transform.rotation.y = 0.0
+        tf.transform.rotation.z = 0.0
+        tf.transform.rotation.w = 1.0
+        self.static_broadcaster.sendTransform(tf)
+
+        self.get_logger().info(f'Map box: {color} {object_map.pose.position.x} {object_map.pose.position.y} N/A')
+
+        for item in self.object_lists:
+            if np.abs(item[0] - object_map.pose.position.x * 100) < 3 and np.abs(item[1] - object_map.pose.position.y * 100) < 3:
+                self.get_logger().info(f"repeated {color} detection, discarded")
+                break
+        else:
+            self.object_lists.append([int(round(object_map.pose.position.x * 100)), int(round(object_map.pose.position.y * 100)), 0])
+            new_object_msg = Pose()
+            new_object_msg.position.x = object_map.pose.position.x
+            new_object_msg.position.y = object_map.pose.position.y
+            new_object_msg.position.z = 0.0
+            new_object_msg.orientation.x = 0.0
+            new_object_msg.orientation.y = 0.0
+            new_object_msg.orientation.z = 0.0
+            new_object_msg.orientation.w = 1.0
+            self.publish_arrays([new_object_msg], None)
+            self.object_num += 1
+
         
     def publish_2d_cloud(self, points_xz, header):
-        # 新header
         h = std_msgs.msg.Header()
         h.stamp = header.stamp
         h.frame_id = 'realsense_camera_link'
@@ -507,12 +744,12 @@ class Detection(Node):
         "yaw: rotation around z in radians "
         "axes: principal axes vectors (2x2) """ 
         
-        if len(points) < 2: 
-            return None, None, None # 不够点无法估计 
+        if len(points) < 10: 
+            return None, None, None 
         
         pts = np.array(points) 
         
-        # --- Step 0: 去除离群点（IQR法） --- 
+        # --- Step 0: reduce outliers（IQR method） --- 
         
         # Q1 = np.percentile(pts, 25, axis=0) 
         # Q3 = np.percentile(pts, 75, axis=0) 
@@ -527,29 +764,29 @@ class Detection(Node):
         mean = np.mean(pts, axis=0) 
         pts_centered = pts - mean 
         U, S, Vt = np.linalg.svd(pts_centered, full_matrices=False) 
-        axes = Vt[:2] # 两个主轴 
+        axes = Vt[:2] 
         
-        # --- Step 2: 判断角度 --- 
+        # --- Step 2: angle calculation --- 
         dir1 = axes[0] 
         dir2 = axes[1] 
         dir1 /= np.linalg.norm(dir1) 
         dir2 /= np.linalg.norm(dir2) 
-        dir1 = dir1 if dir1[1] >= 0 else -dir1 # 保持第一主轴朝上 
-        dir2 = dir2 if dir2[1] >= 0 else -dir2 # 保持第二主轴朝上 
+        dir1 = dir1 if dir1[1] >= 0 else -dir1 # y > 0
+        dir2 = dir2 if dir2[1] >= 0 else -dir2 # y > 0
         
-        # 计算 dir1 和 dir2 关于 x 轴的夹角 
+        # angle with respect to x-axis
         x_axis = np.array([1.0, 0.0]) 
         angle_dir1_x = np.arccos(np.clip(np.dot(dir1, x_axis), -1.0, 1.0)) 
         angle_dir2_x = np.arccos(np.clip(np.dot(dir2, x_axis), -1.0, 1.0)) 
         
-        # Step 3: 判断是否是角 
+        # Step 3: two edge vs single edge decision based on variance ratio
         
         ratio = S[1] / S[0] 
-        self.get_logger().info(f'主成分方差比: {ratio:.3f}') 
+        self.get_logger().debug(f'variance ratio: {ratio:.3f}') 
 
         if ratio > 0.1:
             # =========================================================
-            # RANSAC 拟合两条边 → 求角点
+            # RANSAC 
             # =========================================================
 
             pts_np = pts.copy()
@@ -590,13 +827,12 @@ class Detection(Node):
                 b = -np.array([d1, d2])
                 return np.linalg.solve(A, b)
 
-            # 第一条边
+            # first edge
             model1, inliers1 = fit_line_ransac(pts_np)
 
             if model1 is None or len(inliers1) < 5:
                 return None, None, None
 
-            # 删除第一条边点
             mask = np.ones(len(pts_np), dtype=bool)
             for p in inliers1:
                 idx = np.where((pts_np == p).all(axis=1))[0]
@@ -604,17 +840,17 @@ class Detection(Node):
 
             remaining = pts_np[mask]
 
-            # 第二条边
+            # second edge
             model2, inliers2 = fit_line_ransac(remaining)
 
             if model2 is None or len(inliers2) < 5:
                 return None, None, None
 
-            # 角点
+            # corner point
             corner = intersect_lines(model1, model2)
 
             # =========================================================
-            # 方向向量（从直线法向恢复）
+            # direction vectors and used axes
             # =========================================================
             n1, _ = model1
             n2, _ = model2
@@ -625,7 +861,7 @@ class Detection(Node):
             dir1 /= np.linalg.norm(dir1)
             dir2 /= np.linalg.norm(dir2)
 
-            # 保持朝前
+            # keeps x > 0 in camera frame
             if dir1[1] < 0:
                 dir1 = -dir1
             if dir2[1] < 0:
@@ -634,7 +870,7 @@ class Detection(Node):
             used_axes = np.vstack([dir1, dir2])
 
             # =========================================================
-            # 计算长度方向
+            # length estimation along each direction
             # =========================================================
             proj1 = pts_np @ dir1
             proj2 = pts_np @ dir2
@@ -642,11 +878,11 @@ class Detection(Node):
             length1 = proj1.max() - proj1.min()
             length2 = proj2.max() - proj2.min()
 
-            self.get_logger().info(
+            self.get_logger().debug(
                 f'RANSAC length1: {length1:.3f}, length2: {length2:.3f}'
             )
 
-            # 判断哪条是长边
+            # judge which direction corresponds to length vs width based on variance and box size ratio
             if length1 > length2:
                 main_dir = dir1
                 side_dir = dir2
@@ -659,57 +895,72 @@ class Detection(Node):
                 box_width = box_size[1]
 
             # =========================================================
-            # 计算中心
+            # calculate center by shifting from corner along main_dir and side_dir
             # =========================================================
             # center_shifted = corner + main_dir * (box_length / 2)
-            center_shifted = corner - main_dir * (box_length / 2) + side_dir * (box_width / 2) # 沿宽度方向平移到箱子中心
+            center_shifted = corner - main_dir * (box_length / 2) + side_dir * (box_width / 2) # shift from corner along both directions to get to the center, more robust for partial views
             # center_shifted = corner
 
             # yaw
             yaw = np.arctan2(main_dir[1], main_dir[0])
 
-            self.get_logger().info(
+            self.get_logger().debug(
                 f'Corner: {corner}, Center: {center_shifted}, yaw: {yaw:.3f}'
             )
 
             return center_shifted, yaw, used_axes
 
         else: 
-            used_axes = axes[:1] # 单边 
+            used_axes = axes[:1] # only use the first principal axis if it's not a corner 
             normal = axes[1] if np.dot(axes[1], x_axis) > 0 else -axes[1] 
             is_corner = False 
             projected = pts_centered @ used_axes.T 
 
-            self.get_logger().info(f'dir1 与 x 轴夹角: {angle_dir1_x:.2f}rad, dir2 与 x 轴夹角: {angle_dir2_x:.2f}rad') 
+            self.get_logger().debug(f'dir1 与 x 轴夹角: {angle_dir1_x:.2f}rad, dir2 与 x 轴夹角: {angle_dir2_x:.2f}rad') 
             min_proj = projected.min(axis=0) 
             max_proj = projected.max(axis=0) 
             center_proj = (min_proj + max_proj) / 2 
-            center = mean + center_proj @ used_axes # 回到原坐标系 
+            center = mean + center_proj @ used_axes # 
             length_proj = projected[:,0].max() - projected[:,0].min()
-            width_proj = length_proj # 如果不是角，则将宽度设为长度
+            width_proj = length_proj # set width same as length for single edge case, will be corrected by shifting and box size later
 
-            self.get_logger().info(f'length_proj: {length_proj:.3f}, width_proj: {width_proj:.3f}') 
+            self.get_logger().debug(f'length_proj: {length_proj:.3f}, width_proj: {width_proj:.3f}') 
 
             if length_proj >= width_proj: 
-                # 第一主轴对应长度 → 第二主轴对应宽度 
+                # length corresponds to first principal axis → keep order
                 box_length = box_size[0] 
                 box_width = box_size[1] 
             else: 
-                # 第一主轴对应宽度 → 交换主轴 
+                # length corresponds to second principal axis → swap order
                 used_axes = used_axes[::-1] 
                 box_length = box_size[1] 
                 box_width = box_size[0] 
             
             if length_proj >= box_width: 
-                shift_vec = normal * (box_width / 2) # 沿宽度方向平移 
+                shift_vec = normal * (box_width / 2) # shift along normal direction to get to center
                 yaw = angle_dir1_x 
             else: 
-                shift_vec = normal * (box_length / 2) # 沿长度方向平移 
+                shift_vec = normal * (box_length / 2) # shift along normal direction to get to center
                 yaw = angle_dir1_x - np.pi/2 if angle_dir1_x < np.pi/2 - 0.01 else angle_dir1_x - np.pi/2 
 
             center_shifted = center + shift_vec 
 
             return center_shifted, yaw, used_axes
+    
+    def write_csv(self):
+        try:
+            with open(self.output_csv_path, mode='w', encoding='utf-8', newline='') as file:
+                writer = csv.writer(file)
+                writer.writerow(['Type', 'x', 'y', 'angle'])
+                for meta_row in self.metadata_rows:
+                    writer.writerow(meta_row)
+                for obj in self.object_lists:
+                    writer.writerow(['O'] + obj)
+                for box in self.box_lists:
+                    writer.writerow(['B'] + box)
+            self.get_logger().debug(f'CSV file updated: {self.output_csv_path}')
+        except Exception as e:
+            self.get_logger().error(f'Failed to write CSV: {e}')
 
  
 def main():
@@ -718,24 +969,26 @@ def main():
     try:
         rclpy.spin(node)
     except KeyboardInterrupt:
-        pass
-
-    rclpy.shutdown()
+        node.get_logger().info('Shutting down, writing CSV...')
+    finally:
+        node.write_csv()
+        node.destroy_node()
+        rclpy.shutdown()
 
 def is_red(h,s,v):
-    return True if (h <= 20 or h >= 340) and s > 0.5 and v > 0.4 else False
+    return True if (h <= 20 or h >= 340) and s > 0.5 and v > 0.5 else False
 
 def is_blue(h,s,v):
-    return True if (h >= 200 and h <= 260) and s > 0.55 and v > 0.45 else False
+    return True if (h >= 180 and h <= 200) and s > 0.5 and v > 0.5 else False
 
 def is_green(h,s,v):
-    return True if 120 <= h <= 190 and s > 0.4 and v > 0.4 else False
+    return True if 140 <= h <= 180 and s > 0.4 and v > 0.4 else False
 
 def is_wood(h,s,v):
     return True if 20 <= h <= 60 and 0 < s < 0.6 and v > 0.4 else False
 
 def is_grey(h,s,v):
-    return True if s < 0.15 and v > 0.1 and v < 0.25 else False
+    return True if 0.01 < s < 0.15 and v > 0.1 and v < 0.25 else False
 
 if __name__ == '__main__':
     main()
