@@ -18,7 +18,7 @@ class TaskPlannerNode(Node):
         self.declare_parameter("rate_hz", 5.0)
 
         # NEW: distance threshold (meters) to consider an object "already picked"
-        self.declare_parameter("picked_dist", 0.25)
+        self.declare_parameter("picked_dist", 0.05)
 
         self.world_frame = self.get_parameter("world_frame").value
         self.base_frame = self.get_parameter("base_frame").value
@@ -43,6 +43,7 @@ class TaskPlannerNode(Node):
         self.state = "SELECT_OBJECT"
         self.nav_reached = False
         self.pick_done = False
+        self.place_done = False
         self._published_this_state = False
 
         # pubs
@@ -52,7 +53,8 @@ class TaskPlannerNode(Node):
 
         # subs
         self.create_subscription(Bool, "/nav/reached", self.on_reached, 10)
-        self.create_subscription(Bool, "/arm/done_pick", self.on_pick_done, 10)
+        # self.create_subscription(Bool, "/arm/done_pick", self.on_pick_done, 10)
+        self.create_subscription(String, "/arm/report_back", self.on_report_back, 10)
 
         # CHANGED: PoseArray instead of ItemArray
         self.create_subscription(PoseArray, "/detected_objects", self.on_objects, 10)
@@ -91,8 +93,21 @@ class TaskPlannerNode(Node):
     def on_boxes(self, msg: PoseArray):
         self.latest_box = msg.poses[0] if len(msg.poses) > 0 else None
 
-    def on_pick_done(self, msg: Bool):
-        self.pick_done = bool(msg.data)
+    # def on_pick_done(self, msg: Bool):
+    #     self.pick_done = bool(msg.data)
+
+    def on_report_back(self, msg: String):
+        self.get_logger().info("on_report_back")
+        if msg.data == "pick_success":
+            self.get_logger().info("on_report_back, pick success")
+            self.pick_done = True
+        elif msg.data == "pick_fail":
+            self.pick_done = False
+        elif msg.data == "place_success":
+            self.get_logger().info("on_report_back place success")
+            self.place_done = True
+        elif msg.data == "place_fail":
+            self.place_done = False
 
     def on_reached(self, msg: Bool):
         self.nav_reached = bool(msg.data)
@@ -148,7 +163,7 @@ class TaskPlannerNode(Node):
 
         # if self.current_object is None or self.current_box is None:
         # if self.current_object is None:
-        if self.current_object is None and self.state not in ("SELECT_OBJECT", "DONE"):
+        if self.current_object is None and self.state not in ("SELECT_OBJECT", "DONE", "DROP_OBJECT"):
             self.get_logger().info("here")
             return
 
@@ -171,6 +186,8 @@ class TaskPlannerNode(Node):
                 self.arm_pub.publish(String(data="pick"))
                 self._published_this_state = True
 
+                self.get_logger().info(" PICK_OBJECT: publish pick")
+
             if self.pick_done:
                 # CHANGED: mark picked by (x,y) instead of ID
                 self.picked_ids.append((self.ox, self.oy))
@@ -189,14 +206,16 @@ class TaskPlannerNode(Node):
 
         elif self.state == "DROP_OBJECT":
             if not self._published_this_state:
-                self.arm_pub.publish(String(data="drop"))
+                self.arm_pub.publish(String(data="place"))
                 self._published_this_state = True
 
                 # Done with this cycle
                 self.current_object = None
                 # self.current_box = None
 
-            self.enter_state("DONE")
+            if self.place_done: 
+                self.place_done = False
+                self.enter_state("DONE")
 
         elif self.state == "DONE":
             self.enter_state("SELECT_OBJECT")
