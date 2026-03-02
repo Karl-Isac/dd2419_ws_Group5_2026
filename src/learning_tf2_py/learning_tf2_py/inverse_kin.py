@@ -31,9 +31,12 @@ def forward_kinematics(alpha,beta):
 
 def inverse_kinematics(z,rho):
     # Calculate joint angles (diff from hardware coord system) corresponding to an arm height and extension
-    abs_tolerance = 1e-9  # meters, for z and rho
-    rel_tolerance = 1e-6
 
+    # Saturate z, rho values, moving outside this area might be unsafe
+    z = max(0.16, min(z, 0.175))
+    rho = max(0.175, min(rho, 0.185))
+
+    # Inverse kinematics calculation
     inverse_beta = arccos((l3**2+l4**2-(z-l5+l2)**2-rho**2)/(2*l3*l4))
     E = (l3**2+l4**2-(z-l5+l2)**2-rho**2)/(2*l4)-l4     # aux variables
     F = (l3*square_root(1-((l3**2+l4**2-(z-l5+l2)**2-rho**2)/(2*l3*l4))**2))
@@ -43,6 +46,9 @@ def inverse_kinematics(z,rho):
     # Run forward kinematics on our two solutions, keep the one that gives the original input back:
     z1,rho1 = forward_kinematics(inverse_alpha1,inverse_beta)
     z2,rho2 = forward_kinematics(inverse_alpha2,inverse_beta)
+
+    abs_tolerance = 1e-9  # meters, for z and rho
+    rel_tolerance = 1e-6
     if math.isclose(z1, z , rel_tol=rel_tolerance, abs_tol=abs_tolerance):
         if math.isclose(rho1, rho , rel_tol=rel_tolerance, abs_tol=abs_tolerance):
             return inverse_alpha1, inverse_beta
@@ -50,7 +56,18 @@ def inverse_kinematics(z,rho):
         if math.isclose(rho2, rho , rel_tol=rel_tolerance, abs_tol=abs_tolerance):
             return inverse_alpha2, inverse_beta
     # If neither of the solutions seems good:
-    print("Inverse kinematics failed")
+    raise Exception("Inverse kinematics failed")
+
+def inverse_kinematics_to_joint_states(z,rho):
+    alpha,beta = inverse_kinematics(z,rho)
+    gamma = math.pi/2+alpha-beta            # arm camera pointing downwards constraint
+    # Translate alpha, beta, gamma into joint targets in the hardware's CS:
+    joint4target = 210-(alpha*180/math.pi)
+    joint3target = 300-(beta*180/math.pi)
+    joint2target = (gamma*180/math.pi)-60
+    # Add hardcoded offset:
+    joint2target = joint2target + 15
+    return joint2target, joint3target, joint4target
 
 if __name__ == "__main__":
     alpha, beta = inverse_kinematics(z = 0.175, rho = 0.185)
