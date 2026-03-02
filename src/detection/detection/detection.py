@@ -96,8 +96,8 @@ class Detection(Node):
             header = next(reader)
             for row in reader:
                 type_id = row[0]
-                x = row[1]
-                y = row[2]
+                x = int(row[1])
+                y = int(row[2])
                 angle_deg = float(row[3])   
                 angle_rad = math.radians(angle_deg)
 
@@ -223,7 +223,7 @@ class Detection(Node):
             g = colors[idx, 1]
             b = colors[idx, 2]
             h, s, v = self.rgb_to_hsv(r, g, b)
-            if y > 0 and y < 0.09 and z > 0 and z < 0.4:
+            if y > 0 and y < 0.095 and z > 0 and z < 1.5:
                 # red
                 if is_red(h, s, v):
                     red_counter += 1
@@ -257,7 +257,7 @@ class Detection(Node):
                     grey_points.append([z ,-x])
 
         # red 
-        if red_counter > 15 and not self.red_available:
+        if red_counter > 12 and not self.red_available:
             self.get_logger().info('Red object detected.')
             self.red = tf2_geometry_msgs.PoseStamped()
             self.red.header = msg.header
@@ -331,7 +331,7 @@ class Detection(Node):
                 self.publish_arrays([new_object_msg], None)
 
         # blue
-        if blue_counter > 15 and not self.blue_available:
+        if blue_counter > 12 and not self.blue_available:
             self.get_logger().info('Blue object detected.')
             self.blue = tf2_geometry_msgs.PoseStamped()
             self.blue.header = msg.header
@@ -405,7 +405,7 @@ class Detection(Node):
                 self.publish_arrays([new_object_msg], None)
         
         # green
-        if green_counter > 15 and not self.green_available:
+        if green_counter > 12 and not self.green_available:
             self.get_logger().info('Green object detected.')   
             self.green = tf2_geometry_msgs.PoseStamped()
             self.green.header = msg.header
@@ -479,7 +479,7 @@ class Detection(Node):
                 self.publish_arrays([new_object_msg], None)
 
         # wood
-        if wood_counter > 15 and not self.wood_available:
+        if wood_counter > 12 and not self.wood_available:
             self.get_logger().info('Wood object detected.')   
             self.wood = tf2_geometry_msgs.PoseStamped()
             self.wood.header = msg.header
