@@ -26,9 +26,6 @@ from learning_tf2_py.pickup import saturate_difference,draw_cs_on_image,draw_tar
 class Arm_control(Node):
     def __init__(self):
         super().__init__('pickup')
-        
-        # Lets call init state -1
-        self.state = -1
 
         # Initialize the publishers
 
@@ -58,6 +55,9 @@ class Arm_control(Node):
             10
         )
 
+        self.wait_for_pickup_command = False
+        self.wait_for_place_command = False
+        self.visual_servoing_ON = False
         
         
         self.init_position = [10,120,50,150,100,120]
@@ -90,10 +90,11 @@ class Arm_control(Node):
             # State 0 - wait for pickup command:
             self.wait_for_pickup_command = True
             while(self.wait_for_pickup_command):
-                pass
+                rclpy.spin_once(self, timeout_sec=0.1)
+            self.get_logger().info("State 0 done")
             # State 1 - goto initial arm position
             self.goto_position(self.init_position)
-            
+            self.get_logger().info("State 1 done")
             # State 2 - goto z,rho where feedback control can be turned on
             z = 0.175
             rho = 0.175
@@ -103,7 +104,7 @@ class Arm_control(Node):
                 self.get_logger().warn("Inverse kinematics failed for z={}, rho={}, target might be unreachable".format(z,rho))
                 # if it does fail here that rly sucks
             self.goto_position(self.init_position[0],self.init_position[1],joint2target,joint3target,joint4target,self.init_position[5])
-            
+            self.get_logger().info("State 2 done")
             # State 3 - feedback control ON, run until all errors are small, camera ON
             self.joint1target = self.init_position[1]
             self.joint2target = joint2target
@@ -116,8 +117,8 @@ class Arm_control(Node):
             # Run visual servoing while the errors don't decrease
             self.visual_servoing_ON = True
             while self.visual_servoing_ON:
-                pass
-
+                rclpy.spin_once(self, timeout_sec=1)
+            self.get_logger().info("State 3 done")
             # State 4 - feedback control OFF, goto lower z to pick up
             z = 0.16
             rho = self.rho
@@ -126,10 +127,10 @@ class Arm_control(Node):
             except:
                 self.get_logger().warn("Inverse kinematics failed for z={}, rho={}, target might be unreachable".format(z,rho))
             self.goto_position(self.init_position[0],self.joint1target,joint2target,joint3target,joint4target,self.joint5target)
-
+            self.get_logger().info("State 4 done")
             # State 5 - grip
             self.goto_position(self.joint0grip_value,self.joint1target,joint2target,joint3target,joint4target,self.joint5target)
-
+            self.get_logger().info("State 5 done")
             # State 6 - goto initial position but gripper closed, check whether pcikup was successful, report back
             position = self.init_position
             position[0] = self.joint0grip_value
@@ -138,17 +139,19 @@ class Arm_control(Node):
             msg = String()
             msg.data = "pick_success"
             self.report_publisher.publish(msg)
-
+            self.get_logger().info("State 6 done")
             # State 7 - wait for place command
             self.wait_for_place_command = True
             while(self.wait_for_place_command):
-                pass
-
+                rclpy.spin_once(self, timeout_sec=0.1)
+            self.get_logger().info("State 7 done")
             # State 8 - Gripper release, goto initial (state1?) position, report back
             self.goto_position(self.init_position)  # gripper release
             msg = String()
             msg.data = "place_success"
             self.report_publisher.publish(msg)
+            self.get_logger().info("State 8 done")
+
 
     def goto_position(self,position):
         # Moves arm to hardcoded position in 1 sec
@@ -321,7 +324,7 @@ def main():
     rclpy.init()
     node = Arm_control()
     try:
-        rclpy.spin(node)
+        node.run()
     except KeyboardInterrupt:
         pass
     rclpy.shutdown()
