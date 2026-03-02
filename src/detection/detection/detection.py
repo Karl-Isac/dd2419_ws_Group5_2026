@@ -52,20 +52,9 @@ class Detection(Node):
         # Static TF broadcaster
         self.static_broadcaster = StaticTransformBroadcaster(self)
 
-        self.red_published = False
-        self.red_available = False
         self.red_timestamp = None
-
-        self.blue_published = False
-        self.blue_available = False
         self.blue_timestamp = None
-
-        self.green_published = False
-        self.green_available = False
         self.green_timestamp = None
-
-        self.wood_published = False
-        self.wood_available = False
         self.wood_timestamp = None
         
         # initialize topic publisher
@@ -89,6 +78,8 @@ class Detection(Node):
         self.box_poses = []
         self.object_lists = []
         self.box_lists = []
+
+        self.object_num = 0
 
         with open(csv_path, mode='r', encoding='utf-8') as file:
             reader = csv.reader(file)
@@ -257,7 +248,7 @@ class Detection(Node):
                     grey_points.append([z ,-x])
 
         # red 
-        if red_counter > 12 and not self.red_available:
+        if red_counter > 12:
             self.get_logger().info('Red object detected.')
             self.red = tf2_geometry_msgs.PoseStamped()
             self.red.header = msg.header
@@ -270,9 +261,7 @@ class Detection(Node):
             self.red.pose.orientation.w = 1.0
 
             self.red_timestamp = msg.header.stamp
-            self.red_available = True
 
-        if self.red_available and not self.red_published:
             msg_time = rclpy.time.Time.from_msg(self.red_timestamp)
             if not self.tf_buffer.can_transform(
                 'map',
@@ -310,7 +299,6 @@ class Detection(Node):
             tf_red.transform.rotation.w = 1.0
 
             self.static_broadcaster.sendTransform(tf_red)
-            self.red_published = True
 
             self.get_logger().info(f'Map box: Red {red_map.pose.position.x} {red_map.pose.position.y} N/A')
 
@@ -331,7 +319,7 @@ class Detection(Node):
                 self.publish_arrays([new_object_msg], None)
 
         # blue
-        if blue_counter > 12 and not self.blue_available:
+        if blue_counter > 12:
             self.get_logger().info('Blue object detected.')
             self.blue = tf2_geometry_msgs.PoseStamped()
             self.blue.header = msg.header
@@ -344,9 +332,7 @@ class Detection(Node):
             self.blue.pose.orientation.w = 1.0
 
             self.blue_timestamp = msg.header.stamp
-            self.blue_available = True
 
-        if self.blue_available and not self.blue_published:
             msg_time = rclpy.time.Time.from_msg(self.blue_timestamp)
             if not self.tf_buffer.can_transform(
                 'map',
@@ -384,7 +370,6 @@ class Detection(Node):
             tf_blue.transform.rotation.w = 1.0
 
             self.static_broadcaster.sendTransform(tf_blue)
-            self.blue_published = True
 
             self.get_logger().info(f'Map box: Blue {blue_map.pose.position.x} {blue_map.pose.position.y} N/A')
 
@@ -405,7 +390,7 @@ class Detection(Node):
                 self.publish_arrays([new_object_msg], None)
         
         # green
-        if green_counter > 12 and not self.green_available:
+        if green_counter > 12:
             self.get_logger().info('Green object detected.')   
             self.green = tf2_geometry_msgs.PoseStamped()
             self.green.header = msg.header
@@ -418,9 +403,7 @@ class Detection(Node):
             self.green.pose.orientation.w = 1.0
 
             self.green_timestamp = msg.header.stamp
-            self.green_available = True
-        
-        if self.green_available and not self.green_published:
+
             msg_time = rclpy.time.Time.from_msg(self.green_timestamp)
             if not self.tf_buffer.can_transform(
                 'map',
@@ -444,21 +427,17 @@ class Detection(Node):
                 return
             
             tf_green.header.stamp = self.green_timestamp
-
             tf_green.header.frame_id = 'map'
             tf_green.child_frame_id = 'green_object'
-
             tf_green.transform.translation.x = green_map.pose.position.x
             tf_green.transform.translation.y = green_map.pose.position.y
             tf_green.transform.translation.z = green_map.pose.position.z
-
             tf_green.transform.rotation.x = 0.0
             tf_green.transform.rotation.y = 0.0
             tf_green.transform.rotation.z = 0.0
             tf_green.transform.rotation.w = 1.0
 
             self.static_broadcaster.sendTransform(tf_green)
-            self.green_published = True
 
             self.get_logger().info(f'Map box: Green {green_map.pose.position.x} {green_map.pose.position.y} N/A')
 
@@ -479,7 +458,7 @@ class Detection(Node):
                 self.publish_arrays([new_object_msg], None)
 
         # wood
-        if wood_counter > 12 and not self.wood_available:
+        if wood_counter > 12:
             self.get_logger().info('Wood object detected.')   
             self.wood = tf2_geometry_msgs.PoseStamped()
             self.wood.header = msg.header
@@ -492,9 +471,7 @@ class Detection(Node):
             self.wood.pose.orientation.w = 1.0
 
             self.wood_timestamp = msg.header.stamp
-            self.wood_available = True
-        
-        if self.wood_available and not self.wood_published:
+
             msg_time = rclpy.time.Time.from_msg(self.wood_timestamp)
             if not self.tf_buffer.can_transform(
                 'map',
@@ -518,21 +495,16 @@ class Detection(Node):
                 return
             
             tf_wood.header.stamp = self.wood_timestamp
-
             tf_wood.header.frame_id = 'map'
             tf_wood.child_frame_id = 'wood_object'
-
             tf_wood.transform.translation.x = wood_map.pose.position.x
             tf_wood.transform.translation.y = wood_map.pose.position.y
             tf_wood.transform.translation.z = wood_map.pose.position.z
-
             tf_wood.transform.rotation.x = 0.0
             tf_wood.transform.rotation.y = 0.0
             tf_wood.transform.rotation.z = 0.0
             tf_wood.transform.rotation.w = 1.0
-
             self.static_broadcaster.sendTransform(tf_wood)
-            self.wood_published = True
 
             self.get_logger().info(f'Map box: Wood {wood_map.pose.position.x} {wood_map.pose.position.y} N/A')
 
@@ -681,6 +653,74 @@ class Detection(Node):
         v = c_max
 
         return h, s, v
+    
+    def object_detection(self, msg, sum_x, sum_y, sum_z, counter, color):
+        # object_num is the number of detected objects, regardless of color, used for TF frame naming
+        self.get_logger().info(f'{color} object detected.')
+        self.object = tf2_geometry_msgs.PoseStamped()
+        self.object.header = msg.header
+        self.object.pose.position.x = sum_x / counter
+        self.object.pose.position.y = sum_y / counter
+        self.object.pose.position.z = sum_z / counter
+        self.object.pose.orientation.x = 0.0
+        self.object.pose.orientation.y = 0.0
+        self.object.pose.orientation.z = 0.0
+        self.object.pose.orientation.w = 1.0
+
+        msg_time = rclpy.time.Time.from_msg(msg.header.stamp)
+        if not self.tf_buffer.can_transform(
+                'map',
+                self.object.header.frame_id,
+                msg_time,
+                timeout=rclpy.duration.Duration(seconds=1)
+            ):
+                self.get_logger().warn(f'Failed to publish {color} object_{self.object_num}')
+
+        try:
+                object_map = self.tf_buffer.transform(
+                    self.object,
+                    'map',
+                    timeout=rclpy.duration.Duration(seconds=1)
+                )
+        except TransformException as ex:
+            self.get_logger().info(
+                    f'Could not transform {color} object from '
+                    f'{self.object.header.frame_id} to map: {ex}'
+            )
+            return
+        
+        tf = TransformStamped()
+        tf.header.stamp = self.object_timestamp
+        tf.header.frame_id = 'map'
+        tf.child_frame_id = f'object_{self.object_num}'
+        tf.transform.translation.x = object_map.pose.position.x
+        tf.transform.translation.y = object_map.pose.position.y
+        tf.transform.translation.z = object_map.pose.position.z
+        tf.transform.rotation.x = 0.0
+        tf.transform.rotation.y = 0.0
+        tf.transform.rotation.z = 0.0
+        tf.transform.rotation.w = 1.0
+        self.static_broadcaster.sendTransform(tf)
+
+        self.get_logger().info(f'Map box: {color} {object_map.pose.position.x} {object_map.pose.position.y} N/A')
+
+        for item in self.object_lists:
+            if np.abs(item[0] - object_map.pose.position.x * 100) < 3 and np.abs(item[1] - object_map.pose.position.y * 100) < 3:
+                self.get_logger().info(f"repeated {color} detection, discarded")
+                break
+        else:
+            self.object_lists.append([int(round(object_map.pose.position.x * 100)), int(round(object_map.pose.position.y * 100)), 0])
+            new_object_msg = Pose()
+            new_object_msg.position.x = object_map.pose.position.x
+            new_object_msg.position.y = object_map.pose.position.y
+            new_object_msg.position.z = 0.0
+            new_object_msg.orientation.x = 0.0
+            new_object_msg.orientation.y = 0.0
+            new_object_msg.orientation.z = 0.0
+            new_object_msg.orientation.w = 1.0
+            self.publish_arrays([new_object_msg], None)
+            self.object_num += 1
+
         
     def publish_2d_cloud(self, points_xz, header):
         h = std_msgs.msg.Header()
