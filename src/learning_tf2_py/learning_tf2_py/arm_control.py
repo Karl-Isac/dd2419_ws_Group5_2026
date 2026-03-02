@@ -17,94 +17,15 @@ from std_msgs.msg import Float32  # debug
 
 from learning_tf2_py.arm_safe_republisher import jointmin,jointMAX
 from learning_tf2_py.inverse_kin import inverse_kinematics
+    
 
-def approx_to_polygon(contour):
-    # Approximate contour to polygon
-    peri = cv2.arcLength(contour, True)
-    approx = cv2.approxPolyDP(contour, 0.03 * peri, True)
-    return approx
-
-def is_square(approx):
-    # Check a bunch of conditions whether a contour is square-like
-    # Approximation must have 4 corners
-    if len(approx) != 4:
-        return False
-
-    # Must be convex
-    if not cv2.isContourConvex(approx):
-        return False
-
-    # Area check
-    area = cv2.contourArea(approx)                      
-    min_area = 500                          # might need to finetune
-    if area < min_area:
-        return False
-
-    # Check angles ~ 90 degrees using cosine
-    pts = approx.reshape(4, 2)
-    for i in range(4):
-        p0 = pts[i]
-        p1 = pts[(i + 1) % 4]
-        p2 = pts[(i + 2) % 4]
-
-        v1 = p0 - p1
-        v2 = p2 - p1
-
-        cos_angle = abs(
-            np.dot(v1, v2) /
-            (np.linalg.norm(v1) * np.linalg.norm(v2) + 1e-10)
-        )
-
-        if cos_angle > 0.3:  # ~72–108 degrees                      # might need to finetune
-            return False
-        
-    # Side length check (Is it a square or a rectangle)
-    side_lengths = []
-    for i in range(4):
-        p1 = pts[i]
-        p2 = pts[(i + 1) % 4]
-        side_length = np.linalg.norm(p1 - p2)
-        side_lengths.append(side_length)
-    min_side = min(side_lengths)
-    max_side = max(side_lengths)
-
-    aspect_tolerance = 0.2   # 20% tolerance, tunable parameter
-    if (max_side - min_side) / max_side > aspect_tolerance:
-        return False
-
-    return True
-
-def draw_cs_on_image(image,centerpoint,angle):
-    # Draw cube center and orientation onto image
-    arrow_length = 50
-    theta = angle/180*math.pi
-    cx,cy = centerpoint
-    # X axis:
-    cv2.arrowedLine(image, (int(cx), int(cy)), (int(cx+arrow_length*math.cos(theta)),int(cy+arrow_length*math.sin(theta))),(0,0,255),2)
-    # Y axis:
-    cv2.arrowedLine(image, (int(cx), int(cy)), (int(cx-arrow_length*math.sin(theta)),int(cy+arrow_length*math.cos(theta))),(0,255,0),2)
-
-def draw_target_on_image(image,x,y):
-    cv2.drawMarker(image,(int(x),int(y)),(0,0,255),cv2.MARKER_CROSS,15,2)
-
-def saturate_difference(current,previous,limit):
-    if abs(current - previous) > limit:
-        if (current - previous) > 0:
-            return previous + limit
-        else:
-            return previous - limit
-    else:
-        return current
-
-        
-
-
-class Pickup(Node):
+class Arm_control(Node):
     def __init__(self):
         super().__init__('pickup')
 
-        # Initialize the publisher                      # maybe disable to save even more computations
-        self._pub = self.create_publisher(
+        # Initialize the publishers
+
+        self._pub = self.create_publisher(              # pass these two to pickup function for debug
             Image, '/arm/camera/image_debug', 10)
         self._pub2 = self.create_publisher(
             Image, '/arm/camera/image_debug2', 10)
@@ -116,18 +37,7 @@ class Pickup(Node):
         self.create_subscription(
             Image, '/arm/camera/image_raw', self.image_callback, 10)
         
-        # Initialize the arm position
-        self.init_position = [10,120,50,150,100,120]            # [10,120,30,180,180,120] used during debug
-        # Initial z, rho to move to rigth after
-        self.z = 0.18
-        self.rho = 0.175
-
-        msg = ArmControl()
-        msg.header.stamp = self.get_clock().now().to_msg()
-        msg.time = [1000,1000,1000,1000,1000,1000]
-        msg.position = self.init_position
-        self._pub_control.publish(msg)
-        time.sleep(1)
+        
 
         
         self.cube_position_available = False
@@ -144,28 +54,36 @@ class Pickup(Node):
         timer_period = 0.1      # seconds               TODO change back
         self.timer = self.create_timer(timer_period, self.timer_callback)
 
+    def run(self):
+        # State 0 - wait for pickup command:
 
+        # State 1 - goto initial arm position
+        # Initialize the arm position
+        self.init_position = [10,120,50,150,100,120]            # [10,120,30,180,180,120] used during debug
+        # Initial z, rho to move to rigth after
+        self.z = 0.18
+        self.rho = 0.175
 
-        # Subscriptions
-        self.subscription_1 = self.create_subscription(
-            Float32,
-            '/test/z',              # Change to your topic name
-            self.listener_callback_1,
-            10
-        )
+        msg = ArmControl()
+        msg.header.stamp = self.get_clock().now().to_msg()
+        msg.time = [1000,1000,1000,1000,1000,1000]
+        msg.position = self.init_position
+        self._pub_control.publish(msg)
+        time.sleep(1)
+        # State 2 - goto z,rho where feedback control can be turned on, sub to camera
 
-        self.subscription_2 = self.create_subscription(
-            Float32,
-            '/test/rho',              # Change to your topic name
-            self.listener_callback_2,
-            10
-        )
+        # State 3 - feedback control ON, run until all errors are small
 
-    def listener_callback_1(self, msg):
-        self.z = msg.data
+        # State 4 - feedback control OFF, goto lower z to pick up
 
-    def listener_callback_2(self, msg):
-        self.rho = msg.data
+        # State 5 - grip
+
+        # State - goto initial position but gripper closed
+
+        # State 7 - wait for place command
+
+        # State 8 - Gripper release, goto initial (state1?) position 
+
 
 
     def timer_callback(self):
@@ -356,7 +274,7 @@ class Pickup(Node):
 
 def main():
     rclpy.init()
-    node = Pickup()
+    node = Arm_control()
     try:
         rclpy.spin(node)
     except KeyboardInterrupt:
