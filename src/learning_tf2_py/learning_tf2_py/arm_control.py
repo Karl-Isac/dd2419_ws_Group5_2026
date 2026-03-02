@@ -35,7 +35,7 @@ class Arm_control(Node):
             Image, '/arm/camera/image_debug2', 10)
         
         self._pub_control = self.create_publisher(
-            ArmControl, '/arm/safe_control', 10)
+            ArmControl, '/arm/safe_control', 1)
 
         # Subscribe to the arm camera topic and call callback function on each received image
         self.create_subscription(
@@ -88,6 +88,7 @@ class Arm_control(Node):
         # TODO replace all pass-es with spin once or async wait or whatever was recommended during the bootcamp
         while True:
             # State 0 - wait for pickup command:
+            print("another print4")
             self.get_logger().info("Waiting for pick command")
             self.wait_for_pickup_command = True
             while(self.wait_for_pickup_command):
@@ -95,6 +96,7 @@ class Arm_control(Node):
             self.get_logger().info("State 0 done")
             # State 1 - goto initial arm position
             self.goto_position(self.init_position)
+            time.sleep(5)
             self.get_logger().info("State 1 done")
             # State 2 - goto z,rho where feedback control can be turned on
             z = 0.175
@@ -105,9 +107,12 @@ class Arm_control(Node):
                 self.get_logger().warn("Inverse kinematics failed for z={}, rho={}, target might be unreachable".format(z,rho))
                 # if it does fail here that rly sucks
             position = self.init_position[0],self.init_position[1],joint2target,joint3target,joint4target,self.init_position[5]
+            print(position)
             self.goto_position(position)
+            time.sleep(5)
             self.get_logger().info("State 2 done")
             # State 3 - feedback control ON, run until all errors are small, camera ON
+            raise
             self.joint1target = self.init_position[1]
             self.joint2target = joint2target
             self.joint3target = joint3target
@@ -163,7 +168,7 @@ class Arm_control(Node):
         assert(len(position) == 6)
         msg = ArmControl()
         msg.header.stamp = self.get_clock().now().to_msg()
-        msg.time = [1000,1000,1000,1000,1000,1000]
+        msg.time = [1500]*6
         msg.position = self.init_position
         self._pub_control.publish(msg)
         time.sleep(1)
@@ -196,6 +201,9 @@ class Arm_control(Node):
                         rotation_error = rotation_error - 90
                     extension_error = self.height_target-cy
                     # Termination condition:
+                    print(abs(sideways_error))
+                    print(abs(rotation_error))
+                    print(abs(extension_error))
                     if (abs(sideways_error)<10) and (abs(rotation_error)<5) and (abs(extension_error)<10):
                         self.visual_servoing_ON = False
                         return

@@ -1,4 +1,0 @@
-configure: error: Missing libusb!
-gmake[2]: *** [CMakeFiles/EP_libphidget22.dir/build.make:92: EP_libphidget22-prefix/src/EP_libphidget22-stamp/EP_libphidget22-configure] Error 1
-gmake[1]: *** [CMakeFiles/Makefile2:153: CMakeFiles/EP_libphidget22.dir/all] Error 2
-gmake: *** [Makefile:146: all] Error 2
