@@ -130,7 +130,7 @@ class Detection(Node):
         static_tf.transform.translation.x = 0.08987
         static_tf.transform.translation.y = 0.0175
         static_tf.transform.translation.z = 0.10456
-        q = quaternion_from_euler(-np.pi/2, 0, -np.pi/2)
+        q = quaternion_from_euler(0, 0, 0)
         static_tf.transform.rotation.x = q[0]
         static_tf.transform.rotation.y = q[1]
         static_tf.transform.rotation.z = q[2]
@@ -223,7 +223,7 @@ class Detection(Node):
             g = colors[idx, 1]
             b = colors[idx, 2]
             h, s, v = self.rgb_to_hsv(r, g, b)
-            if y > 0 and y < 0.095 and z > 0 and z < 1.5:
+            if y > 0 and y < 0.09 and z > 0 and z < 1.5:
                 # red
                 if is_red(h, s, v):
                     red_counter += 1
@@ -936,13 +936,13 @@ def main():
         rclpy.shutdown()
 
 def is_red(h,s,v):
-    return True if (h <= 20 or h >= 340) and s > 0.5 and v > 0.4 else False
+    return True if (h <= 20 or h >= 340) and s > 0.4 and v > 0.4 else False
 
 def is_blue(h,s,v):
-    return True if (h >= 200 and h <= 260) and s > 0.5 and v > 0.4 else False
+    return True if (h >= 180 and h <= 280) and s > 0.4 and v > 0.4 else False
 
 def is_green(h,s,v):
-    return True if 120 <= h <= 190 and s > 0.4 and v > 0.4 else False
+    return True if 100 <= h <= 180 and s > 0.4 and v > 0.4 else False
 
 def is_wood(h,s,v):
     return True if 20 <= h <= 60 and 0 < s < 0.6 and v > 0.4 else False
