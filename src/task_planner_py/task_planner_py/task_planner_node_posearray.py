@@ -147,7 +147,8 @@ class TaskPlannerNode(Node):
             return
 
         # if self.current_object is None or self.current_box is None:
-        if self.current_object is None:
+        # if self.current_object is None:
+        if self.current_object is None and self.state not in ("SELECT_OBJECT", "DONE"):
             self.get_logger().info("here")
             return
 
