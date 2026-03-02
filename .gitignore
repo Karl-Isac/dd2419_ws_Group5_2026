@@ -69,3 +69,5 @@ bags/*
 
 # VS Code
 .vscode
+
+src/detection/config/detection_output.csv
