@@ -88,6 +88,7 @@ class Arm_control(Node):
         # TODO replace all pass-es with spin once or async wait or whatever was recommended during the bootcamp
         while True:
             # State 0 - wait for pickup command:
+            self.get_logger().info("Waiting for pick command")
             self.wait_for_pickup_command = True
             while(self.wait_for_pickup_command):
                 rclpy.spin_once(self, timeout_sec=0.1)
@@ -103,7 +104,8 @@ class Arm_control(Node):
             except:
                 self.get_logger().warn("Inverse kinematics failed for z={}, rho={}, target might be unreachable".format(z,rho))
                 # if it does fail here that rly sucks
-            self.goto_position(self.init_position[0],self.init_position[1],joint2target,joint3target,joint4target,self.init_position[5])
+            position = self.init_position[0],self.init_position[1],joint2target,joint3target,joint4target,self.init_position[5]
+            self.goto_position(position)
             self.get_logger().info("State 2 done")
             # State 3 - feedback control ON, run until all errors are small, camera ON
             self.joint1target = self.init_position[1]
@@ -126,10 +128,12 @@ class Arm_control(Node):
                 joint2target, joint3target, joint4target = inverse_kinematics_to_joint_states(z=z,rho=rho)
             except:
                 self.get_logger().warn("Inverse kinematics failed for z={}, rho={}, target might be unreachable".format(z,rho))
-            self.goto_position(self.init_position[0],self.joint1target,joint2target,joint3target,joint4target,self.joint5target)
+            position = self.init_position[0],self.joint1target,joint2target,joint3target,joint4target,self.joint5target
+            self.goto_position(position)
             self.get_logger().info("State 4 done")
             # State 5 - grip
-            self.goto_position(self.joint0grip_value,self.joint1target,joint2target,joint3target,joint4target,self.joint5target)
+            position = self.joint0grip_value,self.joint1target,joint2target,joint3target,joint4target,self.joint5target
+            self.goto_position(position)
             self.get_logger().info("State 5 done")
             # State 6 - goto initial position but gripper closed, check whether pcikup was successful, report back
             position = self.init_position
@@ -141,6 +145,7 @@ class Arm_control(Node):
             self.report_publisher.publish(msg)
             self.get_logger().info("State 6 done")
             # State 7 - wait for place command
+            self.get_logger().info("Waiting for place command")
             self.wait_for_place_command = True
             while(self.wait_for_place_command):
                 rclpy.spin_once(self, timeout_sec=0.1)

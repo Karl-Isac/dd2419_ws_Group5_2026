@@ -355,6 +355,7 @@ class Pickup(Node):
         
 
 def main():
+    raise Exception("old, do not use, too lazy to remove")
     rclpy.init()
     node = Pickup()
     try:
