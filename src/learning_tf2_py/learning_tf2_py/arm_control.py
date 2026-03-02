@@ -45,12 +45,20 @@ class Arm_control(Node):
             Image, '/arm/camera/image_raw', self.image_callback, 10)
         
         # Listen for commands:
-        self.subscription = self.create_subscription(
+        self.create_subscription(
             String,
             "/arm/cmd",
             self.cmd_callback,
             10
         )
+
+        self.report_publisher = self.create_publisher(
+            String,
+            "/arm/report_back",
+            10
+        )
+
+        
         
         self.init_position = [10,120,50,150,100,120]
         self.joint0grip_value = 105
@@ -78,59 +86,69 @@ class Arm_control(Node):
 
     def run(self):
         # TODO replace all pass-es with spin once or async wait or whatever was recommended during the bootcamp
-        # State 0 - wait for pickup command:
-        self.wait_for_pickup_command = True
-        while(self.wait_for_pickup_command):
-            pass
-        # State 1 - goto initial arm position
-        self.goto_position(self.init_position)
-        
-        # State 2 - goto z,rho where feedback control can be turned on
-        z = 0.175
-        rho = 0.175
-        try:
-            joint2target, joint3target, joint4target = inverse_kinematics_to_joint_states(z=z,rho=rho)
-        except:
-            self.get_logger().warn("Inverse kinematics failed for z={}, rho={}, target might be unreachable".format(z,rho))
-            # if it does fail here that rly sucks
-        self.goto_position(self.init_position[0],self.init_position[1],joint2target,joint3target,joint4target,self.init_position[5])
-        
-        # State 3 - feedback control ON, run until all errors are small, camera ON
-        self.joint1target = self.init_position[1]
-        self.joint2target = joint2target
-        self.joint3target = joint3target
-        self.joint4target = joint4target
-        self.joint5target = self.init_position[5]
-        self.z = z # make arm stay on this z while visual servoing
-        self.cube_position_available = False
-        self.sideways_integral_term = 0
-        # Run visual servoing while the errors don't decrease
-        self.visual_servoing_ON = True
-        while self.visual_servoing_ON:
-            pass
+        while True:
+            # State 0 - wait for pickup command:
+            self.wait_for_pickup_command = True
+            while(self.wait_for_pickup_command):
+                pass
+            # State 1 - goto initial arm position
+            self.goto_position(self.init_position)
+            
+            # State 2 - goto z,rho where feedback control can be turned on
+            z = 0.175
+            rho = 0.175
+            try:
+                joint2target, joint3target, joint4target = inverse_kinematics_to_joint_states(z=z,rho=rho)
+            except:
+                self.get_logger().warn("Inverse kinematics failed for z={}, rho={}, target might be unreachable".format(z,rho))
+                # if it does fail here that rly sucks
+            self.goto_position(self.init_position[0],self.init_position[1],joint2target,joint3target,joint4target,self.init_position[5])
+            
+            # State 3 - feedback control ON, run until all errors are small, camera ON
+            self.joint1target = self.init_position[1]
+            self.joint2target = joint2target
+            self.joint3target = joint3target
+            self.joint4target = joint4target
+            self.joint5target = self.init_position[5]
+            self.z = z # make arm stay on this z while visual servoing
+            self.cube_position_available = False
+            self.sideways_integral_term = 0
+            # Run visual servoing while the errors don't decrease
+            self.visual_servoing_ON = True
+            while self.visual_servoing_ON:
+                pass
 
-        # State 4 - feedback control OFF, goto lower z to pick up
-        z = 0.16
-        rho = self.rho
-        try:
-            joint2target, joint3target, joint4target = inverse_kinematics_to_joint_states(z=z,rho=rho)
-        except:
-            self.get_logger().warn("Inverse kinematics failed for z={}, rho={}, target might be unreachable".format(z,rho))
-        self.goto_position(self.init_position[0],self.joint1target,joint2target,joint3target,joint4target,self.joint5target)
+            # State 4 - feedback control OFF, goto lower z to pick up
+            z = 0.16
+            rho = self.rho
+            try:
+                joint2target, joint3target, joint4target = inverse_kinematics_to_joint_states(z=z,rho=rho)
+            except:
+                self.get_logger().warn("Inverse kinematics failed for z={}, rho={}, target might be unreachable".format(z,rho))
+            self.goto_position(self.init_position[0],self.joint1target,joint2target,joint3target,joint4target,self.joint5target)
 
-        # State 5 - grip
-        self.goto_position(self.joint0grip_value,self.joint1target,joint2target,joint3target,joint4target,self.joint5target)
+            # State 5 - grip
+            self.goto_position(self.joint0grip_value,self.joint1target,joint2target,joint3target,joint4target,self.joint5target)
 
-        # State 6 - goto initial position but gripper closed, check whether pcikup was successful, report back
-        position = self.init_position
-        position[0] = self.joint0grip_value
-        self.goto_position(position)
+            # State 6 - goto initial position but gripper closed, check whether pcikup was successful, report back
+            position = self.init_position
+            position[0] = self.joint0grip_value
+            self.goto_position(position)
+            # TODO check whether its actually successful
+            msg = String()
+            msg.data = "pick_success"
+            self.report_publisher.publish(msg)
 
-        # State 7 - wait for place command
-        self.wait_for_place_command = True
-        while(self.wait_for_place_command):
-            pass
-        # State 8 - Gripper release, goto initial (state1?) position, report back
+            # State 7 - wait for place command
+            self.wait_for_place_command = True
+            while(self.wait_for_place_command):
+                pass
+
+            # State 8 - Gripper release, goto initial (state1?) position, report back
+            self.goto_position(self.init_position)  # gripper release
+            msg = String()
+            msg.data = "place_success"
+            self.report_publisher.publish(msg)
 
     def goto_position(self,position):
         # Moves arm to hardcoded position in 1 sec
