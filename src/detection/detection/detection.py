@@ -58,7 +58,8 @@ class Detection(Node):
 
         # open and load map file (csv)
         package_path = get_package_share_directory('detection')
-        csv_path = os.path.join(package_path, 'config', 'test.csv')
+        # csv_path = os.path.join(package_path, 'config', 'test.csv')
+        csv_path = os.path.join(package_path, 'config', 'map_1_1.csv')
         self.metadata_rows = []
 
         # location of final map file (csv)
@@ -385,7 +386,8 @@ class Detection(Node):
             return
         
         tf = TransformStamped()
-        tf.header.stamp = self.object_timestamp
+        #tf.header.stamp = self.object_timestamp
+        tf.header.stamp = self.get_clock().now().to_msg()
         tf.header.frame_id = 'map'
         tf.child_frame_id = f'object_{self.object_num}'
         tf.transform.translation.x = object_map.pose.position.x
