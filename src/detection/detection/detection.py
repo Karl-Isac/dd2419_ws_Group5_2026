@@ -936,13 +936,13 @@ def main():
         rclpy.shutdown()
 
 def is_red(h,s,v):
-    return True if (h <= 20 or h >= 340) and s > 0.4 and v > 0.4 else False
+    return True if (h <= 20 or h >= 340) and s > 0.5 and v > 0.5 else False
 
 def is_blue(h,s,v):
-    return True if (h >= 180 and h <= 280) and s > 0.4 and v > 0.4 else False
+    return True if (h >= 180 and h <= 200) and s > 0.5 and v > 0.5 else False
 
 def is_green(h,s,v):
-    return True if 100 <= h <= 180 and s > 0.4 and v > 0.4 else False
+    return True if 140 <= h <= 180 and s > 0.4 and v > 0.4 else False
 
 def is_wood(h,s,v):
     return True if 20 <= h <= 60 and 0 < s < 0.6 and v > 0.4 else False
