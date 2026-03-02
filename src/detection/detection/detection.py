@@ -948,7 +948,7 @@ def is_wood(h,s,v):
     return True if 20 <= h <= 60 and 0 < s < 0.6 and v > 0.4 else False
 
 def is_grey(h,s,v):
-    return True if s < 0.15 and v > 0.1 and v < 0.25 else False
+    return True if 0.01 < s < 0.15 and v > 0.1 and v < 0.25 else False
 
 if __name__ == '__main__':
     main()
