@@ -18,7 +18,7 @@ class TaskPlannerNode(Node):
         self.declare_parameter("rate_hz", 5.0)
 
         # NEW: distance threshold (meters) to consider an object "already picked"
-        self.declare_parameter("picked_dist", 0.05)
+        self.declare_parameter("picked_dist", 0.20)
 
         self.world_frame = self.get_parameter("world_frame").value
         self.base_frame = self.get_parameter("base_frame").value
