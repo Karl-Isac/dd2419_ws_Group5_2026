@@ -88,7 +88,7 @@ class Arm_control(Node):
         # TODO replace all pass-es with spin once or async wait or whatever was recommended during the bootcamp
         while True:
             # State 0 - wait for pickup command:
-            print("another print4")
+            print("another print5")
             self.get_logger().info("Waiting for pick command")
             self.wait_for_pickup_command = True
             while(self.wait_for_pickup_command):
@@ -96,7 +96,6 @@ class Arm_control(Node):
             self.get_logger().info("State 0 done")
             # State 1 - goto initial arm position
             self.goto_position(self.init_position)
-            time.sleep(5)
             self.get_logger().info("State 1 done")
             # State 2 - goto z,rho where feedback control can be turned on
             z = 0.175
@@ -107,12 +106,9 @@ class Arm_control(Node):
                 self.get_logger().warn("Inverse kinematics failed for z={}, rho={}, target might be unreachable".format(z,rho))
                 # if it does fail here that rly sucks
             position = self.init_position[0],self.init_position[1],joint2target,joint3target,joint4target,self.init_position[5]
-            print(position)
             self.goto_position(position)
-            time.sleep(5)
             self.get_logger().info("State 2 done")
             # State 3 - feedback control ON, run until all errors are small, camera ON
-            raise
             self.joint1target = self.init_position[1]
             self.joint2target = joint2target
             self.joint3target = joint3target
@@ -141,7 +137,7 @@ class Arm_control(Node):
             self.goto_position(position)
             self.get_logger().info("State 5 done")
             # State 6 - goto initial position but gripper closed, check whether pcikup was successful, report back
-            position = self.init_position
+            position = self.init_position.copy()
             position[0] = self.joint0grip_value
             self.goto_position(position)
             # TODO check whether its actually successful
@@ -168,9 +164,10 @@ class Arm_control(Node):
         assert(len(position) == 6)
         msg = ArmControl()
         msg.header.stamp = self.get_clock().now().to_msg()
-        msg.time = [1500]*6
-        msg.position = self.init_position
+        msg.time = [1000]*6
+        msg.position = position
         self._pub_control.publish(msg)
+        print("Going to position: {position}")
         time.sleep(1)
 
     def timer_callback(self):
@@ -204,7 +201,7 @@ class Arm_control(Node):
                     print(abs(sideways_error))
                     print(abs(rotation_error))
                     print(abs(extension_error))
-                    if (abs(sideways_error)<10) and (abs(rotation_error)<5) and (abs(extension_error)<10):
+                    if (abs(sideways_error)<30) and (abs(rotation_error)<25) and (abs(extension_error)<50):
                         self.visual_servoing_ON = False
                         return
                         
@@ -290,7 +287,7 @@ class Arm_control(Node):
             image_half_width = image_shape[1]/2
             image_half_height = image_shape[0]/2
             self.width_target = image_half_width
-            self.height_target = image_half_height+100       # tunable, keep in mind that axis is flipped
+            self.height_target = image_half_height+200       # tunable, keep in mind that axis is flipped
             if publish_debug_images:
                 draw_target_on_image(bgr_image,self.width_target,self.height_target)
 
