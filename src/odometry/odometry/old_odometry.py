@@ -10,10 +10,10 @@ from rclpy.node import Node
 from tf2_ros import TransformBroadcaster
 from tf_transformations import quaternion_from_euler, euler_from_quaternion
 
-from geometry_msgs.msg import TransformStamped, PoseStamped
+from geometry_msgs.msg import TransformStamped
 from robp_interfaces.msg import Encoders
-from sensor_msgs.msg import Imu
 from nav_msgs.msg import Path
+from geometry_msgs.msg import PoseStamped
 
 
 class Odometry(Node):
@@ -31,19 +31,7 @@ class Odometry(Node):
 
         # Subscribe to encoder topic and call callback function on each recieved message
         self.create_subscription(
-            Encoders,
-            '/motor/encoders',
-            self.encoder_callback,
-            10)
-        
-        self.create_subscription(
-            Imu,
-            '/phidgets/imu/data_raw',
-            self.imu_callback,
-            10
-        )
-
-        self._imu_yaw_rate = 0.0
+            Encoders, '/phidgets/motor/encoders', self.encoder_callback, 10)
 
         # 2D pose
         self._x = 0.0
@@ -65,46 +53,29 @@ class Odometry(Node):
         # The kinematic parameters for the differential configuration
         dt = 50 / 1000
         ticks_per_rev = 48 * 64
-        wheel_radius = 0.04921  # TODO: Fill in
-        base = 0.315  # TODO: Fill in
+        wheel_radius = 0.04921  
+        base = 0.315  
 
         # Ticks since last message
         delta_ticks_left = msg.delta_encoder_left
         delta_ticks_right = msg.delta_encoder_right
+        dL = delta_ticks_left
+        dR = delta_ticks_right
 
         # TODO: Fill in
-        phi_L = (delta_ticks_left/ticks_per_rev)*2*math.pi # d_phi = K*delta_E
-        phi_R = (delta_ticks_right/ticks_per_rev)*2*math.pi
-        
-        # v = wheel_radius/2 * (phi_R + phi_L)/dt
-        # w = wheel_radius/base * (phi_R - phi_L)/dt
-        
-        D = wheel_radius/2 * (phi_R + phi_L)
-        d_theta_wheel = wheel_radius/base * (phi_R - phi_L)
-        d_theta_Imu = self._imu_yaw_rate * dt
-        gain = 0.8
-        
-        d_theta = gain * d_theta_wheel + (1 - gain) * d_theta_Imu
 
-        # theta_mid = self._yaw + d_theta / 2.0
+        K = 2*math.pi / ticks_per_rev
+        D = K * wheel_radius / 2 * ( dR + dL)
+        dTheta = K * wheel_radius / base * (dR - dL)
 
-        new_yaw = self._yaw + d_theta
-
-        # Use midpoint heading for position update
-        self._x += D * math.cos(self._yaw + d_theta / 2.0)                            #self._x = self._x + D * math.cos(self._yaw)
-        self._y += D * math.sin(self._yaw + d_theta / 2.0)                            #self._y = self._y + D * math.sin(self._yaw)
-
-        # Normalize yaw to [-pi, pi]
-        self._yaw = math.atan2(math.sin(new_yaw), math.cos(new_yaw))                  #self._yaw = self._yaw + d_theta  # TODO: Fill in
+        self._x = self._x + D * math.cos(self._yaw)  # TODO: Fill in
+        self._y = self._y + D * math.sin(self._yaw) # TODO: Fill in
+        self._yaw = self._yaw + dTheta  # TODO: Fill in
         
         stamp = msg.header.stamp # TODO: Fill in
-        # print(stamp)
 
         self.broadcast_transform(stamp, self._x, self._y, self._yaw)
         self.publish_path(stamp, self._x, self._y, self._yaw)
-    
-    def imu_callback(self, msg: Imu):
-        self._imu_yaw_rate = msg.angular_velocity.z
 
     def broadcast_transform(self, stamp, x, y, yaw):
         """Takes a 2D pose and broadcasts it as a ROS transform.
