@@ -168,28 +168,24 @@ class Detection(Node):
         red_sum_y = 0
         red_sum_z = 0
         red_counter = 0
-        tf_red = TransformStamped()
 
         blue_points = []
         blue_sum_x = 0
         blue_sum_y = 0
         blue_sum_z = 0
         blue_counter = 0
-        tf_blue = TransformStamped()
 
         green_points = []
         green_sum_x = 0
         green_sum_y = 0
         green_sum_z = 0
         green_counter = 0
-        tf_green = TransformStamped()
 
         wood_points = []
         wood_sum_x = 0
         wood_sum_y = 0
         wood_sum_z = 0
         wood_counter = 0
-        tf_wood = TransformStamped()
 
         grey_points = []
 
@@ -265,6 +261,7 @@ class Detection(Node):
         box_size = (0.24, 0.16)  # L, W
 
         center, yaw, axes = self.estimate_box_from_points(grey_points, box_size)
+
         if center is not None:
             # --- convert to map frame ---
             try:
@@ -481,7 +478,7 @@ class Detection(Node):
 
         if ratio > 0.1:
             # =========================================================
-            # RANSAC 
+            # RANSAC - two edges
             # =========================================================
 
             pts_np = pts.copy()
@@ -606,9 +603,12 @@ class Detection(Node):
             return center_shifted, yaw, used_axes
 
         else: 
+            # =========================================================
+            # single edge case - use PCA axes, shift center along normal direction to get to box
+            # =========================================================
+            
             used_axes = axes[:1] # only use the first principal axis if it's not a corner 
             normal = axes[1] if np.dot(axes[1], x_axis) > 0 else -axes[1] 
-            is_corner = False 
             projected = pts_centered @ used_axes.T 
 
             self.get_logger().debug(f'dir1 与 x 轴夹角: {angle_dir1_x:.2f}rad, dir2 与 x 轴夹角: {angle_dir2_x:.2f}rad') 
