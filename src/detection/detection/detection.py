@@ -107,7 +107,7 @@ class Detection(Node):
                 else:
                     self.metadata_rows.append(row)
 
-        self.publish_arrays(self.object_poses, self.box_poses)
+        self.publish_arrays(self.object_poses, None, self.box_poses, None)
         # print(self.object_lists)
     
         static_tf = TransformStamped()
@@ -125,12 +125,12 @@ class Detection(Node):
 
         self.static_broadcaster.sendTransform(static_tf)
 
-    def publish_arrays(self, object_poses, box_poses):
+    def publish_arrays(self, object_poses, object_timestamp, box_poses, box_timestamp):
         """publish object and box poses from map file to ROS topics."""
         # objects
         if object_poses is not None:
             obj_msg = PoseArray()
-            obj_msg.header.stamp = self.get_clock().now().to_msg()
+            obj_msg.header.stamp = object_timestamp if object_timestamp is not None else self.get_clock().now().to_msg()
             obj_msg.header.frame_id = 'map'      
             obj_msg.poses = object_poses
             self.objects_pub.publish(obj_msg)
@@ -138,7 +138,7 @@ class Detection(Node):
         # boxes
         if box_poses is not None:
             box_msg = PoseArray()
-            box_msg.header.stamp = self.get_clock().now().to_msg()
+            box_msg.header.stamp = box_timestamp if box_timestamp is not None else self.get_clock().now().to_msg()
             box_msg.header.frame_id = 'map'
             box_msg.poses = box_poses
             self.boxes_pub.publish(box_msg)
@@ -321,7 +321,7 @@ class Detection(Node):
                     new_box_msg.orientation.y = tf_map_box.transform.rotation.y
                     new_box_msg.orientation.z = tf_map_box.transform.rotation.z
                     new_box_msg.orientation.w = tf_map_box.transform.rotation.w
-                    self.publish_arrays(None, [new_box_msg])
+                    self.publish_arrays(None, None, [new_box_msg], msg.header.stamp)
 
             except TransformException as ex:
                 self.get_logger().error(f'Transform failed: {ex}')
@@ -382,7 +382,7 @@ class Detection(Node):
             return
         
         tf = TransformStamped()
-        tf.header.stamp = self.object_timestamp
+        tf.header.stamp = msg_time
         tf.header.frame_id = 'map'
         tf.child_frame_id = f'object_{self.object_num}'
         tf.transform.translation.x = object_map.pose.position.x
@@ -410,7 +410,7 @@ class Detection(Node):
             new_object_msg.orientation.y = 0.0
             new_object_msg.orientation.z = 0.0
             new_object_msg.orientation.w = 1.0
-            self.publish_arrays([new_object_msg], None)
+            self.publish_arrays([new_object_msg], msg.header.stamp, None, None)
             self.object_num += 1
 
         
