@@ -207,6 +207,9 @@ class TaskPlannerNode(Node):
         elif self.state == "DROP_OBJECT":
             if not self._published_this_state:
                 self.arm_pub.publish(String(data="place"))
+
+                self.place_done = False
+
                 self._published_this_state = True
 
                 # Done with this cycle

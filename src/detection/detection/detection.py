@@ -77,6 +77,8 @@ class Detection(Node):
 
         self.object_num = 0
         self.box_num = 0
+        
+        self.map_timer = self.create_timer(1.0, self.publish_map_from_csv)
 
         with open(csv_path, mode='r', encoding='utf-8') as file:
             reader = csv.reader(file)
@@ -125,6 +127,9 @@ class Detection(Node):
         static_tf.transform.rotation.w = q[3]
 
         self.static_broadcaster.sendTransform(static_tf)
+
+    def publish_map_from_csv(self):
+        self.publish_arrays(self.object_poses, self.box_poses)
 
     def publish_arrays(self, object_poses, box_poses):
         """publish object and box poses from map file to ROS topics."""
