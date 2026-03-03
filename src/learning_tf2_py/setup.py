@@ -32,6 +32,7 @@ setup(
             'pickup_hardcoded = learning_tf2_py.pickup_hardcoded:main',
             'pickup = learning_tf2_py.pickup:main',
             'random_nav = learning_tf2_py.random_nav:main',
+            'space = learning_tf2_py.make_space:main',
         ],
     },
 )
