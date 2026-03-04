@@ -26,7 +26,7 @@ import os
 import ctypes
 import struct
 
-# Criteria of colors are at Line 468-478
+# Criteria of colors are at Line 677-690
 
 ######################################################################################################
 # TODO: discuss the unit of the communication (PoseArray): m
