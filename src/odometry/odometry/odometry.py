@@ -86,7 +86,7 @@ class Odometry(Node):
         D = wheel_radius/2 * (phi_R + phi_L)
         d_theta_wheel = wheel_radius/base * (phi_R - phi_L)
         d_theta_Imu = self._imu_yaw_rate * dt
-        gain = 0.8
+        gain = 0
         
         d_theta = gain * d_theta_wheel + (1 - gain) * d_theta_Imu
 
