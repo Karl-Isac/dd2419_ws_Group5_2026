@@ -11,6 +11,7 @@ from rclpy.node import Node
 
 from tf2_ros import TransformBroadcaster
 from tf_transformations import quaternion_from_euler, euler_from_quaternion
+from rclpy.qos import QoSProfile, QoSDurabilityPolicy, QoSReliabilityPolicy
 
 from geometry_msgs.msg import TransformStamped, PoseStamped
 from robp_interfaces.msg import Encoders
@@ -28,8 +29,20 @@ class make_space(Node):
     
     def __init__(self):
         super().__init__('space')
-        self._marker_pub = self.create_publisher(Marker, 'workspace_marker', 10)
+        
+        qos = QoSProfile(
+            depth=1,
+            durability=QoSDurabilityPolicy.TRANSIENT_LOCAL,
+            reliability=QoSReliabilityPolicy.RELIABLE
+        )
+        
+        self._marker_pub = self.create_publisher(
+            Marker,
+            'workspace_marker',
+            qos)
+        
         print("thing")
+        
         self.publish_workspace()
         
     def publish_workspace(self):
@@ -45,32 +58,21 @@ class make_space(Node):
 
         marker.scale.x = 0.05  # line width
 
-        marker.color.r = 1.0
-        marker.color.g = 0.0
-        marker.color.b = 0.0
+        marker.color.r = 232/255
+        marker.color.g = 61/255
+        marker.color.b = 132/255
         marker.color.a = 1.0
-
-        # Rectangle corners
-        width = 4.0
-        height = 3.0
+        #marker.color.r, marker.color.g, marker.color.b, marker.color.a = 232/255, 61/255, 132/255, 1
         
         points = []
         
         with open(WS_PATH, newline='') as csvfile:
             reader = csv.DictReader(csvfile)
             for row in reader:
-                x = float(row['x'])/100  # convert to int
+                x = float(row['x'])/100  # convert to meters
                 y = float(row['y'])/100
                 points.append((x, y))
         points.append(points[0])
-
-        #points = [
-        #    (0.0, 0.0),
-        #    (width, 0.0),
-        #    (width, height),
-        #    (0.0, height),
-        #    (0.0, 0.0)
-        #]
 
         for x, y in points:
             p = PoseStamped().pose.position
