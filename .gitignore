@@ -70,3 +70,4 @@ log/
 **/log/
 
 rosbags/
+src/detection/config/detection_output.csv

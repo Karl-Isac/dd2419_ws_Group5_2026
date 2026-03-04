@@ -14,7 +14,6 @@ from tf2_ros.buffer import Buffer
 from tf2_ros.static_transform_broadcaster import StaticTransformBroadcaster
 from tf_transformations import quaternion_from_euler
 from geometry_msgs.msg import TransformStamped, Point, Vector3Stamped, PoseArray, Pose
-from geometry_msgs.msg import TransformStamped, Point, Vector3Stamped, PoseArray, Pose
 from visualization_msgs.msg import Marker
 
 from sensor_msgs.msg import PointCloud2
@@ -24,18 +23,10 @@ import csv
 from ament_index_python.packages import get_package_share_directory
 import os
 
-import csv
-from ament_index_python.packages import get_package_share_directory
-import os
-
 import ctypes
 import struct
 
 # Criteria of colors are at Line 468-478
-
-######################################################################################################
-# TODO: discuss the unit of the communication (PoseArray): m
-######################################################################################################
 
 ######################################################################################################
 # TODO: discuss the unit of the communication (PoseArray): m
@@ -67,8 +58,7 @@ class Detection(Node):
 
         # open and load map file (csv)
         package_path = get_package_share_directory('detection')
-        # csv_path = os.path.join(package_path, 'config', 'test.csv')
-        csv_path = os.path.join(package_path, 'config', 'map_1_1.csv')
+        csv_path = os.path.join(package_path, 'config', 'test.csv')
         self.metadata_rows = []
 
         # location of final map file (csv)
@@ -86,8 +76,6 @@ class Detection(Node):
 
         self.object_num = 0
         self.box_num = 0
-        
-        self.map_timer = self.create_timer(1.0, self.publish_map_from_csv)
 
         with open(csv_path, mode='r', encoding='utf-8') as file:
             reader = csv.reader(file)
@@ -119,7 +107,7 @@ class Detection(Node):
                 else:
                     self.metadata_rows.append(row)
 
-        self.publish_arrays(self.object_poses, self.box_poses)
+        self.publish_arrays(self.object_poses, None, self.box_poses, None)
         # print(self.object_lists)
     
         static_tf = TransformStamped()
@@ -136,17 +124,13 @@ class Detection(Node):
         static_tf.transform.rotation.w = q[3]
 
         self.static_broadcaster.sendTransform(static_tf)
-        self.static_broadcaster.sendTransform(static_tf)
 
-    def publish_map_from_csv(self):
-        self.publish_arrays(self.object_poses, self.box_poses)
-
-    def publish_arrays(self, object_poses, box_poses):
+    def publish_arrays(self, object_poses, object_timestamp, box_poses, box_timestamp):
         """publish object and box poses from map file to ROS topics."""
         # objects
         if object_poses is not None:
             obj_msg = PoseArray()
-            obj_msg.header.stamp = self.get_clock().now().to_msg()
+            obj_msg.header.stamp = object_timestamp if object_timestamp is not None else self.get_clock().now().to_msg()
             obj_msg.header.frame_id = 'map'      
             obj_msg.poses = object_poses
             self.objects_pub.publish(obj_msg)
@@ -154,7 +138,7 @@ class Detection(Node):
         # boxes
         if box_poses is not None:
             box_msg = PoseArray()
-            box_msg.header.stamp = self.get_clock().now().to_msg()
+            box_msg.header.stamp = box_timestamp if box_timestamp is not None else self.get_clock().now().to_msg()
             box_msg.header.frame_id = 'map'
             box_msg.poses = box_poses
             self.boxes_pub.publish(box_msg)
@@ -184,28 +168,24 @@ class Detection(Node):
         red_sum_y = 0
         red_sum_z = 0
         red_counter = 0
-        tf_red = TransformStamped()
 
         blue_points = []
         blue_sum_x = 0
         blue_sum_y = 0
         blue_sum_z = 0
         blue_counter = 0
-        tf_blue = TransformStamped()
 
         green_points = []
         green_sum_x = 0
         green_sum_y = 0
         green_sum_z = 0
         green_counter = 0
-        tf_green = TransformStamped()
 
         wood_points = []
         wood_sum_x = 0
         wood_sum_y = 0
         wood_sum_z = 0
         wood_counter = 0
-        tf_wood = TransformStamped()
 
         grey_points = []
 
@@ -226,7 +206,6 @@ class Detection(Node):
             g = colors[idx, 1]
             b = colors[idx, 2]
             h, s, v = self.rgb_to_hsv(r, g, b)
-            if y > 0 and y < 0.09 and z > 0 and z < 1.5:
             if y > 0 and y < 0.09 and z > 0 and z < 1.5:
                 # red
                 if is_red(h, s, v):
@@ -262,19 +241,19 @@ class Detection(Node):
                     grey_points.append([z ,-x])
 
         # red 
-        if red_counter > 12:
+        if red_counter > 10:
             self.object_detection(msg, red_sum_x, red_sum_y, red_sum_z, red_counter, 'Red')
 
         # blue
-        if blue_counter > 12:
+        if blue_counter > 10:
             self.object_detection(msg, blue_sum_x, blue_sum_y, blue_sum_z, blue_counter, 'Blue')
         
         # green
-        if green_counter > 12:
+        if green_counter > 10:
             self.object_detection(msg, green_sum_x, green_sum_y, green_sum_z, green_counter, 'Green')
 
         # wood
-        if wood_counter > 12:
+        if wood_counter > 10:
             self.object_detection(msg, wood_sum_x, wood_sum_y, wood_sum_z, wood_counter, 'Wood')
             
 
@@ -342,7 +321,7 @@ class Detection(Node):
                     new_box_msg.orientation.y = tf_map_box.transform.rotation.y
                     new_box_msg.orientation.z = tf_map_box.transform.rotation.z
                     new_box_msg.orientation.w = tf_map_box.transform.rotation.w
-                    self.publish_arrays(None, [new_box_msg])
+                    self.publish_arrays(None, None, [new_box_msg], msg.header.stamp)
 
             except TransformException as ex:
                 self.get_logger().error(f'Transform failed: {ex}')
@@ -403,10 +382,9 @@ class Detection(Node):
             return
         
         tf = TransformStamped()
-        #tf.header.stamp = self.object_timestamp
-        tf.header.stamp = self.get_clock().now().to_msg()
+        tf.header.stamp = msg.header.stamp
         tf.header.frame_id = 'map'
-        tf.child_frame_id = f'object_{self.object_num}'
+        tf.child_frame_id = f'object_{color}'
         tf.transform.translation.x = object_map.pose.position.x
         tf.transform.translation.y = object_map.pose.position.y
         tf.transform.translation.z = object_map.pose.position.z
@@ -432,7 +410,7 @@ class Detection(Node):
             new_object_msg.orientation.y = 0.0
             new_object_msg.orientation.z = 0.0
             new_object_msg.orientation.w = 1.0
-            self.publish_arrays([new_object_msg], None)
+            self.publish_arrays([new_object_msg], msg.header.stamp, None, None)
             self.object_num += 1
 
         
@@ -465,11 +443,11 @@ class Detection(Node):
         
         # --- Step 0: reduce outliers（IQR method） --- 
         
-        # Q1 = np.percentile(pts, 25, axis=0) 
-        # Q3 = np.percentile(pts, 75, axis=0) 
-        # IQR = Q3 - Q1 
-        # mask = np.all((pts >= Q1 - 1.5 * IQR) & (pts <= Q3 + 1.5 * IQR), axis=1) 
-        # pts = pts[mask] 
+        Q1 = np.percentile(pts, 25, axis=0) 
+        Q3 = np.percentile(pts, 75, axis=0) 
+        IQR = Q3 - Q1 
+        mask = np.all((pts >= Q1 - 1.5 * IQR) & (pts <= Q3 + 1.5 * IQR), axis=1) 
+        pts = pts[mask] 
         
         if len(pts) < 2: 
             return None, None, None 
@@ -500,7 +478,7 @@ class Detection(Node):
 
         if ratio > 0.1:
             # =========================================================
-            # RANSAC 
+            # RANSAC - two edges
             # =========================================================
 
             pts_np = pts.copy()
@@ -612,8 +590,12 @@ class Detection(Node):
             # calculate center by shifting from corner along main_dir and side_dir
             # =========================================================
             # center_shifted = corner + main_dir * (box_length / 2)
-            center_shifted = corner - main_dir * (box_length / 2) + side_dir * (box_width / 2) # shift from corner along both directions to get to the center, more robust for partial views
-            # center_shifted = corner
+            # center_shifted = corner - main_dir * (box_length / 2) + side_dir * (box_width / 2) # shift from corner along both directions to get to the center, more robust for partial views
+    
+            center_shifted = corner
+            center_shifted = center_shifted + main_dir * (box_length / 2) if main_dir[0] > 0 else center_shifted - main_dir * (box_length / 2)
+            center_shifted = center_shifted + side_dir * (box_width / 2) if side_dir[0] > 0 else center_shifted - side_dir * (box_width / 2)
+            # print(f"main_dir is {main_dir}, side_dir is {side_dir}")
 
             # yaw
             yaw = np.arctan2(main_dir[1], main_dir[0])
@@ -625,9 +607,12 @@ class Detection(Node):
             return center_shifted, yaw, used_axes
 
         else: 
+            # =========================================================
+            # single edge case - use PCA axes, shift center along normal direction to get to box
+            # =========================================================
+            
             used_axes = axes[:1] # only use the first principal axis if it's not a corner 
             normal = axes[1] if np.dot(axes[1], x_axis) > 0 else -axes[1] 
-            is_corner = False 
             projected = pts_centered @ used_axes.T 
 
             self.get_logger().debug(f'dir1 与 x 轴夹角: {angle_dir1_x:.2f}rad, dir2 与 x 轴夹角: {angle_dir2_x:.2f}rad') 
@@ -688,30 +673,21 @@ def main():
         node.write_csv()
         node.destroy_node()
         rclpy.shutdown()
-        node.get_logger().info('Shutting down, writing CSV...')
-    finally:
-        node.write_csv()
-        node.destroy_node()
-        rclpy.shutdown()
 
 def is_red(h,s,v):
-    return True if (h <= 20 or h >= 340) and s > 0.5 and v > 0.5 else False
-    return True if (h <= 20 or h >= 340) and s > 0.5 and v > 0.5 else False
+    return True if (h <= 20 or h >= 340) and s > 0.8 and v > 0.5 else False
 
 def is_blue(h,s,v):
-    return True if (h >= 180 and h <= 200) and s > 0.5 and v > 0.5 else False
-    return True if (h >= 180 and h <= 200) and s > 0.5 and v > 0.5 else False
+    return True if (h >= 180 and h <= 200) and s > 0.8 and v > 0.4 else False
 
 def is_green(h,s,v):
-    return True if 140 <= h <= 180 and s > 0.4 and v > 0.4 else False
-    return True if 140 <= h <= 180 and s > 0.4 and v > 0.4 else False
+    return True if 140 <= h <= 180 and s > 0.8 and v > 0.25 else False
 
 def is_wood(h,s,v):
-    return True if 20 <= h <= 60 and 0 < s < 0.6 and v > 0.4 else False
+    return True if 20 <= h <= 60 and 0.3 < s < 0.6 and 0.3 < v < 0.5 else False
 
 def is_grey(h,s,v):
-    return True if 0.01 < s < 0.15 and v > 0.1 and v < 0.25 else False
-    return True if 0.01 < s < 0.15 and v > 0.1 and v < 0.25 else False
+    return True if 0.05 < s < 0.15 and v > 0.15 and v < 0.3 else False
 
 if __name__ == '__main__':
     main()
