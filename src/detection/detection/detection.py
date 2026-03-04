@@ -240,19 +240,19 @@ class Detection(Node):
                     grey_points.append([z ,-x])
 
         # red 
-        if red_counter > 12:
+        if red_counter > 10:
             self.object_detection(msg, red_sum_x, red_sum_y, red_sum_z, red_counter, 'Red')
 
         # blue
-        if blue_counter > 12:
+        if blue_counter > 10:
             self.object_detection(msg, blue_sum_x, blue_sum_y, blue_sum_z, blue_counter, 'Blue')
         
         # green
-        if green_counter > 12:
+        if green_counter > 10:
             self.object_detection(msg, green_sum_x, green_sum_y, green_sum_z, green_counter, 'Green')
 
         # wood
-        if wood_counter > 12:
+        if wood_counter > 10:
             self.object_detection(msg, wood_sum_x, wood_sum_y, wood_sum_z, wood_counter, 'Wood')
             
 
@@ -382,9 +382,9 @@ class Detection(Node):
             return
         
         tf = TransformStamped()
-        tf.header.stamp = msg_time
+        tf.header.stamp = msg.header.stamp
         tf.header.frame_id = 'map'
-        tf.child_frame_id = f'object_{self.object_num}'
+        tf.child_frame_id = f'object_{color}'
         tf.transform.translation.x = object_map.pose.position.x
         tf.transform.translation.y = object_map.pose.position.y
         tf.transform.translation.z = object_map.pose.position.z
@@ -443,11 +443,11 @@ class Detection(Node):
         
         # --- Step 0: reduce outliers（IQR method） --- 
         
-        # Q1 = np.percentile(pts, 25, axis=0) 
-        # Q3 = np.percentile(pts, 75, axis=0) 
-        # IQR = Q3 - Q1 
-        # mask = np.all((pts >= Q1 - 1.5 * IQR) & (pts <= Q3 + 1.5 * IQR), axis=1) 
-        # pts = pts[mask] 
+        Q1 = np.percentile(pts, 25, axis=0) 
+        Q3 = np.percentile(pts, 75, axis=0) 
+        IQR = Q3 - Q1 
+        mask = np.all((pts >= Q1 - 1.5 * IQR) & (pts <= Q3 + 1.5 * IQR), axis=1) 
+        pts = pts[mask] 
         
         if len(pts) < 2: 
             return None, None, None 
@@ -590,13 +590,17 @@ class Detection(Node):
             # calculate center by shifting from corner along main_dir and side_dir
             # =========================================================
             # center_shifted = corner + main_dir * (box_length / 2)
-            center_shifted = corner - main_dir * (box_length / 2) + side_dir * (box_width / 2) # shift from corner along both directions to get to the center, more robust for partial views
-            # center_shifted = corner
+            # center_shifted = corner - main_dir * (box_length / 2) + side_dir * (box_width / 2) # shift from corner along both directions to get to the center, more robust for partial views
+    
+            center_shifted = corner
+            center_shifted = center_shifted + main_dir * (box_length / 2) if main_dir[0] > 0 else center_shifted - main_dir * (box_length / 2)
+            center_shifted = center_shifted + side_dir * (box_width / 2) if side_dir[0] > 0 else center_shifted - side_dir * (box_width / 2)
+            # print(f"main_dir is {main_dir}, side_dir is {side_dir}")
 
             # yaw
             yaw = np.arctan2(main_dir[1], main_dir[0])
 
-            self.get_logger().debug(
+            self.get_logger().info(
                 f'Corner: {corner}, Center: {center_shifted}, yaw: {yaw:.3f}'
             )
 
@@ -671,19 +675,19 @@ def main():
         rclpy.shutdown()
 
 def is_red(h,s,v):
-    return True if (h <= 20 or h >= 340) and s > 0.5 and v > 0.5 else False
+    return True if (h <= 20 or h >= 340) and s > 0.8 and v > 0.5 else False
 
 def is_blue(h,s,v):
-    return True if (h >= 180 and h <= 200) and s > 0.5 and v > 0.5 else False
+    return True if (h >= 180 and h <= 200) and s > 0.8 and v > 0.4 else False
 
 def is_green(h,s,v):
-    return True if 140 <= h <= 180 and s > 0.4 and v > 0.4 else False
+    return True if 140 <= h <= 180 and s > 0.8 and v > 0.25 else False
 
 def is_wood(h,s,v):
-    return True if 20 <= h <= 60 and 0 < s < 0.6 and v > 0.4 else False
+    return True if 20 <= h <= 60 and 0.3 < s < 0.6 and 0.3 < v < 0.5 else False
 
 def is_grey(h,s,v):
-    return True if 0.01 < s < 0.15 and v > 0.1 and v < 0.25 else False
+    return True if 0.05 < s < 0.15 and v > 0.15 and v < 0.3 else False
 
 if __name__ == '__main__':
     main()
