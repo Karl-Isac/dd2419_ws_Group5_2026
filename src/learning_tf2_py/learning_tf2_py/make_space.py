@@ -1,22 +1,12 @@
 #!/usr/bin/env python
-
-from visualization_msgs.msg import Marker
-import math
-
-import numpy as np
 import csv
 
 import rclpy
 from rclpy.node import Node
-
-from tf2_ros import TransformBroadcaster
-from tf_transformations import quaternion_from_euler, euler_from_quaternion
 from rclpy.qos import QoSProfile, QoSDurabilityPolicy, QoSReliabilityPolicy
 
-from geometry_msgs.msg import TransformStamped, PoseStamped
-from robp_interfaces.msg import Encoders
-from sensor_msgs.msg import Imu
-from nav_msgs.msg import Path
+from geometry_msgs.msg import PoseStamped
+from visualization_msgs.msg import Marker
 
 ########################################################################################
     # TODO: Change path
@@ -48,7 +38,7 @@ class make_space(Node):
     def publish_workspace(self):
 
         marker = Marker()
-        marker.header.frame_id = "odom"
+        marker.header.frame_id = "map"
         marker.header.stamp = self.get_clock().now().to_msg()
 
         marker.ns = "workspace"
