@@ -33,6 +33,8 @@ class Arm_control(Node):
             Image, '/arm/camera/image_debug', 10)
         self._pub2 = self.create_publisher(
             Image, '/arm/camera/image_debug2', 10)
+        self._pub3 = self.create_publisher(
+            Image, '/arm/camera/image_debug3', 10)
         
         self._pub_control = self.create_publisher(
             ArmControl, '/arm/safe_control', 1)
@@ -88,7 +90,7 @@ class Arm_control(Node):
         # TODO replace all pass-es with spin once or async wait or whatever was recommended during the bootcamp
         while True:
             # State 0 - wait for pickup command:
-            print("another print5")
+            print("another print6")
             self.get_logger().info("Waiting for pick command")
             self.wait_for_pickup_command = True
             while(self.wait_for_pickup_command):
@@ -123,7 +125,7 @@ class Arm_control(Node):
                 rclpy.spin_once(self, timeout_sec=1)
             self.get_logger().info("State 3 done")
             # State 4 - feedback control OFF, goto lower z to pick up
-            z = 0.16
+            z = 0.15
             rho = self.rho
             try:
                 joint2target, joint3target, joint4target = inverse_kinematics_to_joint_states(z=z,rho=rho)
@@ -168,7 +170,7 @@ class Arm_control(Node):
         msg.position = position
         self._pub_control.publish(msg)
         print("Going to position: {position}")
-        time.sleep(1)
+        time.sleep(1.5)
 
     def timer_callback(self):
         # TODO put this entire thing into a separate function and maybe even file
@@ -276,8 +278,8 @@ class Arm_control(Node):
 
             # Image preprocess - grayscale, blur so texture wont get detected as edges, Canny edge detection
             gray = cv2.cvtColor(raw_image, cv2.COLOR_YUV2GRAY_YUY2)
-            gray = cv2.GaussianBlur(gray, (5, 5), 1.5)
-            canny = cv2.Canny(gray, 50, 150)
+            gray = cv2.GaussianBlur(gray, (5, 5), 1.5)#(5, 5), 1.5)
+            canny = cv2.Canny(gray, 50,150)#50, 150)
 
             if publish_debug_images:
                 bgr_image = cv2.cvtColor(raw_image,cv2.COLOR_YUV2BGR_YUY2)
@@ -315,11 +317,18 @@ class Arm_control(Node):
 
             if publish_debug_images:
                 out_msg = bridge.cv2_to_imgmsg(         # convert the np array back to ros2 Image msg
+                    gray,
+                    encoding='mono8'
+                )
+                out_msg.header = msg.header
+                self._pub.publish(out_msg)    
+
+                out_msg = bridge.cv2_to_imgmsg(         # convert the np array back to ros2 Image msg
                     canny,
                     encoding='mono8'
                 )
                 out_msg.header = msg.header
-                self._pub.publish(out_msg)      
+                self._pub3.publish(out_msg)   
 
                 out_msg2 = bridge.cv2_to_imgmsg(         # convert the np array back to ros2 Image msg
                     bgr_image,
