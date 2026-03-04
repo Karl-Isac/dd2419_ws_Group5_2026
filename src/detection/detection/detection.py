@@ -14,6 +14,7 @@ from tf2_ros.buffer import Buffer
 from tf2_ros.static_transform_broadcaster import StaticTransformBroadcaster
 from tf_transformations import quaternion_from_euler
 from geometry_msgs.msg import TransformStamped, Point, Vector3Stamped, PoseArray, Pose
+from geometry_msgs.msg import TransformStamped, Point, Vector3Stamped, PoseArray, Pose
 from visualization_msgs.msg import Marker
 
 from sensor_msgs.msg import PointCloud2
@@ -23,10 +24,18 @@ import csv
 from ament_index_python.packages import get_package_share_directory
 import os
 
+import csv
+from ament_index_python.packages import get_package_share_directory
+import os
+
 import ctypes
 import struct
 
 # Criteria of colors are at Line 468-478
+
+######################################################################################################
+# TODO: discuss the unit of the communication (PoseArray): m
+######################################################################################################
 
 ######################################################################################################
 # TODO: discuss the unit of the communication (PoseArray): m
@@ -127,6 +136,7 @@ class Detection(Node):
         static_tf.transform.rotation.w = q[3]
 
         self.static_broadcaster.sendTransform(static_tf)
+        self.static_broadcaster.sendTransform(static_tf)
 
     def publish_map_from_csv(self):
         self.publish_arrays(self.object_poses, self.box_poses)
@@ -217,6 +227,7 @@ class Detection(Node):
             b = colors[idx, 2]
             h, s, v = self.rgb_to_hsv(r, g, b)
             if y > 0 and y < 0.09 and z > 0 and z < 1.5:
+            if y > 0 and y < 0.09 and z > 0 and z < 1.5:
                 # red
                 if is_red(h, s, v):
                     red_counter += 1
@@ -247,6 +258,7 @@ class Detection(Node):
                     wood_sum_z += z
 
                 if is_grey(h,s,v):
+                    grey_points.append([z ,-x])
                     grey_points.append([z ,-x])
 
         # red 
@@ -676,20 +688,29 @@ def main():
         node.write_csv()
         node.destroy_node()
         rclpy.shutdown()
+        node.get_logger().info('Shutting down, writing CSV...')
+    finally:
+        node.write_csv()
+        node.destroy_node()
+        rclpy.shutdown()
 
 def is_red(h,s,v):
+    return True if (h <= 20 or h >= 340) and s > 0.5 and v > 0.5 else False
     return True if (h <= 20 or h >= 340) and s > 0.5 and v > 0.5 else False
 
 def is_blue(h,s,v):
     return True if (h >= 180 and h <= 200) and s > 0.5 and v > 0.5 else False
+    return True if (h >= 180 and h <= 200) and s > 0.5 and v > 0.5 else False
 
 def is_green(h,s,v):
+    return True if 140 <= h <= 180 and s > 0.4 and v > 0.4 else False
     return True if 140 <= h <= 180 and s > 0.4 and v > 0.4 else False
 
 def is_wood(h,s,v):
     return True if 20 <= h <= 60 and 0 < s < 0.6 and v > 0.4 else False
 
 def is_grey(h,s,v):
+    return True if 0.01 < s < 0.15 and v > 0.1 and v < 0.25 else False
     return True if 0.01 < s < 0.15 and v > 0.1 and v < 0.25 else False
 
 if __name__ == '__main__':
