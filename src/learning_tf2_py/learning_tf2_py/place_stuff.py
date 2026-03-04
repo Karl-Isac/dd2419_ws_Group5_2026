@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import csv
+import math
 
 import rclpy
 from rclpy.node import Node
@@ -23,7 +24,7 @@ class make_space(Node):
         super().__init__('space')
         
         QoS = QoSProfile(
-            depth=1,
+            depth=10,
             durability=QoSDurabilityPolicy.TRANSIENT_LOCAL,
             reliability=QoSReliabilityPolicy.RELIABLE
         )
@@ -66,29 +67,42 @@ class make_space(Node):
         MAX_ID = 0
         for the_type, x, y, angle in things:
             marker = Marker()
+            
+            marker.header.frame_id = "map"
+            marker.header.stamp = self.get_clock().now().to_msg()
+            
             thing = id_placer(the_type)
             
-            
-            marker.ns = thing.name
-            marker.type = thing.thing_type
-            marker.color.r = thing.R
-            marker.color.g = thing.G
-            marker.color.b = thing.B
-            marker.color.a = thing.A
-            
-            marker.header.frame_id = "odom"
-            marker.header.stamp = self.get_clock().now().to_msg()
-            marker.pose.position.x = x
-            marker.pose.position.y = y
-            marker.pose.position.z = 0.1
+            marker.ns = thing.name + str(MAX_ID)
             marker.id = MAX_ID
             MAX_ID += 1
+            marker.type = thing.thing_type
+            marker.action = Marker.ADD
+            
+            # Position
+            marker.pose.position.x = x
+            marker.pose.position.y = y
+            marker.pose.position.z = thing.Z_scale/2
+            marker.pose.orientation.w = 1.0
+            
+            if thing.thing_type == Marker.ARROW:
+                marker.pose.orientation.x = 0.0
+                marker.pose.orientation.y = math.sin(math.pi/4)
+                marker.pose.orientation.z = 0.0
+                marker.pose.orientation.w = math.cos(math.pi/4)
+                marker.pose.position.z += thing.X_scale
+            
+            # Scale
             marker.scale.x = thing.X_scale
             marker.scale.y = thing.Y_scale
             marker.scale.z = thing.Z_scale
-
-
-            marker.action = Marker.ADD
+            
+            marker.color.r = thing.R
+            marker.color.g = thing.G
+            marker.color.b = thing.B
+            marker.color.a = 1.0
+    
+            print("Publiched " + marker.ns + " " + str(thing.R) + str(thing.G )+ str(thing.B))
             self._marker_pub.publish(marker)
 
 @dataclass
@@ -107,11 +121,11 @@ class object:
 def id_placer(the_type):
     match the_type:
         case 'S':
-            ret_obj = object("Start", Marker.ARROW, 1, 0, 0, 1, 0.1, 0.1, 0.1)
+            ret_obj = object("Start", Marker.ARROW, 1.0, 0.0, 0.0, 1.0, 0.5, 0.01, 0.01)
         case 'O':
-            ret_obj = object("Object", Marker.CUBE, 0, 1, 0, 1, 0.1, 0.1, 0.1)
+            ret_obj = object("Object", Marker.CUBE, 0.0, 1.0, 0.0, 1.0, 0.03, 0.03, 0.03)
         case 'B':
-            ret_obj = object("Object", Marker.CUBE, 65/255, 65/255, 65/255, 1, 0.1, 0.2, 0.1)
+            ret_obj = object("Object", Marker.CUBE, 1.0, 1.0, 1.0, 1.0, 0.24, 0.16, 0.099)
         case _:
             raise ValueError(f"Unknown type: {type}")
     return ret_obj
@@ -120,7 +134,6 @@ def main():
     rclpy.init()
     node = make_space()
     rclpy.spin(node)
-    node.destroy_node()
     rclpy.shutdown()
 
 

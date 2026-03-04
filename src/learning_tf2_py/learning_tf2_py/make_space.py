@@ -13,7 +13,7 @@ from visualization_msgs.msg import Marker
 ######################################################################################## 
 
 
-WS_PATH = '/home/grumpy/dd2419_ws_Group5_2026/Workspace/workspace_1.csv'
+WS_PATH = '/Users/ki/Desktop/Skola/Robot/dd2419_ws_Group5_2026/Workspace/workspace_1.csv'
 
 class make_space(Node):
     
