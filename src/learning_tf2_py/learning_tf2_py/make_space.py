@@ -1,41 +1,44 @@
 #!/usr/bin/env python
-
-from visualization_msgs.msg import Marker
-import math
-
-import numpy as np
 import csv
 
 import rclpy
 from rclpy.node import Node
+from rclpy.qos import QoSProfile, QoSDurabilityPolicy, QoSReliabilityPolicy
 
-from tf2_ros import TransformBroadcaster
-from tf_transformations import quaternion_from_euler, euler_from_quaternion
-
-from geometry_msgs.msg import TransformStamped, PoseStamped
-from robp_interfaces.msg import Encoders
-from sensor_msgs.msg import Imu
-from nav_msgs.msg import Path
+from geometry_msgs.msg import PoseStamped
+from visualization_msgs.msg import Marker
 
 ########################################################################################
     # TODO: Change path
 ######################################################################################## 
 
 
-WS_PATH = '/home/grumpy/dd2419_ws_Group5_2026/Workspace/workspace_1.csv'
+WS_PATH = '/Users/ki/Desktop/Skola/Robot/dd2419_ws_Group5_2026/Workspace/workspace_1.csv'
 
 class make_space(Node):
     
     def __init__(self):
         super().__init__('space')
-        self._marker_pub = self.create_publisher(Marker, 'workspace_marker', 10)
+        
+        qos = QoSProfile(
+            depth=1,
+            durability=QoSDurabilityPolicy.TRANSIENT_LOCAL,
+            reliability=QoSReliabilityPolicy.RELIABLE
+        )
+        
+        self._marker_pub = self.create_publisher(
+            Marker,
+            'workspace_marker',
+            qos)
+        
         print("thing")
+        
         self.publish_workspace()
         
     def publish_workspace(self):
 
         marker = Marker()
-        marker.header.frame_id = "odom"
+        marker.header.frame_id = "map"
         marker.header.stamp = self.get_clock().now().to_msg()
 
         marker.ns = "workspace"
@@ -45,32 +48,21 @@ class make_space(Node):
 
         marker.scale.x = 0.05  # line width
 
-        marker.color.r = 1.0
-        marker.color.g = 0.0
-        marker.color.b = 0.0
+        marker.color.r = 232/255
+        marker.color.g = 61/255
+        marker.color.b = 132/255
         marker.color.a = 1.0
-
-        # Rectangle corners
-        width = 4.0
-        height = 3.0
+        #marker.color.r, marker.color.g, marker.color.b, marker.color.a = 232/255, 61/255, 132/255, 1
         
         points = []
         
         with open(WS_PATH, newline='') as csvfile:
             reader = csv.DictReader(csvfile)
             for row in reader:
-                x = float(row['x'])/100  # convert to int
+                x = float(row['x'])/100  # convert to meters
                 y = float(row['y'])/100
                 points.append((x, y))
         points.append(points[0])
-
-        #points = [
-        #    (0.0, 0.0),
-        #    (width, 0.0),
-        #    (width, height),
-        #    (0.0, height),
-        #    (0.0, 0.0)
-        #]
 
         for x, y in points:
             p = PoseStamped().pose.position

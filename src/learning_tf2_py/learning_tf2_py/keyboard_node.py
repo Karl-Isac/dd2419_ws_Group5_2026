@@ -26,17 +26,17 @@ class KeyboardTeleop(Node):
         while rclpy.ok():
             key = self.get_key()
             if key == 'w':
-                msg.duty_cycle_left = 0.3
-                msg.duty_cycle_right = 0.3
+                msg.duty_cycle_left = 0.5
+                msg.duty_cycle_right = 0.5
             elif key == 's':
-                msg.duty_cycle_left = -0.3
-                msg.duty_cycle_right = -0.3
+                msg.duty_cycle_left = -0.5
+                msg.duty_cycle_right = -0.5
             elif key == 'a':
-                msg.duty_cycle_left = -0.1
-                msg.duty_cycle_right = 0.1
+                msg.duty_cycle_left = -0.25
+                msg.duty_cycle_right = 0.25
             elif key == 'd':
-                msg.duty_cycle_left = 0.1
-                msg.duty_cycle_right = -0.1
+                msg.duty_cycle_left = 0.25
+                msg.duty_cycle_right = -0.25
             elif key == 'c' or key == '\x03':
                 msg.duty_cycle_left = 0.0
                 msg.duty_cycle_right = 0.0
