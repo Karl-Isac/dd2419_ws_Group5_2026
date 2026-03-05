@@ -51,6 +51,26 @@ def generate_launch_description():
     #     output='screen'
     # )
 
+    # arm_init = ExecuteProcess(
+    #     cmd=['pixi', 'run', 'arm_init'],
+    #     output='screen'
+    # )
+
+    # arm_control = ExecuteProcess(
+    #     cmd=['pixi', 'run', 'ros2', 'run', 'learning_tf2_py', 'arm_control'],
+    #     output='screen'
+    # )
+
+    # task_planner_node_posearray_2 = Node(
+    #     package='task_planner_py',
+    #     executable='task_planner_node_posearray_2',
+    #     name='task_planner_node_posearray_2',
+    #     output='screen'
+    # )
+
+    
+
+
 
 
 
@@ -61,5 +81,9 @@ def generate_launch_description():
         odometry,
         # phidgets,
         # detection,
-        realsense
+        realsense,
+        # arm_init,
+        # arm_control,
+        # task_planner_node_posearray_2,
+
     ])

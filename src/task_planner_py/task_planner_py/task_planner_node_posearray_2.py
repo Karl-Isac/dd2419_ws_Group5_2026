@@ -69,7 +69,7 @@ class TaskPlannerNode(Node):
         dt = 1.0 / float(self.get_parameter("rate_hz").value)
         self.timer = self.create_timer(dt, self.step)
 
-        self.get_logger().info("TaskPlannerNode up. Pub: /nav/goal, /nav/phase, /arm/cmd  Sub: /nav/reached, /arm/done_pick")
+        self.get_logger().info("TaskPlannerNode up. Pub: /nav/goal, /nav/phase, /arm/cmd  Sub: /nav/reached, /arm/report_back")
 
     # NEW: small helper for "similar coordinates"
     def _is_picked_xy(self, x: float, y: float) -> bool:
@@ -97,11 +97,16 @@ class TaskPlannerNode(Node):
     def on_objects(self, msg: PoseArray):
         self.objects = []  # rebuild list every detection update
 
+        print(f"objects:\n {msg}")
+
         for p in msg.poses:
+            print("on_objects 1")
+
             x = float(p.position.x)
             y = float(p.position.y)
 
             if not self._is_picked_xy(x, y):
+                print("on_objects 2")
                 self.objects.append(p)
 
         # Optional: keep compatibility with existing logic
@@ -168,6 +173,7 @@ class TaskPlannerNode(Node):
         # We still lookup TF so we can publish goals from TF frames
         robot = self.lookup_xy(self.base_frame)
         if robot is None:
+            print("robot is None")
             return
 
         # if self.state == "SELECT_OBJECT":
@@ -200,8 +206,12 @@ class TaskPlannerNode(Node):
         if self.state == "SELECT_OBJECT":
             if len(self.objects) == 0 or len(self.boxes) == 0:
                 return
+            
+            # print(f"objects:\n {self.objects}")
 
-            self.current_object = self.objects[0]
+            # self.current_object = self.objects[0]
+            # self.current_box = self.boxes[0]
+            self.current_object = self.objects[-1]
             self.current_box = self.boxes[0]
             self.objects.pop() # pop the queue
 
@@ -209,6 +219,8 @@ class TaskPlannerNode(Node):
             self.oy = float(self.current_object.position.y)
             self.bx = float(self.current_box.position.x)
             self.by = float(self.current_box.position.y)
+
+            print(f"current_box, current_object: {self.current_box, self.current_object}")
 
             self.enter_state("NAV_TO_OBJECT")
             return

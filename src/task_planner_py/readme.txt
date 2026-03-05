@@ -1,0 +1,4 @@
+ros2 run task_planner_py task_planner_node_posearray_2
+
+ros2 launch task_planner_py task_nav_detection_test.launch.py
+
