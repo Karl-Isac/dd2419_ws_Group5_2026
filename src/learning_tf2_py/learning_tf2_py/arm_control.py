@@ -101,11 +101,11 @@ class Arm_control(Node):
             self.get_logger().info("State 1 done")
             # State 2 - goto z,rho where feedback control can be turned on
             z = 0.175
-            rho = 0.175
+            self.rho = 0.175
             try:
-                joint2target, joint3target, joint4target = inverse_kinematics_to_joint_states(z=z,rho=rho)
+                joint2target, joint3target, joint4target = inverse_kinematics_to_joint_states(z=z,rho=self.rho)
             except:
-                self.get_logger().warn("Inverse kinematics failed for z={}, rho={}, target might be unreachable".format(z,rho))
+                self.get_logger().warn("Inverse kinematics failed for z={}, rho={}, target might be unreachable".format(z,self.rho))
                 # if it does fail here that rly sucks
             position = self.init_position[0],self.init_position[1],joint2target,joint3target,joint4target,self.init_position[5]
             self.goto_position(position)
@@ -126,11 +126,10 @@ class Arm_control(Node):
             self.get_logger().info("State 3 done")
             # State 4 - feedback control OFF, goto lower z to pick up
             z = 0.15
-            rho = self.rho
             try:
-                joint2target, joint3target, joint4target = inverse_kinematics_to_joint_states(z=z,rho=rho)
+                joint2target, joint3target, joint4target = inverse_kinematics_to_joint_states(z=z,rho=self.rho)
             except:
-                self.get_logger().warn("Inverse kinematics failed for z={}, rho={}, target might be unreachable".format(z,rho))
+                self.get_logger().warn("Inverse kinematics failed for z={}, rho={}, target might be unreachable".format(z,self.rho))
             position = self.init_position[0],self.joint1target,joint2target,joint3target,joint4target,self.joint5target
             self.goto_position(position)
             self.get_logger().info("State 4 done")
