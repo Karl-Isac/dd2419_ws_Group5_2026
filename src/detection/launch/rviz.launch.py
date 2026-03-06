@@ -1,4 +1,5 @@
 from launch import LaunchDescription
+from launch.actions import ExecuteProcess
 from launch_ros.actions import Node
 from ament_index_python.packages import get_package_share_directory
 import os
@@ -7,6 +8,11 @@ def generate_launch_description():
     package_dir = get_package_share_directory('detection')
     rviz_config = os.path.join(package_dir, 'rviz', 'view.rviz')
 
+
+    realsense = ExecuteProcess(
+    cmd=['pixi', 'run', 'realsense'],
+    output='screen'
+    )
     # static tf brodcaster：map -> realsense_camera_link
 
     static_tf_node = Node(
@@ -14,7 +20,7 @@ def generate_launch_description():
         executable='static_transform_publisher',
         name='static_map_to_realsense',
         arguments=[
-            '0', '0', '0',        # x, y, z (in meters)
+            '0.49', '0.50', '0',        # x, y, z (in meters)
             '0', '0', '0',        # yaw, pitch, roll (in rads)
             'map',                # parent frame
             'base_link'  # child frame
@@ -30,4 +36,4 @@ def generate_launch_description():
         output='screen',
     )
 
-    return LaunchDescription([static_tf_node, rviz_node])
+    return LaunchDescription([static_tf_node, rviz_node, realsense])
