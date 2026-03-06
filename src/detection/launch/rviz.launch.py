@@ -13,8 +13,8 @@ def generate_launch_description():
     cmd=['pixi', 'run', 'realsense'],
     output='screen'
     )
-    # static tf brodcaster：map -> realsense_camera_link
 
+    # static tf brodcaster：map -> odom
     static_tf_node = Node(
         package='tf2_ros',
         executable='static_transform_publisher',
@@ -23,10 +23,24 @@ def generate_launch_description():
             '0.49', '0.50', '0',        # x, y, z (in meters)
             '0', '0', '0',        # yaw, pitch, roll (in rads)
             'map',                # parent frame
-            'base_link'  # child frame
+            'odom'  # child frame
         ],
         output='screen'
     )
+
+    # static tf brodcaster：map -> base_link
+    # static_tf_node = Node(
+    #     package='tf2_ros',
+    #     executable='static_transform_publisher',
+    #     name='static_map_to_realsense',
+    #     arguments=[
+    #         '0.49', '0.50', '0',        # x, y, z (in meters)
+    #         '0', '0', '0',        # yaw, pitch, roll (in rads)
+    #         'map',                # parent frame
+    #         'base_link'  # child frame
+    #     ],
+    #     output='screen'
+    # )
 
     rviz_node = Node(
         package='rviz2',
