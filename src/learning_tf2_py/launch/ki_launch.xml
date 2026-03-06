@@ -10,5 +10,5 @@
 	<node name="odom" pkg="tf2_ros" exec="static_transform_publisher" args="--x 0.5 --y 0.49 --z 0.0 --frame-id map --child-frame-id odom" />
 
 	<node pkg="learning_tf2_py" exec="make_space" name="make_space" output="screen"/>
-	<node pkg="learning_tf2_py" exec="make_space" name="make_space" output="screen"/>
+	<node pkg="learning_tf2_py" exec="place_stuff" name="place_stuff" output="screen"/>
 </launch>
