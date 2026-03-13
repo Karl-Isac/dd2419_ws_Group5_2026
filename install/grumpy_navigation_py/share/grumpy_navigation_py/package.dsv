@@ -1,0 +1,6 @@
+source;share/grumpy_navigation_py/hook/pythonpath.ps1
+source;share/grumpy_navigation_py/hook/pythonpath.dsv
+source;share/grumpy_navigation_py/hook/pythonpath.sh
+source;share/grumpy_navigation_py/hook/ament_prefix_path.ps1
+source;share/grumpy_navigation_py/hook/ament_prefix_path.dsv
+source;share/grumpy_navigation_py/hook/ament_prefix_path.sh
