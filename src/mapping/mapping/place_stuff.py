@@ -15,8 +15,8 @@ from dataclasses import dataclass
 ######################################################################################## 
 
 
-KNOWN_PATH = '/Users/ki/Desktop/Skola/Robot/dd2419_ws_Group5_2026/Workspace/map_1_1.csv'
-NEW_PATH = '/Users/ki/Desktop/Skola/Robot/dd2419_ws_Group5_2026/Workspace/the_map.csv'
+KNOWN_PATH = '/home/grumpy/dd2419_ws_Group5_2026/Workspace/map_1_1.csv'
+NEW_PATH = '/home/grumpy/dd2419_ws_Group5_2026/Workspace/the_map.csv'
 
 class make_space(Node):
     
