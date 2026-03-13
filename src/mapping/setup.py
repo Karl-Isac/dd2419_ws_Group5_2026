@@ -24,8 +24,9 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'space = learning_tf2_py.make_space:main',
-            'stuff = learning_tf2_py.place_stuff:main',
+            'space = mapping.make_space:main',
+            'stuff = mapping.place_stuff:main',
+            'keyboard = mapping.keyboard_node:main',
         ],
     },
 )

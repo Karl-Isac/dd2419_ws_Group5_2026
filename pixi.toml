@@ -22,7 +22,7 @@ arm_camera = { cmd = "ros2 launch robp_launch arm_camera_launch.yaml" }
 lidar = { cmd = "ros2 launch robp_launch lidar_launch.yaml" }
 phidgets = { cmd = "ros2 launch robp_launch phidgets_launch.yaml" }
 realsense = { cmd = "ros2 launch robp_launch realsense_launch.yaml" }
-keyboard = { cmd = "ros2 run learning_tf2_py keyboard" }
+keyboard = { cmd = "ros2 run mapping keyboard" }
 rviz = { cmd = "ros2 run rviz2 rviz2"}
 
 [tasks.install_udev_rules]
@@ -80,6 +80,7 @@ ros-jazzy-learning-tf2-py = { path = "src/learning_tf2_py" }
 ros-jazzy-odometry = { path = "src/odometry" }
 ros-jazzy-display-markers = { path = "src/display_markers" }
 ros-jazzy-detection = { path = "src/detection" }
+ros-jazzy-mapping = { path = "src/mapping" }
 
 # Other
 argcomplete = ">=3.6.3,<4"

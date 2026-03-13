@@ -28,12 +28,9 @@ setup(
             'interpolation = learning_tf2_py.interpolation:main',
             'threading = learning_tf2_py.threading:main',
             'timestamp = learning_tf2_py.timestamp:main',
-            'keyboard = learning_tf2_py.keyboard_node:main',
             'pickup_hardcoded = learning_tf2_py.pickup_hardcoded:main',
             'pickup = learning_tf2_py.pickup:main',
             'random_nav = learning_tf2_py.random_nav:main',
-            'space = learning_tf2_py.make_space:main',
-            'stuff = learning_tf2_py.place_stuff:main',
         ],
     },
 )

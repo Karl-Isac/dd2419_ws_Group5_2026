@@ -700,6 +700,8 @@ environments:
       - conda: src/learning_tf2_py
         build: hb0f4dca_0
       - conda: src/librealsense
+      - conda: src/mapping
+        build: hb0f4dca_0
       - conda: src/odometry
         build: hb0f4dca_0
       - conda: src/phidgets_drivers/libphidget22
@@ -1312,6 +1314,8 @@ environments:
       - conda: src/display_markers
         build: h60d57d3_0
       - conda: src/learning_tf2_py
+        build: h60d57d3_0
+      - conda: src/mapping
         build: h60d57d3_0
       - conda: src/odometry
         build: h60d57d3_0
@@ -11852,6 +11856,34 @@ packages:
   license: BSD-3-Clause
   size: 296779
   timestamp: 1769001714692
+- conda: src/mapping
+  name: ros-jazzy-mapping
+  version: 0.0.0
+  build: h60d57d3_0
+  subdir: osx-arm64
+  variants:
+    target_platform: osx-arm64
+  depends:
+  - ros2-distro-mutex >=0.13,<0.14
+  - ros2-distro-mutex >=0.13.0,<0.14.0a0
+  - libcxx >=22
+  - python_abi 3.12.* *_cp312
+  - numpy >=1.23,<3
+- conda: src/mapping
+  name: ros-jazzy-mapping
+  version: 0.0.0
+  build: hb0f4dca_0
+  subdir: linux-64
+  variants:
+    target_platform: linux-64
+  depends:
+  - ros2-distro-mutex >=0.13,<0.14
+  - ros2-distro-mutex >=0.13.0,<0.14.0a0
+  - libgcc >=15
+  - libgcc >=15
+  - libstdcxx >=15
+  - python_abi 3.12.* *_cp312
+  - numpy >=1.23,<3
 - conda: https://prefix.dev/robostack-jazzy/linux-64/ros-jazzy-mcap-vendor-0.26.9-np2py312h2ed9cc7_14.conda
   sha256: 50435a59b378cb15653089279278c3a19ec8306a79d19899f215d77729586dfb
   md5: 28a79a8794c4b272324cfb6dfcd2c3e4
