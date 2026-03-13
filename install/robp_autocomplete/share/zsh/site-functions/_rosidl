@@ -1,2 +1,0 @@
-#compdef rosidl
-eval "$(register-python-argcomplete rosidl)"
