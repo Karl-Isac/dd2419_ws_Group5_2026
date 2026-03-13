@@ -19,7 +19,10 @@ _colcon_prefix_chain_zsh_source_script() {
 
 # source chained prefixes
 # setting COLCON_CURRENT_PREFIX avoids determining the prefix in the sourced script
-COLCON_CURRENT_PREFIX="/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default"
+COLCON_CURRENT_PREFIX="/Users/ki/Desktop/Skola/Robot/dd2419_ws_Group5_2026/.pixi/envs/default"
+_colcon_prefix_chain_zsh_source_script "$COLCON_CURRENT_PREFIX/local_setup.zsh"
+# setting COLCON_CURRENT_PREFIX avoids determining the prefix in the sourced script
+COLCON_CURRENT_PREFIX="/Users/ki/Desktop/Skola/Robot/dd2419_ws_Group5_2026"
 _colcon_prefix_chain_zsh_source_script "$COLCON_CURRENT_PREFIX/local_setup.zsh"
 
 # source this prefix
