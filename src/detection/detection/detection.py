@@ -59,8 +59,8 @@ class Detection(Node):
         # open and load map file (csv)
         package_path = get_package_share_directory('detection')
         # csv_path = os.path.join(package_path, 'config', 'test.csv')
-        # csv_path = os.path.join(package_path, 'config', 'map_1_1.csv')
-        csv_path = os.path.join(package_path, 'config', 'map_1_2.csv')
+        csv_path = os.path.join(package_path, 'config', 'map_1_1.csv')
+        # csv_path = os.path.join(package_path, 'config', 'map_1_2.csv')
         self.metadata_rows = []
 
         # location of final map file (csv)
@@ -256,8 +256,8 @@ class Detection(Node):
             self.object_detection(msg, green_sum_x, green_sum_y, green_sum_z, green_counter, 'Green')
 
         # wood
-        if wood_counter > 10:
-            self.object_detection(msg, wood_sum_x, wood_sum_y, wood_sum_z, wood_counter, 'Wood')
+        # if wood_counter > 10:
+        #     self.object_detection(msg, wood_sum_x, wood_sum_y, wood_sum_z, wood_counter, 'Wood')
             
 
         self.publish_2d_cloud(grey_points, msg.header)

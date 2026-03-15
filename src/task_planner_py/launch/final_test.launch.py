@@ -23,7 +23,7 @@ def generate_launch_description():
         package='tf2_ros',
         executable='static_transform_publisher',
         name='map_to_odom',
-        arguments=['0', '0', '0', '0', '0', '0', 'map', 'odom']
+        arguments=['0.49', '0.5', '0', '0', '0', '0', 'map', 'odom']
     )
 
     odometry = Node(

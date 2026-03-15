@@ -33,7 +33,7 @@ class PathControllerNode(Node):
         self.declare_parameter("rate_hz", 20.0)
 
         # Different stopping distances per phase
-        self.declare_parameter("object_stop_distance", 0.185)  # stop standoff for pickup
+        self.declare_parameter("object_stop_distance", 0.180)  # stop standoff for pickup
         self.declare_parameter("box_stop_distance", 0.25)     # stop standoff for dropoff
 
         # Tracking / steering
