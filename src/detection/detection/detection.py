@@ -252,7 +252,7 @@ class Detection(Node):
                         wood_sum_y += y
                         wood_sum_z += z
 
-                if y < 0.06 and y > 0.03:
+                if y > 0.045 and y < 0.055:
                     # TODO: (Private Test) 新增：满足条件的点直接append原始gen[idx]，保留所有字段
                     test_points.append(gen[idx])
                     if is_grey(h,s,v):
@@ -712,7 +712,7 @@ def is_wood(h,s,v):
     return True if 20 <= h <= 60 and 0.3 < s < 0.6 and 0.3 < v < 0.5 else False
 
 def is_grey(h,s,v):
-    return True if 0.05 < s < 0.1 and v > 0.2 and v < 0.3 else False
+    return True if 0.06 < s < 0.09 and v > 0.22 and v < 0.28 else False
 
 if __name__ == '__main__':
     main()
