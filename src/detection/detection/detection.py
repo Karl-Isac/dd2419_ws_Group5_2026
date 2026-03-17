@@ -39,6 +39,11 @@ class Detection(Node):
         # Initialize the publisher
         self._pub = self.create_publisher(
             PointCloud2, '/realsense/depth/color/ds_points', 10)
+        
+        # TODO:Test the belief range of point cloud of realsense, initialization
+        self.test_pub = self.create_publisher(
+            PointCloud2, '/test_points', 10
+        )
 
         # Subscribe to point cloud topic and call callback function on each received message
         self.create_subscription(
@@ -157,6 +162,9 @@ class Detection(Node):
         run 'ros2 interface show sensor_msgs/msg/PointCloud2' in a terminal.
         """
 
+        # TODO: 新增：用于收集所有满足条件的点，并在最后一次性发布成一个新的点云，方便调试和可视化
+        test_points = []
+
         # Convert ROS -> NumPy
 
         gen = pc2.read_points_numpy(msg, skip_nans=True)
@@ -201,6 +209,10 @@ class Detection(Node):
         colors = colors.astype(np.float32) / 255
 
         for idx in range(points.shape[0]):
+
+            # TODO: 新增：满足条件的点直接append原始gen[idx]，保留所有字段
+            test_points.append(gen[idx])
+            
             x, y, z = points[idx]
             r = colors[idx, 0]
             g = colors[idx, 1]
@@ -254,7 +266,11 @@ class Detection(Node):
         # wood
         if wood_counter > 10:
             self.object_detection(msg, wood_sum_x, wood_sum_y, wood_sum_z, wood_counter, 'Wood')
-            
+                    
+        # TODO: 新增：将所有满足条件的点组成一个点云并一次性发布，保留原始字段（含颜色）
+        if test_points:
+            cloud = pc2.create_cloud(msg.header, msg.fields, test_points)
+            self.test_pub.publish(cloud)
 
         self.publish_2d_cloud(grey_points, msg.header)
 
