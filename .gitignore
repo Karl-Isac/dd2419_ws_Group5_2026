@@ -61,6 +61,7 @@ CATKIN_IGNORE
 
 # Pixi
 **/files.txt
+pixi.lock
 
 # Rosbags
 bags/*

@@ -9,10 +9,10 @@ def generate_launch_description():
     rviz_config = os.path.join(package_dir, 'rviz', 'view.rviz')
 
 
-    realsense = ExecuteProcess(
-    cmd=['pixi', 'run', 'realsense'],
-    output='screen'
-    )
+    # realsense = ExecuteProcess(
+    #     cmd=['pixi', 'run', 'realsense'],
+    #     output='screen'
+    # )
 
     # static tf brodcaster：map -> odom
     static_tf_node = Node(
@@ -28,7 +28,7 @@ def generate_launch_description():
         output='screen'
     )
 
-    # static tf brodcaster：map -> base_link
+    # # static tf brodcaster：map -> base_link
     # static_tf_node = Node(
     #     package='tf2_ros',
     #     executable='static_transform_publisher',
@@ -50,4 +50,9 @@ def generate_launch_description():
         output='screen',
     )
 
-    return LaunchDescription([static_tf_node, rviz_node, realsense])
+    detection = ExecuteProcess(
+        cmd=['pixi', 'run', 'ros2', 'run', 'detection', 'detection'],
+        output='screen'
+    )
+
+    return LaunchDescription([static_tf_node, rviz_node, detection])
