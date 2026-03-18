@@ -1,9 +1,16 @@
 6 terminals are needed. Enable pixi shell in all of them. 
 
-When you run the last command (detection) the robot will start moving directly.
+When you run the last command (detection) the robot will start moving.
 
 
-Run commands in this order:
+First run this 
+colcon build --packages-select grumpy_navigation_py detection learning_tf2_py task_planner_py odometry
+
+Then run this in every terminal:
+source install/setup.bash
+
+
+Then run commands in this order:
 
 
 pixi run phidgets
