@@ -5,22 +5,17 @@ from rclpy.node import Node
 
 from sensor_msgs.msg import Image
 from robp_interfaces.msg import ArmControl
-from std_msgs.msg import Bool, String
+from std_msgs.msg import String
 
-import sys          ## return to these
-import math
 import cv2
 import numpy as np
 from cv_bridge import CvBridge      # to convert between ros2 image and numpy array (for opencv)
 import time
 
-from std_msgs.msg import Float32  # debug
-
+# Self written functions
 from learning_tf2_py.arm_safe_republisher import jointmin,jointMAX
 from learning_tf2_py.inverse_kin import inverse_kinematics_to_joint_states
-from learning_tf2_py.pickup import saturate_difference,draw_cs_on_image,draw_target_on_image,approx_to_polygon,is_square
-
-
+from learning_tf2_py.pickup import saturate_difference,find_cube_in_image_msg
 
 
 class Arm_control(Node):
@@ -34,6 +29,8 @@ class Arm_control(Node):
         self._pub2 = self.create_publisher(
             Image, '/arm/camera/image_debug2', 10)
         self._pub3 = self.create_publisher(
+            Image, '/arm/camera/image_debug3', 10)
+        self._pub4 = self.create_publisher(
             Image, '/arm/camera/image_debug3', 10)
         
         self._pub_control = self.create_publisher(
@@ -64,6 +61,12 @@ class Arm_control(Node):
         
         self.init_position = [10,120,50,150,100,120]
         self.joint0grip_value = 105
+
+        # Cube target within camera frame
+        image_half_width = 320
+        image_half_height = 240
+        self.width_target = image_half_width
+        self.height_target = image_half_height+200       # tunable, keep in mind that axis is flipped
 
         # When visual servoing send out a control action every .1 sec
         timer_period = 0.1
@@ -125,7 +128,7 @@ class Arm_control(Node):
                 rclpy.spin_once(self, timeout_sec=1)
             self.get_logger().info("State 3 done")
             # State 4 - feedback control OFF, goto lower z to pick up
-            z = 0.15
+            z = 0.14
             try:
                 joint2target, joint3target, joint4target = inverse_kinematics_to_joint_states(z=z,rho=self.rho)
             except:
@@ -178,7 +181,7 @@ class Arm_control(Node):
                 try:
                     # Control gains:
                     k_sideways = 0.01#0.05                  commented values work with 0.5 sec timer
-                    k_sideways_integral = 0.01#0.1
+                    k_sideways_integral = 0.005#0.1
                     k_rotation = 1
                     k_extension = 0.001
 
@@ -199,9 +202,6 @@ class Arm_control(Node):
                         rotation_error = rotation_error - 90
                     extension_error = self.height_target-cy
                     # Termination condition:
-                    print(abs(sideways_error))
-                    print(abs(rotation_error))
-                    print(abs(extension_error))
                     if (abs(sideways_error)<30) and (abs(rotation_error)<25) and (abs(extension_error)<50):
                         self.visual_servoing_ON = False
                         return
@@ -260,83 +260,18 @@ class Arm_control(Node):
         
         
     def image_callback(self, msg: Image):
-        # TODO put this entire thing into a separate function and maybe even file
-
+        # For each image received on /arm/camera/image_raw it updates the cube position and orientation variables
+        # Known issues: it can detect multiple cubes/cube-like objects in the same frame, and both get written to the same attribute
         if self.visual_servoing_ON:
-            # For each image received on /arm/camera/image_raw it updates the cube position and orientation variables
-            # Known issues: it can detect multiple cubes/cube-like objects in the same frame, and both get written to the same attribute
+            try:
+                self.cube_position_in_frame, self.cube_orientation_in_frame = find_cube_in_image_msg(msg, self._pub, self._pub2, self._pub3, self._pub4, self.width_target, self.height_target, publish_debug_images=True)
+                self.cube_position_available = True
+            except Exception as ex:     # if crash is due to no cube detected then pass, otherwise reraise
+                if ex.args[0] != "Cube not found in frame":
+                    raise ex   
 
-            publish_debug_images = True
+                      
 
-            # Convert ros2 Image to numpy array
-            bridge = CvBridge()
-            raw_image = bridge.imgmsg_to_cv2(       
-                msg,
-                desired_encoding='passthrough'
-            )
-
-            # Image preprocess - grayscale, blur so texture wont get detected as edges, Canny edge detection
-            gray = cv2.cvtColor(raw_image, cv2.COLOR_YUV2GRAY_YUY2)
-            gray = cv2.GaussianBlur(gray, (5, 5), 1.5)#(5, 5), 1.5)
-            canny = cv2.Canny(gray, 50,150)#50, 150)
-
-            if publish_debug_images:
-                bgr_image = cv2.cvtColor(raw_image,cv2.COLOR_YUV2BGR_YUY2)
-
-            # Define arm target in the image frame - its here due to debug reasons
-            image_shape = gray.shape
-            image_half_width = image_shape[1]/2
-            image_half_height = image_shape[0]/2
-            self.width_target = image_half_width
-            self.height_target = image_half_height+200       # tunable, keep in mind that axis is flipped
-            if publish_debug_images:
-                draw_target_on_image(bgr_image,self.width_target,self.height_target)
-
-            # Thicken edges so cube faces become distinctly separate
-            kernel = np.ones((5,5), np.uint8)
-            canny = cv2.dilate(canny, kernel)
-            canny = cv2.bitwise_not(canny)
-
-            contours, hierarchy = cv2.findContours(
-                canny, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
-            )
-            for i in range(len(contours)):
-                if hierarchy[0][i][2] == -1:            # look for only the innermost square, sometimes the cube shadow seems like an enveloping larger cube face
-                    poly = approx_to_polygon(contours[i])
-                    if is_square(poly):
-                        rect = cv2.minAreaRect(poly)  # returns ((cx, cy), (width, height), angle)
-                        centerpoint = rect[0]
-                        angle = rect[2]         # in degrees
-                        self.cube_position_in_frame = centerpoint
-                        self.cube_orientation_in_frame = angle
-                        self.cube_position_available = True
-                        if publish_debug_images:
-                            cv2.drawContours(bgr_image, contours, i, (255,0,0), 4)
-                            draw_cs_on_image(bgr_image,centerpoint,angle)
-
-            if publish_debug_images:
-                out_msg = bridge.cv2_to_imgmsg(         # convert the np array back to ros2 Image msg
-                    gray,
-                    encoding='mono8'
-                )
-                out_msg.header = msg.header
-                self._pub.publish(out_msg)    
-
-                out_msg = bridge.cv2_to_imgmsg(         # convert the np array back to ros2 Image msg
-                    canny,
-                    encoding='mono8'
-                )
-                out_msg.header = msg.header
-                self._pub3.publish(out_msg)   
-
-                out_msg2 = bridge.cv2_to_imgmsg(         # convert the np array back to ros2 Image msg
-                    bgr_image,
-                    encoding='bgr8'
-                )
-                out_msg2.header = msg.header
-                self._pub2.publish(out_msg2)          
-
-        
 
 def main():
     rclpy.init()

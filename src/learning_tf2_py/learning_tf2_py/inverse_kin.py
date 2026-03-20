@@ -33,7 +33,7 @@ def inverse_kinematics(z,rho):
     # Calculate joint angles (diff from hardware coord system) corresponding to an arm height and extension
 
     # Saturate z, rho values, moving outside this area might be unsafe
-    z = max(0.16, min(z, 0.175))
+    z = max(0.14, min(z, 0.175))
     rho = max(0.175, min(rho, 0.185))
 
     # Inverse kinematics calculation
