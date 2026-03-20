@@ -63,7 +63,7 @@ class Detection(Node):
 
         # open and load map file (csv)
         package_path = get_package_share_directory('detection')
-        csv_path = os.path.join(package_path, 'config', 'map_1_1.csv')
+        csv_path = os.path.join(package_path, 'config', 'blank.csv')
         self.metadata_rows = []
 
         # location of final map file (csv)
