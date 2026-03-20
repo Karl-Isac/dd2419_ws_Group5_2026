@@ -36,6 +36,7 @@ setup(
             'arm_safe_republisher = learning_tf2_py.arm_safe_republisher:main',
             'jitter_test = learning_tf2_py.jitter_test:main',
             'arm_control = learning_tf2_py.arm_control:main',
+            'arm_cube_detection_test = learning_tf2_py.arm_cube_detection_test:main',
         ],
     },
 )
