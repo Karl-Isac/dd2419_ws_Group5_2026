@@ -81,6 +81,29 @@ def saturate_difference(current,previous,limit):
             return previous - limit
     else:
         return current
+    
+def is_the_target_cube_colored(msg, width_target, height_target):
+    # Takes a square area around the target pixel in the input image, 
+    # and checks whether its average color matches one of the possible cube colors
+
+    # Convert ros2 Image to numpy array
+    bridge = CvBridge()
+    raw_image = bridge.imgmsg_to_cv2(       
+        msg,
+        desired_encoding='passthrough'
+    )
+    bgr_image = cv2.cvtColor(raw_image,cv2.COLOR_YUV2BGR_YUY2)
+    ksl = 7      # kernel side length, how big of a square to analyze around the target pixel
+    crop = bgr_image[height_target-ksl:height_target+ksl+1, width_target-ksl:width_target+ksl+1]
+    average = np.mean(crop, axis=(0, 1))
+    average_hsl = cv2.cvtColor(average,cv2.COLOR_BGR2HLS)
+    print("average_hsl:")
+    print(average_hsl)
+    # TODO:
+    # merge Michael's functions
+    # run them all on this pixel
+    # return true if any are true
+    # test on rosbag, finetune
               
     
 def find_cube_in_image_msg(msg, publisher1, publisher2, publisher3, publisher4, width_target, height_target, publish_debug_images):

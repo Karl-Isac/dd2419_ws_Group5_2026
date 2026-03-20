@@ -140,14 +140,20 @@ class Arm_control(Node):
             position = self.joint0grip_value,self.joint1target,joint2target,joint3target,joint4target,self.joint5target
             self.goto_position(position)
             self.get_logger().info("State 5 done")
-            # State 6 - goto initial position but gripper closed, check whether pcikup was successful, report back
+            # State 6 - goto initial position but gripper closed, check whether pickup was successful, report back
             position = self.init_position.copy()
             position[0] = self.joint0grip_value
             self.goto_position(position)
             # TODO check whether its actually successful
-            msg = String()
-            msg.data = "pick_success"
-            self.report_publisher.publish(msg)
+            self.look_at_gripper_contents = True
+            while self.look_at_gripper_contents:
+                rclpy.spin_once(self, timeout_sec=1)
+            if self.cube_being_held:
+                self.report_pick_success()
+            else:
+                self.report_pick_fail()
+                continue
+            
             self.get_logger().info("State 6 done")
             # State 7 - wait for place command
             self.get_logger().info("Waiting for place command")
@@ -173,6 +179,16 @@ class Arm_control(Node):
         self._pub_control.publish(msg)
         print("Going to position: {position}")
         time.sleep(1.5)
+
+    def report_pick_success(self):
+        msg = String()
+        msg.data = "pick_success"
+        self.report_publisher.publish(msg)
+
+    def report_pick_fail(self):
+        msg = String()
+        msg.data = "pick_fail"
+        self.report_publisher.publish(msg)
 
     def timer_callback(self):
         # TODO put this entire thing into a separate function and maybe even file
