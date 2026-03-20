@@ -23,7 +23,7 @@ Navigation:
 
         - Path planner:
             - A-star (A*)
-            - Occupancy grid isntead
+            - Occupancy grid instead
 
         - Change to one topic instead of 2 to decide if we are in pick or place stage
         - Use map file with boundary to check if path is 
