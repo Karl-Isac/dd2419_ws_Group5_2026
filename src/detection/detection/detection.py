@@ -30,6 +30,7 @@ import struct
 
 ######################################################################################################
 # TODO: discuss the unit of the communication (PoseArray): m
+# TODO: (Private Test) deal with timestamp of messages and TF transforms, make sure to use the correct timestamp for each detection and transformation
 ######################################################################################################
 
 class Detection(Node):
@@ -290,7 +291,7 @@ class Detection(Node):
             try:
                 point_camera = PointStamped()
                 point_camera.header.frame_id = 'realsense_camera_link'
-                point_camera.header.stamp = rclpy.time.Time().to_msg()
+                point_camera.header.stamp = msg.header.stamp
                 point_camera.point.x = float(center[0])
                 point_camera.point.y = float(center[1])
                 point_camera.point.z = 0.0
@@ -298,7 +299,7 @@ class Detection(Node):
 
                 dir_camera = Vector3Stamped()
                 dir_camera.header.frame_id = 'realsense_camera_link'
-                dir_camera.header.stamp = rclpy.time.Time().to_msg()
+                dir_camera.header.stamp = msg.header.stamp
                 dir_camera.vector.x = np.cos(yaw)
                 dir_camera.vector.y = np.sin(yaw)
                 dir_camera.vector.z = 0.0
@@ -321,7 +322,7 @@ class Detection(Node):
                     self.box_num += 1
                     # publish static TF for the box
                     tf_map_box = TransformStamped()
-                    tf_map_box.header.stamp = rclpy.time.Time().to_msg()
+                    tf_map_box.header.stamp = msg.header.stamp
                     tf_map_box.header.frame_id = 'map'
                     tf_map_box.child_frame_id = f'box_{self.box_num}'
                     tf_map_box.transform.translation.x = point_map.point.x
@@ -344,7 +345,7 @@ class Detection(Node):
                     new_box_msg.orientation.y = tf_map_box.transform.rotation.y
                     new_box_msg.orientation.z = tf_map_box.transform.rotation.z
                     new_box_msg.orientation.w = tf_map_box.transform.rotation.w
-                    self.publish_arrays(None, None, [new_box_msg], rclpy.time.Time().to_msg())
+                    self.publish_arrays(None, None, [new_box_msg], msg.header.stamp)
 
 
             except TransformException as ex:
@@ -375,7 +376,6 @@ class Detection(Node):
         self.get_logger().debug(f'{color} object detected.')
         self.object = tf2_geometry_msgs.PoseStamped()
         self.object.header = msg.header
-        self.object.header.stamp = rclpy.time.Time().to_msg()
         self.object.pose.position.x = sum_x / counter
         self.object.pose.position.y = sum_y / counter
         self.object.pose.position.z = sum_z / counter
@@ -384,7 +384,7 @@ class Detection(Node):
         self.object.pose.orientation.z = 0.0
         self.object.pose.orientation.w = 1.0
 
-        msg_time = rclpy.time.Time().to_msg()
+        msg_time = msg.header.stamp
         if not self.tf_buffer.can_transform(
                 'map',
                 self.object.header.frame_id,
@@ -420,11 +420,11 @@ class Detection(Node):
             new_object_msg.orientation.y = 0.0
             new_object_msg.orientation.z = 0.0
             new_object_msg.orientation.w = 1.0
-            self.publish_arrays([new_object_msg], rclpy.time.Time().to_msg(), None, None)
+            self.publish_arrays([new_object_msg], msg_time, None, None)
             self.object_num += 1
 
             tf = TransformStamped()
-            tf.header.stamp = rclpy.time.Time().to_msg()
+            tf.header.stamp = msg_time
             tf.header.frame_id = 'map'
             tf.child_frame_id = f'object_{self.object_num}'
             tf.transform.translation.x = object_map.pose.position.x
