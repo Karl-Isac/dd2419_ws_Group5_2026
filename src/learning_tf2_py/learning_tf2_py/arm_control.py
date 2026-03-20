@@ -30,6 +30,8 @@ class Arm_control(Node):
             Image, '/arm/camera/image_debug2', 10)
         self._pub3 = self.create_publisher(
             Image, '/arm/camera/image_debug3', 10)
+        self._pub4 = self.create_publisher(
+            Image, '/arm/camera/image_debug3', 10)
         
         self._pub_control = self.create_publisher(
             ArmControl, '/arm/safe_control', 1)
@@ -126,7 +128,7 @@ class Arm_control(Node):
                 rclpy.spin_once(self, timeout_sec=1)
             self.get_logger().info("State 3 done")
             # State 4 - feedback control OFF, goto lower z to pick up
-            z = 0.15
+            z = 0.14
             try:
                 joint2target, joint3target, joint4target = inverse_kinematics_to_joint_states(z=z,rho=self.rho)
             except:
@@ -179,7 +181,7 @@ class Arm_control(Node):
                 try:
                     # Control gains:
                     k_sideways = 0.01#0.05                  commented values work with 0.5 sec timer
-                    k_sideways_integral = 0.01#0.1
+                    k_sideways_integral = 0.005#0.1
                     k_rotation = 1
                     k_extension = 0.001
 
@@ -200,9 +202,6 @@ class Arm_control(Node):
                         rotation_error = rotation_error - 90
                     extension_error = self.height_target-cy
                     # Termination condition:
-                    print(abs(sideways_error))
-                    print(abs(rotation_error))
-                    print(abs(extension_error))
                     if (abs(sideways_error)<30) and (abs(rotation_error)<25) and (abs(extension_error)<50):
                         self.visual_servoing_ON = False
                         return
