@@ -15,7 +15,7 @@ import time
 # Self written functions
 from learning_tf2_py.arm_safe_republisher import jointmin,jointMAX
 from learning_tf2_py.inverse_kin import inverse_kinematics_to_joint_states
-from learning_tf2_py.pickup import saturate_difference,find_cube_in_image_msg
+from learning_tf2_py.pickup import saturate_difference,find_cube_in_image_msg, is_the_target_cube_colored
 
 
 class Arm_control(Node):
@@ -93,7 +93,6 @@ class Arm_control(Node):
         # TODO replace all pass-es with spin once or async wait or whatever was recommended during the bootcamp
         while True:
             # State 0 - wait for pickup command:
-            print("another print6")
             self.get_logger().info("Waiting for pick command")
             self.wait_for_pickup_command = True
             while(self.wait_for_pickup_command):
@@ -152,8 +151,8 @@ class Arm_control(Node):
                 self.report_pick_success()
             else:
                 self.report_pick_fail()
+                self.goto_position(self.init_position)  # gripper release
                 continue
-            
             self.get_logger().info("State 6 done")
             # State 7 - wait for place command
             self.get_logger().info("Waiting for place command")
@@ -284,7 +283,10 @@ class Arm_control(Node):
                 self.cube_position_available = True
             except Exception as ex:     # if crash is due to no cube detected then pass, otherwise reraise
                 if ex.args[0] != "Cube not found in frame":
-                    raise ex   
+                    raise ex
+        elif self.look_at_gripper_contents:
+            self.cube_being_held = is_the_target_cube_colored(msg)
+            self.look_at_gripper_contents = False
 
                       
 
