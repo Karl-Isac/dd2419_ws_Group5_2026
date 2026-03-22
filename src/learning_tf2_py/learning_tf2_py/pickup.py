@@ -5,7 +5,7 @@ import numpy as np
 from cv_bridge import CvBridge      # to convert between ros2 image and numpy array (for opencv)
 
 # Imports from Michael:
-from detection.detection.detection import is_red, is_blue, is_green, is_wood
+from detection.detection import Detection 
 
 def approx_to_polygon(contour):
     # Approximate contour to polygon
@@ -85,7 +85,7 @@ def saturate_difference(current,previous,limit):
     else:
         return current
     
-def is_the_target_cube_colored(msg, width_target, height_target):
+def is_the_target_cube_colored(msg, width_target, height_target, publisher):
     # Takes a square area around the target pixel in the input image, 
     # and checks whether its average color matches one of the possible cube colors
 
@@ -99,11 +99,30 @@ def is_the_target_cube_colored(msg, width_target, height_target):
     ksl = 7      # kernel side length, how big of a square to analyze around the target pixel
     crop = bgr_image[height_target-ksl:height_target+ksl+1, width_target-ksl:width_target+ksl+1]
     average = np.mean(crop, axis=(0, 1))
-    average_hsl = cv2.cvtColor(average,cv2.COLOR_BGR2HLS)
-    print("average_hsl:")
-    print(average_hsl)
-    h,s,v = average_hsl
-    if is_red(h,s,v) or is_blue(h,s,v) or is_green(h,s,v) or is_wood(h,s,v):
+    b,g,r = average/255
+
+    # Debug
+    out_msg = bridge.cv2_to_imgmsg(
+            crop,
+            encoding='bgr8'
+        )
+    out_msg.header = msg.header
+    publisher.publish(out_msg)
+    
+    h,s,v = Detection.rgb_to_hsv(None, r, g, b)     # TODO replace this method w a regular function eventually
+    print(r,g,b)
+    print([h,s,v])
+    if is_red(h,s,v): 
+        print("Red cube grabbed")
+        return True
+    elif is_blue(h,s,v): 
+        print("Blue cube grabbed")
+        return True
+    elif is_green(h,s,v): 
+        print("Green cube grabbed")
+        return True
+    elif is_wood(h,s,v): 
+        print("Wood cube grabbed")
         return True
     else:
         return False
@@ -229,6 +248,18 @@ def find_cube_in_image_msg(msg, publisher1, publisher2, publisher3, publisher4, 
         return cube_position_in_frame, cube_orientation_in_frame
     else:
         raise Exception("Cube not found in frame")
+
+def is_red(h,s,v):          # Tuned for arm camera, not the same as the values used in detection
+    return True if (h <= 20 or h >= 340) and s > 0.5 and v > 0.5 else False
+
+def is_blue(h,s,v):
+    return True if (h >= 180 and h <= 200) and s > 0.5 and v > 0.4 else False
+
+def is_green(h,s,v):
+    return True if 140 <= h <= 180 and s > 0.5 and v > 0.25 else False
+
+def is_wood(h,s,v):
+    return True if 20 <= h <= 60 and 0.3 < s < 0.6 and 0.3 < v < 0.5 else False
 
 
 

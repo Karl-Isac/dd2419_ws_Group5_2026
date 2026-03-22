@@ -32,6 +32,8 @@ class Arm_control(Node):
             Image, '/arm/camera/image_debug3', 10)
         self._pub4 = self.create_publisher(
             Image, '/arm/camera/image_debug3', 10)
+        self._pub5 = self.create_publisher(
+            Image, '/arm/camera/image_debug_gripper_crop', 10)
         
         self._pub_control = self.create_publisher(
             ArmControl, '/arm/safe_control', 1)
@@ -57,7 +59,7 @@ class Arm_control(Node):
         self.wait_for_pickup_command = False
         self.wait_for_place_command = False
         self.visual_servoing_ON = False
-        
+        self.look_at_gripper_contents = False
         
         self.init_position = [10,120,50,150,100,120]
         self.joint0grip_value = 105
@@ -87,7 +89,7 @@ class Arm_control(Node):
             else:
                 self.get_logger().warn("Invalid command, expecting: place")
         else:
-            self.get_logger().warn("Warning: No command expected at this point")
+            pass #self.get_logger().warn("Warning: No command expected at this point")  TODO put back
 
     def run(self):
         # TODO replace all pass-es with spin once or async wait or whatever was recommended during the bootcamp
@@ -286,7 +288,7 @@ class Arm_control(Node):
                 if ex.args[0] != "Cube not found in frame":
                     raise ex
         elif self.look_at_gripper_contents:
-            self.cube_being_held = is_the_target_cube_colored(msg)
+            self.cube_being_held = is_the_target_cube_colored(msg, self.width_target, self.height_target, self._pub5)
             self.look_at_gripper_contents = False
 
                       
