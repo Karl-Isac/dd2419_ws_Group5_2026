@@ -221,7 +221,7 @@ class Detection(Node):
             r = colors[idx, 0]
             g = colors[idx, 1]
             b = colors[idx, 2]
-            h, s, v = self.rgb_to_hsv(r, g, b)
+            h, s, v = rgb_to_hsv(r, g, b)
             if y > 0 and y < 0.085 and z > 0.05 and z < 1:
                 if y > 0.05:
                     # red
@@ -350,26 +350,6 @@ class Detection(Node):
 
             except TransformException as ex:
                 self.get_logger().error(f'Transform failed: {ex}')
-
-    def rgb_to_hsv(self, r, g, b):
-        c_max = max(r, g, b)
-        c_min = min(r, g, b)
-        delta = c_max - c_min
-
-        if delta == 0:
-            h = 0.0
-        elif c_max == r:
-            h = 60.0 * (((g - b) / delta) % 6)
-        elif c_max == g:
-            h = 60.0 * (((b - r) / delta) + 2)
-        elif c_max == b:
-            h = 60.0 * (((r - g) / delta) + 4)
-
-        s = 0.0 if c_max == 0 else delta / c_max
-
-        v = c_max
-
-        return h, s, v
     
     def object_detection(self, msg, sum_x, sum_y, sum_z, counter, color):
         # object_num is the number of detected objects, regardless of color, used for TF frame naming
@@ -713,6 +693,26 @@ def is_wood(h,s,v):
 
 def is_grey(h,s,v):
     return True if 0.06 < s < 0.09 and v > 0.22 and v < 0.28 else False
+
+def rgb_to_hsv(r, g, b):
+        c_max = max(r, g, b)
+        c_min = min(r, g, b)
+        delta = c_max - c_min
+
+        if delta == 0:
+            h = 0.0
+        elif c_max == r:
+            h = 60.0 * (((g - b) / delta) % 6)
+        elif c_max == g:
+            h = 60.0 * (((b - r) / delta) + 2)
+        elif c_max == b:
+            h = 60.0 * (((r - g) / delta) + 4)
+
+        s = 0.0 if c_max == 0 else delta / c_max
+
+        v = c_max
+
+        return h, s, v
 
 if __name__ == '__main__':
     main()
