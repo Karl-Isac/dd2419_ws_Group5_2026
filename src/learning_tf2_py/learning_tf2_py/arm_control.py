@@ -179,7 +179,7 @@ class Arm_control(Node):
         msg.time = [1000]*6
         msg.position = position
         self._pub_control.publish(msg)
-        print("Going to position: {position}")
+        print(f"Going to position: {position}")
         time.sleep(1.5)
 
     def report_pick_success(self):
