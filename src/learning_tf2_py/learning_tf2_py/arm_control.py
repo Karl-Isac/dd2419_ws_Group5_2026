@@ -123,10 +123,23 @@ class Arm_control(Node):
             self.z = z # make arm stay on this z while visual servoing
             self.cube_position_available = False
             self.sideways_integral_term = 0
-            # Run visual servoing while the errors don't decrease
+            # Run visual servoing while the errors don't decrease, or a timeout doesnt trigger
+            self.was_timed_out = False
+            main_timeout = 10           # reset if visual servoing isnt complete in this time
+            self.main_timeout_timer = self.create_timer(main_timeout, self.visual_servo_timeout)
+            cant_see_cube_timeout = 2   # reset if cube cant be seen for this long while visual servoing
+            self.cant_see_cube_timer = self.create_timer(cant_see_cube_timeout, self.visual_servo_timeout)
             self.visual_servoing_ON = True
             while self.visual_servoing_ON:
                 rclpy.spin_once(self, timeout_sec=1)
+            # Destroy timeout timers
+            self.cant_see_cube_timer.destroy()      
+            self.main_timeout_timer.destroy()
+            if self.was_timed_out:     # If it was timed out, report back failure and go to the initial position
+                self.report_pick_fail()
+                self.get_logger().info("pick failed - timeout")
+                self.goto_position(self.init_position)
+                continue
             self.get_logger().info("State 3 done")
             # State 4 - feedback control OFF, goto lower z to pick up
             z = 0.14
@@ -191,6 +204,11 @@ class Arm_control(Node):
         msg = String()
         msg.data = "pick_fail"
         self.report_publisher.publish(msg)
+
+    def visual_servo_timeout(self):
+        self.get_logger().warn("Visual servoing timed out (no cube seen or stuck for a long time)")
+        self.was_timed_out = True
+        self.visual_servoing_ON = False
 
     def timer_callback(self):
         # TODO put this entire thing into a separate function and maybe even file
@@ -284,6 +302,7 @@ class Arm_control(Node):
             try:
                 self.cube_position_in_frame, self.cube_orientation_in_frame = find_cube_in_image_msg(msg, self._pub, self._pub2, self._pub3, self._pub4, self.width_target, self.height_target, publish_debug_images=True)
                 self.cube_position_available = True
+                self.cant_see_cube_timer.reset()    # keep reseting timeout timer while we see the cube
             except Exception as ex:     # if crash is due to no cube detected then pass, otherwise reraise
                 if ex.args[0] != "Cube not found in frame":
                     raise ex
