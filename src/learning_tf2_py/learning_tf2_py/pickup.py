@@ -4,6 +4,9 @@ import cv2
 import numpy as np
 from cv_bridge import CvBridge      # to convert between ros2 image and numpy array (for opencv)
 
+# Imports from Michael:
+from detection.detection.detection import is_red, is_blue, is_green, is_wood
+
 def approx_to_polygon(contour):
     # Approximate contour to polygon
     peri = cv2.arcLength(contour, True)
@@ -99,11 +102,11 @@ def is_the_target_cube_colored(msg, width_target, height_target):
     average_hsl = cv2.cvtColor(average,cv2.COLOR_BGR2HLS)
     print("average_hsl:")
     print(average_hsl)
-    # TODO:
-    # merge Michael's functions
-    # run them all on this pixel
-    # return true if any are true
-    # test on rosbag, finetune
+    h,s,v = average_hsl
+    if is_red(h,s,v) or is_blue(h,s,v) or is_green(h,s,v) or is_wood(h,s,v):
+        return True
+    else:
+        return False
               
     
 def find_cube_in_image_msg(msg, publisher1, publisher2, publisher3, publisher4, width_target, height_target, publish_debug_images):

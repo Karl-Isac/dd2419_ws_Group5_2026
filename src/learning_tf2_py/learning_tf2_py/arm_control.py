@@ -143,14 +143,15 @@ class Arm_control(Node):
             position = self.init_position.copy()
             position[0] = self.joint0grip_value
             self.goto_position(position)
-            # TODO check whether its actually successful
             self.look_at_gripper_contents = True
-            while self.look_at_gripper_contents:
+            while self.look_at_gripper_contents:            # analyze a camera image in a callback
                 rclpy.spin_once(self, timeout_sec=1)
             if self.cube_being_held:
                 self.report_pick_success()
+                self.get_logger().info("pick successful")
             else:
                 self.report_pick_fail()
+                self.get_logger().info("pick failed")
                 self.goto_position(self.init_position)  # gripper release
                 continue
             self.get_logger().info("State 6 done")
