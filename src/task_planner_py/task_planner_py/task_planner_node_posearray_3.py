@@ -17,23 +17,37 @@ class TaskPlannerNode(Node):
         self.declare_parameter("box_frame", "box_0")
         self.declare_parameter("rate_hz", 5.0)
 
-        # NEW: distance threshold (meters) to consider an object "already picked"
+        # distance threshold for:
+        # 1) deciding whether an object is already picked
+        # 2) deciding whether a newly detected object is already known
         self.declare_parameter("picked_dist", 0.20)
+        self.declare_parameter("known_dist", 0.15)
 
         self.world_frame = self.get_parameter("world_frame").value
         self.base_frame = self.get_parameter("base_frame").value
         self.object_frame = self.get_parameter("object_frame").value
         self.box_frame = self.get_parameter("box_frame").value
         self.picked_dist = float(self.get_parameter("picked_dist").value)
+        self.known_dist = float(self.get_parameter("known_dist").value)
 
-        self.latest_object = None
+        # Current detections
+        self.objects = []       # latest PoseArray objects
+        self.boxes = []         # latest PoseArray boxes
+
+        # Persistent memory
+        self.known_objects = []   # remembered unpicked objects
         self.latest_box = None
 
-        # CHANGED: store picked (x,y) instead of IDs
-        self.picked_ids = []  # list[(x,y)]
+        # Picked object positions
+        self.picked_ids = []   # list of (x, y)
 
         self.current_object = None
         self.current_box = None
+
+        self.ox = None
+        self.oy = None
+        self.bx = None
+        self.by = None
 
         # TF
         self.tf_buffer = tf2_ros.Buffer()
@@ -53,20 +67,19 @@ class TaskPlannerNode(Node):
 
         # subs
         self.create_subscription(Bool, "/nav/reached", self.on_reached, 10)
-        # self.create_subscription(Bool, "/arm/done_pick", self.on_pick_done, 10)
         self.create_subscription(String, "/arm/report_back", self.on_report_back, 10)
-
-        # CHANGED: PoseArray instead of ItemArray
         self.create_subscription(PoseArray, "/detected_objects", self.on_objects, 10)
         self.create_subscription(PoseArray, "/detected_boxes", self.on_boxes, 10)
 
         dt = 1.0 / float(self.get_parameter("rate_hz").value)
         self.timer = self.create_timer(dt, self.step)
 
-        self.get_logger().info("TaskPlannerNode up. Pub: /nav/goal, /nav/phase, /arm/cmd  Sub: /nav/reached, /arm/done_pick")
-        self.get_logger().info("TaskPlannerNode up. Pub: /nav/goal, /nav/phase, /arm/cmd  Sub: /nav/reached, /arm/done_pick")
+        self.get_logger().info(
+            "TaskPlannerNode up. "
+            "Pub: /nav/goal, /nav/phase, /arm/cmd  "
+            "Sub: /nav/reached, /arm/report_back, /detected_objects, /detected_boxes"
+        )
 
-    # NEW: small helper for "similar coordinates"
     def _is_picked_xy(self, x: float, y: float) -> bool:
         thr2 = self.picked_dist * self.picked_dist
         for (px, py) in self.picked_ids:
@@ -76,47 +89,71 @@ class TaskPlannerNode(Node):
                 return True
         return False
 
-    # CHANGED: PoseArray callback
+    def _is_known_xy(self, x: float, y: float) -> bool:
+        thr2 = self.known_dist * self.known_dist
+        for p in self.known_objects:
+            dx = float(p.position.x) - x
+            dy = float(p.position.y) - y
+            if dx * dx + dy * dy <= thr2:
+                return True
+        return False
+
     def on_objects(self, msg: PoseArray):
-        self.latest_object = None
-        self.get_logger().info("on_objects 1")
+        # latest detections only
+        self.objects = list(msg.poses)
+
         for p in msg.poses:
-            self.get_logger().info("on_objects 2")
             x = float(p.position.x)
             y = float(p.position.y)
-            if not self._is_picked_xy(x, y):
-                self.get_logger().info("on_objects 3")
-                self.latest_object = p
-                break
 
-    # CHANGED: PoseArray callback
+            # do not remember picked objects
+            if self._is_picked_xy(x, y):
+                continue
+
+            # do not duplicate remembered objects
+            if self._is_known_xy(x, y):
+                continue
+
+            self.known_objects.append(p)
+            self.get_logger().info(f"Remembered new object at ({x:.2f}, {y:.2f})")
+
     def on_boxes(self, msg: PoseArray):
-        self.latest_box = msg.poses[0] if len(msg.poses) > 0 else None
-
-    # def on_pick_done(self, msg: Bool):
-    #     self.pick_done = bool(msg.data)
+        self.boxes = list(msg.poses)
+        self.latest_box = self.boxes[0] if len(self.boxes) > 0 else None
 
     def on_report_back(self, msg: String):
-        self.get_logger().info("on_report_back")
+        self.get_logger().info(f"on_report_back: {msg.data}")
+
         if msg.data == "pick_success":
-            self.get_logger().info("on_report_back, pick success")
             self.pick_done = True
+
         elif msg.data == "pick_fail":
             self.pick_done = False
+            # easiest behavior: abandon current object and try next one
+            self.current_object = None
+            self.enter_state("SELECT_OBJECT")
+
         elif msg.data == "place_success":
-            self.get_logger().info("on_report_back place success")
             self.place_done = True
+
         elif msg.data == "place_fail":
             self.place_done = False
+            # easiest behavior: retry by going back to box state
+            self.enter_state("NAV_TO_BOX")
 
     def on_reached(self, msg: Bool):
         self.nav_reached = bool(msg.data)
 
     def lookup_xy(self, target_frame: str):
         try:
-            tf = self.tf_buffer.lookup_transform(self.world_frame, target_frame, rclpy.time.Time())
+            tf = self.tf_buffer.lookup_transform(
+                self.world_frame,
+                target_frame,
+                rclpy.time.Time()
+            )
         except Exception:
             return None
+
         t = tf.transform.translation
         return (t.x, t.y)
 
@@ -127,10 +164,10 @@ class TaskPlannerNode(Node):
         g.pose.position.x = float(x)
         g.pose.position.y = float(y)
         g.pose.position.z = 0.0
-        # yaw not used for MS2; identity is fine
         g.pose.orientation.w = 1.0
         self.goal_pub.publish(g)
-        self.get_logger().info("publish goal xy")
+
+        self.get_logger().info(f"Published goal ({x:.2f}, {y:.2f})")
 
     def enter_state(self, new_state: str):
         self.state = new_state
@@ -138,44 +175,41 @@ class TaskPlannerNode(Node):
         self.get_logger().info(f"State -> {new_state}")
 
     def step(self):
-        # We still lookup TF so we can publish goals from TF frames
         robot = self.lookup_xy(self.base_frame)
         if robot is None:
             return
 
         if self.state == "SELECT_OBJECT":
-            obj = self.latest_object
-            box = self.latest_box
-            if obj is None or box is None:
+            if len(self.known_objects) == 0 or len(self.boxes) == 0:
                 return
 
-            self.current_object = obj
-            self.current_box = box
+            # FIFO queue: pick oldest remembered object
+            self.current_object = self.known_objects.pop(0)
+            self.current_box = self.boxes[0]
 
-            # CHANGED: Pose has position directly (no .pose)
             self.ox = float(self.current_object.position.x)
             self.oy = float(self.current_object.position.y)
             self.bx = float(self.current_box.position.x)
             self.by = float(self.current_box.position.y)
 
+            self.get_logger().info(
+                f"Selected object ({self.ox:.2f}, {self.oy:.2f}) "
+                f"-> box ({self.bx:.2f}, {self.by:.2f})"
+            )
+
             self.enter_state("NAV_TO_OBJECT")
             return
 
-        # if self.current_object is None or self.current_box is None:
-        # if self.current_object is None:
         if self.current_object is None and self.state not in ("SELECT_OBJECT", "DONE", "DROP_OBJECT"):
-            self.get_logger().info("here")
             return
 
         if self.state == "NAV_TO_OBJECT":
             if not self._published_this_state:
-                self.get_logger().info("nav to object state")
                 self.phase_pub.publish(String(data="object"))
-                # IMPORTANT: goal should be the object center TF (controller handles standoff)
                 self.publish_goal_xy(self.ox, self.oy)
                 self._published_this_state = True
                 self.nav_reached = False
-                self.get_logger().info("nav to object state 2")
+                self.get_logger().info("NAV_TO_OBJECT: published object goal")
 
             if self.nav_reached:
                 self.enter_state("PICK_OBJECT")
@@ -185,38 +219,35 @@ class TaskPlannerNode(Node):
                 self.pick_done = False
                 self.arm_pub.publish(String(data="pick"))
                 self._published_this_state = True
-
-                self.get_logger().info(" PICK_OBJECT: publish pick")
+                self.get_logger().info("PICK_OBJECT: published pick")
 
             if self.pick_done:
-                # CHANGED: mark picked by (x,y) instead of ID
                 self.picked_ids.append((self.ox, self.oy))
+                self.get_logger().info(f"Marked picked object at ({self.ox:.2f}, {self.oy:.2f})")
                 self.enter_state("NAV_TO_BOX")
 
         elif self.state == "NAV_TO_BOX":
             if not self._published_this_state:
                 self.phase_pub.publish(String(data="box"))
-                # goal should be the box center TF
                 self.publish_goal_xy(self.bx, self.by)
                 self._published_this_state = True
                 self.nav_reached = False
+                self.get_logger().info("NAV_TO_BOX: published box goal")
 
             if self.nav_reached:
                 self.enter_state("DROP_OBJECT")
 
         elif self.state == "DROP_OBJECT":
             if not self._published_this_state:
-                self.arm_pub.publish(String(data="place"))
-
                 self.place_done = False
-
+                self.arm_pub.publish(String(data="place"))
                 self._published_this_state = True
+                self.get_logger().info("DROP_OBJECT: published place")
 
-                # Done with this cycle
+                # done with this object
                 self.current_object = None
-                # self.current_box = None
 
-            if self.place_done: 
+            if self.place_done:
                 self.place_done = False
                 self.enter_state("DONE")
 

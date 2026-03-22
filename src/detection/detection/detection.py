@@ -145,6 +145,7 @@ class Detection(Node):
             obj_msg.header.stamp = object_timestamp if object_timestamp is not None else self.get_clock().now().to_msg()
             obj_msg.header.frame_id = 'map'      
             obj_msg.poses = object_poses
+
             self.objects_pub.publish(obj_msg)
 
         # boxes
@@ -293,6 +294,7 @@ class Detection(Node):
                 point_camera = PointStamped()
                 point_camera.header.frame_id = 'realsense_camera_link'
                 point_camera.header.stamp = rclpy.time.Time().to_msg()
+                point_camera.header.stamp = rclpy.time.Time().to_msg()
                 point_camera.point.x = float(center[0])
                 point_camera.point.y = float(center[1])
                 point_camera.point.z = 0.0
@@ -300,6 +302,7 @@ class Detection(Node):
 
                 dir_camera = Vector3Stamped()
                 dir_camera.header.frame_id = 'realsense_camera_link'
+                dir_camera.header.stamp = rclpy.time.Time().to_msg()
                 dir_camera.header.stamp = rclpy.time.Time().to_msg()
                 dir_camera.vector.x = np.cos(yaw)
                 dir_camera.vector.y = np.sin(yaw)
@@ -358,6 +361,7 @@ class Detection(Node):
         self.object = tf2_geometry_msgs.PoseStamped()
         self.object.header = msg.header
         self.object.header.stamp = rclpy.time.Time().to_msg()
+        self.object.header.stamp = rclpy.time.Time().to_msg()
         self.object.pose.position.x = sum_x / counter
         self.object.pose.position.y = sum_y / counter
         self.object.pose.position.z = sum_z / counter
@@ -366,6 +370,7 @@ class Detection(Node):
         self.object.pose.orientation.z = 0.0
         self.object.pose.orientation.w = 1.0
 
+        msg_time = rclpy.time.Time().to_msg()
         msg_time = rclpy.time.Time().to_msg()
         if not self.tf_buffer.can_transform(
                 'map',

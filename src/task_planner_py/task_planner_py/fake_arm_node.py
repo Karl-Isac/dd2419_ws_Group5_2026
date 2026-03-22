@@ -7,7 +7,7 @@ class FakeArmNode(Node):
     def __init__(self):
         super().__init__("fake_arm_node")
 
-        self.subscription = self.create_subscription(
+        self.create_subscription(
             String,
             "/arm/cmd",
             self.cmd_callback,

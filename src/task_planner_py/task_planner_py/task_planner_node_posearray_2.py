@@ -26,8 +26,15 @@ class TaskPlannerNode(Node):
         self.box_frame = self.get_parameter("box_frame").value
         self.picked_dist = float(self.get_parameter("picked_dist").value)
 
-        self.latest_object = None
+        # self.latest_object = None
+        # self.latest_box = None
+
+        self.boxes = []        # list of Pose
         self.latest_box = None
+
+        self.objects = []  # list of Pose
+        self.latest_object = None  # keep for minimal disruption
+        self.known_objects = []
 
         # CHANGED: store picked (x,y) instead of IDs
         self.picked_ids = []  # list[(x,y)]
@@ -63,8 +70,7 @@ class TaskPlannerNode(Node):
         dt = 1.0 / float(self.get_parameter("rate_hz").value)
         self.timer = self.create_timer(dt, self.step)
 
-        self.get_logger().info("TaskPlannerNode up. Pub: /nav/goal, /nav/phase, /arm/cmd  Sub: /nav/reached, /arm/done_pick")
-        self.get_logger().info("TaskPlannerNode up. Pub: /nav/goal, /nav/phase, /arm/cmd  Sub: /nav/reached, /arm/done_pick")
+        self.get_logger().info("TaskPlannerNode up. Pub: /nav/goal, /nav/phase, /arm/cmd  Sub: /nav/reached, /arm/report_back")
 
     # NEW: small helper for "similar coordinates"
     def _is_picked_xy(self, x: float, y: float) -> bool:
@@ -77,21 +83,49 @@ class TaskPlannerNode(Node):
         return False
 
     # CHANGED: PoseArray callback
+    # def on_objects(self, msg: PoseArray):
+    #     self.latest_object = None
+    #     self.get_logger().info("on_objects 1")
+    #     for p in msg.poses:
+    #         self.get_logger().info("on_objects 2")
+    #         x = float(p.position.x)
+    #         y = float(p.position.y)
+    #         if not self._is_picked_xy(x, y):
+    #             self.get_logger().info("on_objects 3")
+    #             self.latest_object = p
+    #             break
+
     def on_objects(self, msg: PoseArray):
-        self.latest_object = None
-        self.get_logger().info("on_objects 1")
+        self.objects = []  # rebuild list every detection update
+
+        print(f"objects:\n {msg}")
+
         for p in msg.poses:
-            self.get_logger().info("on_objects 2")
+            print("on_objects 1")
+
             x = float(p.position.x)
             y = float(p.position.y)
+
+            #if not self._is_picked_xy(x, y) and p not in self.objects:
             if not self._is_picked_xy(x, y):
-                self.get_logger().info("on_objects 3")
-                self.latest_object = p
-                break
+                print("on_objects 2")
+                self.objects.append(p)
+
+        # Optional: keep compatibility with existing logic
+        self.latest_object = self.objects[0] if len(self.objects) > 0 else None
 
     # CHANGED: PoseArray callback
+    # def on_boxes(self, msg: PoseArray):
+    #     self.latest_box = msg.poses[0] if len(msg.poses) > 0 else None
+
     def on_boxes(self, msg: PoseArray):
-        self.latest_box = msg.poses[0] if len(msg.poses) > 0 else None
+        self.boxes = []  # rebuild every update
+
+        for p in msg.poses:
+            self.boxes.append(p)
+
+        # keep compatibility with existing logic
+        self.latest_box = self.boxes[0] if len(self.boxes) > 0 else None
 
     # def on_pick_done(self, msg: Bool):
     #     self.pick_done = bool(msg.data)
@@ -141,22 +175,54 @@ class TaskPlannerNode(Node):
         # We still lookup TF so we can publish goals from TF frames
         robot = self.lookup_xy(self.base_frame)
         if robot is None:
+            print("robot is None")
             return
 
+        # if self.state == "SELECT_OBJECT":
+        #     # obj = self.latest_object
+        #     # box = self.latest_box
+        #     # if obj is None or box is None:
+        #     #     return
+        #
+        #     # if len(self.objects) == 0 or self.latest_box is None:
+        #     # return
+        #     #
+        #     # obj = self.objects[0]   # pick first available
+        #     # box = self.latest_box
+        #
+        #     if len(self.objects) == 0 or len(self.boxes) == 0:
+        #         return
+        #
+        #     obj = self.objects[0]
+        #     box = self.boxes[0]
+        #
+        #     # CHANGED: Pose has position directly (no .pose)
+        #     self.ox = float(self.current_object.position.x)
+        #     self.oy = float(self.current_object.position.y)
+        #     self.bx = float(self.current_box.position.x)
+        #     self.by = float(self.current_box.position.y)
+        #
+        #     self.enter_state("NAV_TO_OBJECT")
+        #     return
+
         if self.state == "SELECT_OBJECT":
-            obj = self.latest_object
-            box = self.latest_box
-            if obj is None or box is None:
+            if len(self.objects) == 0 or len(self.boxes) == 0:
                 return
+            
+            # print(f"objects:\n {self.objects}")
 
-            self.current_object = obj
-            self.current_box = box
+            # self.current_object = self.objects[0]
+            # self.current_box = self.boxes[0]
+            self.current_object = self.objects[-1]
+            self.current_box = self.boxes[0]
+            self.objects.pop() # pop the queue
 
-            # CHANGED: Pose has position directly (no .pose)
             self.ox = float(self.current_object.position.x)
             self.oy = float(self.current_object.position.y)
             self.bx = float(self.current_box.position.x)
             self.by = float(self.current_box.position.y)
+
+            print(f"current_box, current_object: {self.current_box, self.current_object}")
 
             self.enter_state("NAV_TO_OBJECT")
             return
