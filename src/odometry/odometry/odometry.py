@@ -45,11 +45,17 @@ class Odometry(Node):
         )
 
         self._imu_yaw_rate = 0.0
+        
+        self.gain = 0.25
+        print("Gain = ", self.gain)
 
         # 2D pose
         self._x = 0.0
         self._y = 0.0
-        self._yaw = 0.0
+        #self._yaw = 0.0
+        self._yaw = -2.77 * (1- self.gain)
+        #self._yaw = -0.8275568 - 1.932388
+        
         
     def imu_callback(self, msg: Imu):
         self._imu_yaw_rate = msg.angular_velocity.z
@@ -70,7 +76,7 @@ class Odometry(Node):
         dt = 50 / 1000
         ticks_per_rev = 48 * 64
         wheel_radius = 0.04921
-        base = 0.315
+        base = 0.25
 
         # Ticks since last message
         delta_ticks_left = msg.delta_encoder_left
@@ -86,9 +92,10 @@ class Odometry(Node):
         D = wheel_radius/2 * (phi_R + phi_L)
         d_theta_wheel = wheel_radius/base * (phi_R - phi_L)
         d_theta_Imu = self._imu_yaw_rate * dt
-        gain = 0
+        gain = self.gain
         
-        d_theta = gain * d_theta_wheel + (1 - gain) * d_theta_Imu
+        d_theta = gain * d_theta_wheel - (1 - gain) * d_theta_Imu
+        print(d_theta)
 
         # theta_mid = self._yaw + d_theta / 2.0
 

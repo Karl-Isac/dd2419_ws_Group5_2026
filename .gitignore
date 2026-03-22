@@ -63,6 +63,9 @@ CATKIN_IGNORE
 bags/*
 *.db3
 *.mcap
+rosbags/
+Rosbags/
+Rosbags_2/
 
 # VS Code
 .vscode
@@ -74,4 +77,4 @@ log/
 # **/install/
 **/log/
 
-rosbags/
+
