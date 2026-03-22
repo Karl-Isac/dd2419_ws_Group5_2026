@@ -291,7 +291,7 @@ class Detection(Node):
             try:
                 point_camera = PointStamped()
                 point_camera.header.frame_id = 'realsense_camera_link'
-                point_camera.header.stamp = msg.header.stamp
+                point_camera.header.stamp = rclpy.time.Time().to_msg()
                 point_camera.point.x = float(center[0])
                 point_camera.point.y = float(center[1])
                 point_camera.point.z = 0.0
@@ -299,7 +299,7 @@ class Detection(Node):
 
                 dir_camera = Vector3Stamped()
                 dir_camera.header.frame_id = 'realsense_camera_link'
-                dir_camera.header.stamp = msg.header.stamp
+                dir_camera.header.stamp = rclpy.time.Time().to_msg()
                 dir_camera.vector.x = np.cos(yaw)
                 dir_camera.vector.y = np.sin(yaw)
                 dir_camera.vector.z = 0.0
@@ -322,7 +322,7 @@ class Detection(Node):
                     self.box_num += 1
                     # publish static TF for the box
                     tf_map_box = TransformStamped()
-                    tf_map_box.header.stamp = msg.header.stamp
+                    tf_map_box.header.stamp = rclpy.time.Time().to_msg()
                     tf_map_box.header.frame_id = 'map'
                     tf_map_box.child_frame_id = f'box_{self.box_num}'
                     tf_map_box.transform.translation.x = point_map.point.x
@@ -345,7 +345,7 @@ class Detection(Node):
                     new_box_msg.orientation.y = tf_map_box.transform.rotation.y
                     new_box_msg.orientation.z = tf_map_box.transform.rotation.z
                     new_box_msg.orientation.w = tf_map_box.transform.rotation.w
-                    self.publish_arrays(None, None, [new_box_msg], msg.header.stamp)
+                    self.publish_arrays(None, None, [new_box_msg], rclpy.time.Time().to_msg())
 
 
             except TransformException as ex:
@@ -356,6 +356,7 @@ class Detection(Node):
         self.get_logger().debug(f'{color} object detected.')
         self.object = tf2_geometry_msgs.PoseStamped()
         self.object.header = msg.header
+        self.object.header.stamp = rclpy.time.Time().to_msg()
         self.object.pose.position.x = sum_x / counter
         self.object.pose.position.y = sum_y / counter
         self.object.pose.position.z = sum_z / counter
@@ -364,7 +365,7 @@ class Detection(Node):
         self.object.pose.orientation.z = 0.0
         self.object.pose.orientation.w = 1.0
 
-        msg_time = msg.header.stamp
+        msg_time = rclpy.time.Time().to_msg()
         if not self.tf_buffer.can_transform(
                 'map',
                 self.object.header.frame_id,
@@ -372,6 +373,7 @@ class Detection(Node):
                 timeout=rclpy.duration.Duration(seconds=1)
             ):
                 self.get_logger().warn(f'Failed to publish {color} object_{self.object_num}')
+                return
 
         try:
                 object_map = self.tf_buffer.transform(
@@ -404,7 +406,7 @@ class Detection(Node):
             self.object_num += 1
 
             tf = TransformStamped()
-            tf.header.stamp = msg_time
+            tf.header.stamp = msg.header.stamp
             tf.header.frame_id = 'map'
             tf.child_frame_id = f'object_{self.object_num}'
             tf.transform.translation.x = object_map.pose.position.x
@@ -417,6 +419,7 @@ class Detection(Node):
             self.static_broadcaster.sendTransform(tf)
 
             self.get_logger().info(f'Object {self.object_num}: {color} {object_map.pose.position.x} {object_map.pose.position.y} N/A')
+            print(f"z distance: {sum_z / counter:.3f} m")
 
         
     def publish_2d_cloud(self, points_xz, header):
