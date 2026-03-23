@@ -46,14 +46,14 @@ class Odometry(Node):
 
         self._imu_yaw_rate = 0.0
         
-        self.gain = 0.25
+        self.gain = 0.5
         #print("Gain = ", self.gain)
 
         # 2D pose
         self._x = 0.0
         self._y = 0.0
-        #self._yaw = 0.0
-        self._yaw = -2.77 * (1- self.gain)
+        self._yaw = 0.0
+        #self._yaw = -2.77 * (1- self.gain)
         #self._yaw = -0.8275568 - 1.932388
         
         
@@ -76,7 +76,7 @@ class Odometry(Node):
         dt = 50 / 1000
         ticks_per_rev = 48 * 64
         wheel_radius = 0.04921
-        base = 0.3
+        base = 0.315
 
         # Ticks since last message
         delta_ticks_left = msg.delta_encoder_left
