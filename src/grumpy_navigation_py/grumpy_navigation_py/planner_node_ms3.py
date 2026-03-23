@@ -10,10 +10,12 @@ from tf2_geometry_msgs import do_transform_pose
 from geometry_msgs.msg import PoseStamped
 from nav_msgs.msg import Path
 
+from grumpy_interfaces import Goal
+
 import yaml 
 
 
-class SimplePlannerNode(Node):
+class PlannerNode(Node):
     def __init__(self):
         super().__init__("simple_planner_node")
 
@@ -50,7 +52,7 @@ class SimplePlannerNode(Node):
         self.path_pub = self.create_publisher(Path, "/nav/path", 10)
 
         self.get_logger().info(
-            f"SimplePlannerNode up. world_frame={self.world_frame} base_frame={self.base_frame} "
+            f"PlannerNode up. world_frame={self.world_frame} base_frame={self.base_frame} "
             f"Sub: /nav/goal  Pub: /nav/path"
         )
 
@@ -144,7 +146,7 @@ class SimplePlannerNode(Node):
 
 def main():
     rclpy.init()
-    node = SimplePlannerNode()
+    node = PlannerNode()
     try:
         rclpy.spin(node)
     finally:

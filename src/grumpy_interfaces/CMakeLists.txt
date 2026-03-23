@@ -13,6 +13,7 @@ find_package(geometry_msgs REQUIRED)
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Item.msg"
   "msg/ItemArray.msg"
+  "msg/Goal.msg"
   DEPENDENCIES geometry_msgs
 )
 
