@@ -6,9 +6,9 @@ from rclpy.node import Node
 import tf2_ros
 
 from std_msgs.msg import Bool, String
-from geometry_msgs.msg import PoseStamped, PoseArray
+from geometry_msgs.msg import PoseStamped, PoseArray, Path
 
-from grumpy_interfaces.msg import Goal
+from grumpy_interfaces.msg import Goal, PathWithType
 
 
 class TrackedObject:
@@ -67,6 +67,7 @@ class TaskPlannerNode(Node):
 
         # Publishers
         self.goal_pub = self.create_publisher(Goal, "/nav/goal", 10)
+        self.path_pub = self.create_publisher(PathWithType, "/nav/path", 10)
         self.arm_pub = self.create_publisher(String, "/arm/cmd", 10)
 
         # Subscribers
@@ -174,6 +175,16 @@ class TaskPlannerNode(Node):
         self.goal_pub.publish(goal)
         self.get_logger().info(f"Published {goal_type} goal ({x:.2f}, {y:.2f})")
 
+    def publish_path_to_controller(self, path: Path, goal_type: str):
+        path_to_goal = PathWithType()
+        if goal_type == "object":
+            path_to_goal.type = 0 
+        elif goal_type == "box":
+            path_to_goal.type = 1 
+
+        self.path_pub.publish(path)
+        self.get_logger().info(f"Published {goal_type} goal ({x:.2f}, {y:.2f})")
+
     def enter_state(self, new_state: str):
         self.state = new_state
         self._published_this_state = False
@@ -224,6 +235,29 @@ class TaskPlannerNode(Node):
         # EXECUTE_PATH_TO_OBJECT
         # GENERATE_PATH_TO_BOX
         # EXECUTE_PATH_TO_BOX
+
+        # TODO: next create for box as well
+
+        
+        if self.state == "GENERATE_PATH_TO_OBJECT": 
+            if not self._published_this_state:
+                self.publish_goal_xy(self.ox, self.oy, goal_type="object") # TODO: probably dont need goal type here
+                self._published_this_state = True
+                self.generate_path_success = False
+                self.get_logger().info("GENERATE_PATH_TO_OBJECT: published object goal")
+
+            if self.nav_reached:
+                self.enter_state("EXECUTE_PATH_TO_OBJECT")
+
+        if self.state == "EXECUTE_PATH_TO_OBJECT": 
+            if not self._published_this_state:
+                self.publish_path_to_controller(path=self.path_to_goal, goal_type="object")
+                self._published_this_state = True
+                self.execute_path_success = False
+                self.get_logger().info("GENERATE_PATH_TO_OBJECT: published object goal")
+
+            if self.nav_reached:
+                self.enter_state("PICK_OBJECT")
 
 
         if self.state == "NAV_TO_OBJECT":

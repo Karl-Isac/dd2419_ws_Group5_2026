@@ -42,8 +42,8 @@ Arm:
 Exploration node:
 
     topis:
-        - explore/start/
-        - explore/done/
+        - pub: explore/start/
+        - sub: explore/done/  
     
     detection might be turned off when turning
 

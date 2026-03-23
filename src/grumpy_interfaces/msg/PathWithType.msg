@@ -1,3 +1,5 @@
+uint8 OBJECT=0
+uint8 BOX=1
 
-
-geometry_msgs/PoseStamped pose_stamped
+uint8 type
+geometry_msgs/Path
