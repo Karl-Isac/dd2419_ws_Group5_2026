@@ -6,7 +6,7 @@ from rclpy.node import Node
 import tf2_ros
 
 from std_msgs.msg import Bool, String
-from geometry_msgs.msg import PoseStamped, PoseArray, Path
+from geometry_msgs.msg import PoseStamped, PoseArray, Path, Point
 
 from grumpy_interfaces.msg import Goal, PathWithType
 
@@ -70,11 +70,24 @@ class TaskPlannerNode(Node):
         self.path_pub = self.create_publisher(PathWithType, "/nav/path", 10)
         self.arm_pub = self.create_publisher(String, "/arm/cmd", 10)
 
+        # create pub and sub
+        # topics: 
+        self.exploration_pub = self.create_publisher(string, "/exploration/request_unexplored_point", 10) # content can be anything
+
+        # TODO: create callback for this
+        self.create_subscription(Point, "/exploration/return_unexplored_point", self.on_exploration_point, 10) # z value irrelevant
+
         # Subscribers
         self.create_subscription(Bool, "/nav/reached", self.on_reached, 10)
         self.create_subscription(String, "/arm/report_back", self.on_report_back, 10)
         self.create_subscription(PoseArray, "/detected_objects", self.on_objects, 10)
         self.create_subscription(PoseArray, "/detected_boxes", self.on_boxes, 10)
+
+
+        #TODO: create ICP state and callback for these:
+        self.ICP_pub = self.create_publisher(String, "/localization/start_update_ICP", 10)  # contant can be anything
+        self.create_subscription(String, "/localization/finished_update_ICP", self.on_finshed_update_ICP, 10)  # contant can be anything
+
 
         dt = 1.0 / float(self.get_parameter("rate_hz").value)
         self.timer = self.create_timer(dt, self.step)
@@ -238,6 +251,11 @@ class TaskPlannerNode(Node):
 
         # TODO: next create for box as well
 
+        # TODO: 
+        # states: 
+        # genereate exploration pose 
+        # execute exploration pose 
+        # 
         
         if self.state == "GENERATE_PATH_TO_OBJECT": 
             if not self._published_this_state:

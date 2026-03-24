@@ -11,6 +11,9 @@ Task planner:
 
     - current object id, to see what we are handling
 
+    - 
+
+
 Detection:
 
     - Detection should continously update the map file with the detected objects 
