@@ -72,7 +72,7 @@ class TaskPlannerNode(Node):
 
         # create pub and sub
         # topics: 
-        self.exploration_pub = self.create_publisher(string, "/exploration/request_unexplored_point", 10) # content can be anything
+        self.exploration_pub = self.create_publisher(String, "/exploration/request_unexplored_point", 10) # content can be anything
 
         # TODO: create callback for this
         self.create_subscription(Point, "/exploration/return_unexplored_point", self.on_exploration_point, 10) # z value irrelevant
@@ -278,15 +278,39 @@ class TaskPlannerNode(Node):
                 self.enter_state("PICK_OBJECT")
 
 
-        if self.state == "NAV_TO_OBJECT":
+        if self.state == "GENERATE_PATH_TO_BOX": 
             if not self._published_this_state:
-                self.publish_goal_xy(self.ox, self.oy, goal_type="object")
+                self.publish_goal_xy(self.ox, self.oy) 
                 self._published_this_state = True
-                self.nav_reached = False
-                self.get_logger().info("NAV_TO_OBJECT: published object goal")
+                self.generate_path_success = False
+                self.get_logger().info("GENERATE_PATH_TO_BOX: published object goal")
 
             if self.nav_reached:
-                self.enter_state("PICK_OBJECT")
+                self.enter_state("EXECUTE_PATH_TO_BOX")
+
+
+        if self.state == "EXECUTE_PATH_TO_BOX": 
+            if not self._published_this_state:
+                self.publish_path_to_controller(path=self.path_to_goal, goal_type="box")
+                self._published_this_state = True
+                self.execute_path_success = False
+                self.get_logger().info("GENERATE_PATH_TO_BOX: published object goal")
+
+            if self.nav_reached:
+                self.enter_state("DROP_OBJECT")
+
+
+
+
+        # if self.state == "NAV_TO_OBJECT":
+        #     if not self._published_this_state:
+        #         self.publish_goal_xy(self.ox, self.oy, goal_type="object")
+        #         self._published_this_state = True
+        #         self.nav_reached = False
+        #         self.get_logger().info("NAV_TO_OBJECT: published object goal")
+        #
+        #     if self.nav_reached:
+        #         self.enter_state("PICK_OBJECT")
 
 
 
@@ -305,15 +329,15 @@ class TaskPlannerNode(Node):
                 )
                 self.enter_state("NAV_TO_BOX")
 
-        elif self.state == "NAV_TO_BOX":
-            if not self._published_this_state:
-                self.publish_goal_xy(self.bx, self.by, goal_type="box")
-                self._published_this_state = True
-                self.nav_reached = False
-                self.get_logger().info("NAV_TO_BOX: published box goal")
-
-            if self.nav_reached:
-                self.enter_state("DROP_OBJECT")
+        # elif self.state == "NAV_TO_BOX":
+        #     if not self._published_this_state:
+        #         self.publish_goal_xy(self.bx, self.by, goal_type="box")
+        #         self._published_this_state = True
+        #         self.nav_reached = False
+        #         self.get_logger().info("NAV_TO_BOX: published box goal")
+        #
+        #     if self.nav_reached:
+        #         self.enter_state("DROP_OBJECT")
 
         elif self.state == "DROP_OBJECT":
             if not self._published_this_state:
