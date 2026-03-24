@@ -38,13 +38,13 @@ def generate_launch_description():
     #     output='screen'
     # )
 
-    # rviz_node = Node(
-    #     package='rviz2',
-    #     executable='rviz2',
-    #     name='rviz2',
-    #     arguments=['-d', rviz_config],
-    #     output='screen',
-    # )
+    rviz_node = Node(
+        package='rviz2',
+        executable='rviz2',
+        name='rviz2',
+        arguments=['-d', rviz_config],
+        output='screen',
+    )
 
     # realsense = ExecuteProcess(
     #     cmd=['pixi', 'run', 'realsense'],
@@ -66,4 +66,4 @@ def generate_launch_description():
     #     output='screen'
     # )
 
-    return LaunchDescription([static_tf_node])
+    return LaunchDescription([static_tf_node, rviz_node])

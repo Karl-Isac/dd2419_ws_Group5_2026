@@ -116,6 +116,23 @@ class Detection(Node):
                     self.box_lists.append([x, y, angle_deg])
                     self.box_num += 1
                     self.known_box_num += 1
+                elif type_id == 'S':
+                    starting = TransformStamped()
+                    starting.header.stamp = self.get_clock().now().to_msg()
+                    starting.header.frame_id = 'map'
+                    starting.child_frame_id = 'odom'
+                    starting.transform.translation.x = x
+                    starting.transform.translation.y = y
+                    starting.transform.translation.z = 0
+                    q = quaternion_from_euler(0, 0, angle_rad)
+                    starting.transform.rotation.x = q[0]
+                    starting.transform.rotation.y = q[1]
+                    starting.transform.rotation.z = q[2]
+                    starting.transform.rotation.w = q[3]
+
+                    self.static_broadcaster.sendTransform(starting)
+
+                    self.metadata_rows.append(row)
                 else:
                     self.metadata_rows.append(row)
 

@@ -13,7 +13,7 @@ import tf2_geometry_msgs
 from tf2_ros import PointStamped, TransformBroadcaster, TransformListener, TransformException
 from tf2_ros.buffer import Buffer
 from tf2_ros.static_transform_broadcaster import StaticTransformBroadcaster
-from tf_transformations import quaternion_from_euler
+from tf_transformations import quaternion_from_euler, euler_from_quaternion
 from geometry_msgs.msg import TransformStamped, Point, Vector3Stamped, PoseArray, Pose
 from visualization_msgs.msg import Marker
 
@@ -87,7 +87,7 @@ class Detection(Node):
 
         # Using a deque as a buffer to store incoming point cloud messages for processing
         self.cloud_queue = deque(maxlen=50)
-        self.timer = self.create_timer(0.1, self.process_queue)
+        self.timer = self.create_timer(0.05, self.process_queue)
 
         with open(csv_path, mode='r', encoding='utf-8') as file:
             reader = csv.reader(file)
@@ -120,6 +120,23 @@ class Detection(Node):
                     self.box_lists.append([x, y, angle_deg])
                     self.box_num += 1
                     self.known_box_num += 1
+                elif type_id == 'S':
+                    starting = TransformStamped()
+                    starting.header.stamp = self.get_clock().now().to_msg()
+                    starting.header.frame_id = 'map'
+                    starting.child_frame_id = 'odom'
+                    starting.transform.translation.x = x
+                    starting.transform.translation.y = y
+                    starting.transform.translation.z = 0
+                    q = quaternion_from_euler(0, 0, angle_rad)
+                    starting.transform.rotation.x = q[0]
+                    starting.transform.rotation.y = q[1]
+                    starting.transform.rotation.z = q[2]
+                    starting.transform.rotation.w = q[3]
+
+                    self.static_broadcaster.sendTransform(starting)
+
+                    self.metadata_rows.append(row)
                 else:
                     self.metadata_rows.append(row)
 
@@ -168,16 +185,15 @@ class Detection(Node):
         if not self.cloud_queue:
             return
 
-        remaining_queue = []
-
         while self.cloud_queue:
             msg = self.cloud_queue.popleft()
             t_cloud = msg.header.stamp
 
             # TODO: (Private Test) Print out the time difference between timestamp of pointcloud and latest TF
-            latest_tf_time = self.tf_buffer.get_latest_common_time('map', 'realsense_camera_link')
-            self.get_logger().info(f"Time difference: {t_cloud.sec - latest_tf_time.sec}.{t_cloud.nanosec - latest_tf_time.nanosec}")
-
+            # latest_tf_time = self.tf_buffer.get_latest_common_time('map', 'realsense_camera_link').to_msg()
+            # self.get_logger().info(f"Time difference: {t_cloud.sec - latest_tf_time.sec}.{t_cloud.nanosec - latest_tf_time.nanosec}")
+            # self.get_logger().info(f"Pointcloud Timestamp: {t_cloud.sec}.{t_cloud.nanosec}")
+            # self.get_logger().info(f"Latest TF Timestamp: {latest_tf_time.sec}.{latest_tf_time.nanosec}")
 
             # 判断 TF 是否已经准备好
             if self.tf_buffer.can_transform(
@@ -187,13 +203,13 @@ class Detection(Node):
                 timeout=rclpy.duration.Duration(seconds=0.01)
             ):
                 # ✅ 可以 transform → 正式处理
+                # self.get_logger().debug("TF is ready, processing point cloud.")
                 self.process_point_cloud(msg)
-            else:
-                # ❌ TF 还没到 → 留在队列里
-                remaining_queue.append(msg)
-
-        # 把还不能处理的放回队列
-        self.cloud_queue.extend(remaining_queue)
+                new_queue = deque()
+                for m in self.cloud_queue:
+                    if m.header.stamp.sec > t_cloud.sec or (m.header.stamp.sec == t_cloud.sec and m.header.stamp.nanosec > t_cloud.nanosec):
+                        new_queue.append(m)
+                self.cloud_queue = new_queue
 
     def process_point_cloud(self, msg):
         """Takes point cloud readings to detect objects.
@@ -260,7 +276,8 @@ class Detection(Node):
             g = colors[idx, 1]
             b = colors[idx, 2]
             h, s, v = rgb_to_hsv(r, g, b)
-            if y > 0 and y < 0.085 and z > 0.05 and z < 1:
+            # if y > 0 and y < 0.085 and z > 0.05 and z < 1:
+            if y > 0 and y < 0.085 and z > 0.05 and z < 0.5:
                 if y > 0.05:
                     # red
                     if is_red(h, s, v):
@@ -310,8 +327,8 @@ class Detection(Node):
             self.object_detection(msg, green_sum_x, green_sum_y, green_sum_z, green_counter, 'Green')
 
         # wood
-        if wood_counter > 10:
-            self.object_detection(msg, wood_sum_x, wood_sum_y, wood_sum_z, wood_counter, 'Wood')
+        # if wood_counter > 10:
+            # self.object_detection(msg, wood_sum_x, wood_sum_y, wood_sum_z, wood_counter, 'Wood')
                     
         # TODO: (Private Test) 新增：将所有满足条件的点组成一个点云并一次性发布，保留原始字段（含颜色）
         if test_points:
@@ -353,7 +370,7 @@ class Detection(Node):
                 y_str = int(round(point_map.point.y * 100))
 
                 for item in self.box_lists:
-                    if np.abs(item[0] - x_str) < 10 and np.abs(item[1] - y_str) < 10:
+                    if np.abs(item[0] - x_str) < 15 and np.abs(item[1] - y_str) < 15:
                         self.get_logger().debug("repeated box detection, discarded")
                         break
                 else:
@@ -383,7 +400,7 @@ class Detection(Node):
                     new_box_msg.orientation.y = tf_map_box.transform.rotation.y
                     new_box_msg.orientation.z = tf_map_box.transform.rotation.z
                     new_box_msg.orientation.w = tf_map_box.transform.rotation.w
-                    self.publish_arrays(None, None, [new_box_msg], rclpy.time.Time().to_msg())
+                    self.publish_arrays(None, None, [new_box_msg], msg.header.stamp)
 
 
             except TransformException as ex:
@@ -415,11 +432,12 @@ class Detection(Node):
                 return
 
         try:
-                object_map = self.tf_buffer.transform(
-                    self.object,
-                    'map',
-                    timeout=rclpy.duration.Duration(seconds=1)
-                )
+            object_map = self.tf_buffer.transform(
+                self.object,
+                'map',
+                timeout=rclpy.duration.Duration(seconds=1)
+            )
+
         except TransformException as ex:
             self.get_logger().info(
                     f'Could not transform {color} object from '
@@ -428,7 +446,7 @@ class Detection(Node):
             return
 
         for item in self.object_lists:
-            if np.abs(item[0] - object_map.pose.position.x * 100) < 3 and np.abs(item[1] - object_map.pose.position.y * 100) < 3:
+            if np.abs(item[0] - object_map.pose.position.x * 100) < 5 and np.abs(item[1] - object_map.pose.position.y * 100) < 5:
                 self.get_logger().debug(f"repeated object {self.object_lists.index(item)} detection, discarded")
                 break
         else:
@@ -459,7 +477,6 @@ class Detection(Node):
 
             self.get_logger().info(f'Object {self.object_num}: {color} {object_map.pose.position.x} {object_map.pose.position.y} N/A')
             print(f"z distance: {sum_z / counter:.3f} m")
-
         
     def publish_2d_cloud(self, points_xz, header):
         h = std_msgs.msg.Header()
