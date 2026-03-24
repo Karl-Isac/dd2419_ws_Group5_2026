@@ -259,33 +259,34 @@ class TaskPlannerNode(Node):
         
         if self.state == "GENERATE_PATH_TO_OBJECT": 
             if not self._published_this_state:
-                self.publish_goal_xy(self.ox, self.oy, goal_type="object") # TODO: probably dont need goal type here
+                #self.publish_goal_xy(self.ox, self.oy, goal_type="object") # TODO: probably dont need goal type here
+                self.publish_goal_xy() # TODO: probably dont need goal type here
                 self._published_this_state = True
-                self.generate_path_success = False
+                self.generate_path_object_success = False
                 self.get_logger().info("GENERATE_PATH_TO_OBJECT: published object goal")
 
-            if self.nav_reached:
+            if self.generate_path_object_success:
                 self.enter_state("EXECUTE_PATH_TO_OBJECT")
 
         if self.state == "EXECUTE_PATH_TO_OBJECT": 
             if not self._published_this_state:
                 self.publish_path_to_controller(path=self.path_to_goal, goal_type="object")
                 self._published_this_state = True
-                self.execute_path_success = False
+                self.execute_path_object_success = False
                 self.get_logger().info("GENERATE_PATH_TO_OBJECT: published object goal")
 
-            if self.nav_reached:
+            if self.execute_path_object_success:
                 self.enter_state("PICK_OBJECT")
 
 
         if self.state == "GENERATE_PATH_TO_BOX": 
             if not self._published_this_state:
-                self.publish_goal_xy(self.ox, self.oy) 
+                self.publish_goal_xy(self.bx, self.by) 
                 self._published_this_state = True
-                self.generate_path_success = False
+                self.generate_path_box_success = False
                 self.get_logger().info("GENERATE_PATH_TO_BOX: published object goal")
 
-            if self.nav_reached:
+            if self.generate_path_box_success:
                 self.enter_state("EXECUTE_PATH_TO_BOX")
 
 
@@ -293,10 +294,10 @@ class TaskPlannerNode(Node):
             if not self._published_this_state:
                 self.publish_path_to_controller(path=self.path_to_goal, goal_type="box")
                 self._published_this_state = True
-                self.execute_path_success = False
+                self.execute_path_box_success = False
                 self.get_logger().info("GENERATE_PATH_TO_BOX: published object goal")
 
-            if self.nav_reached:
+            if self.execute_path_box_success:
                 self.enter_state("DROP_OBJECT")
 
 
@@ -327,7 +328,7 @@ class TaskPlannerNode(Node):
                     f"Marked picked object id={self.current_object.id} "
                     f"at ({self.ox:.2f}, {self.oy:.2f})"
                 )
-                self.enter_state("NAV_TO_BOX")
+                self.enter_state("GENERATE_PATH_TO_BOX")
 
         # elif self.state == "NAV_TO_BOX":
         #     if not self._published_this_state:
