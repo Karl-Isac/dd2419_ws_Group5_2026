@@ -43,8 +43,11 @@ class Detection(Node):
             PointCloud2, '/realsense/depth/color/ds_points', 10)
         
         # TODO: (Private Test) Test the belief range of point cloud of realsense, initialization
-        self.test_pub = self.create_publisher(
-            PointCloud2, '/test_points', 10
+        self.test_pub_box = self.create_publisher(
+            PointCloud2, '/test_points_box', 10
+        )
+        self.test_pub_cube = self.create_publisher(
+            PointCloud2, '/test_points_cube', 10
         )
 
         # Subscribe to point cloud topic and call callback function on each received message
@@ -121,12 +124,14 @@ class Detection(Node):
                     self.box_num += 1
                     self.known_box_num += 1
                 elif type_id == 'S':
+                    print('s is on')
+                    print(f"initial position from csv: x={x} cm, y={y} cm, angle={angle_deg} deg")
                     starting = TransformStamped()
                     starting.header.stamp = self.get_clock().now().to_msg()
                     starting.header.frame_id = 'map'
                     starting.child_frame_id = 'odom'
-                    starting.transform.translation.x = x
-                    starting.transform.translation.y = y
+                    starting.transform.translation.x = x / 100.0  # convert cm to m
+                    starting.transform.translation.y = y / 100.0  # convert cm to m
                     starting.transform.translation.z = 0
                     q = quaternion_from_euler(0, 0, angle_rad)
                     starting.transform.rotation.x = q[0]
@@ -224,7 +229,8 @@ class Detection(Node):
         """
 
         # TODO: (Private Test) 新增：用于收集所有满足条件的点，并在最后一次性发布成一个新的点云，方便调试和可视化
-        test_points = []
+        test_points_box = []
+        test_points_cube = []
 
         # Convert ROS -> NumPy
 
@@ -279,6 +285,7 @@ class Detection(Node):
             # if y > 0 and y < 0.085 and z > 0.05 and z < 1:
             if y > 0 and y < 0.085 and z > 0.05 and z < 0.5:
                 if y > 0.05:
+                    test_points_cube.append(gen[idx])
                     # red
                     if is_red(h, s, v):
                         red_counter += 1
@@ -310,7 +317,7 @@ class Detection(Node):
 
                 if y > 0.045 and y < 0.055:
                     # TODO: (Private Test) 新增：满足条件的点直接append原始gen[idx]，保留所有字段
-                    test_points.append(gen[idx])
+                    test_points_box.append(gen[idx])
                     if is_grey(h,s,v):
                         grey_points.append([z ,-x])
 
@@ -331,9 +338,13 @@ class Detection(Node):
             # self.object_detection(msg, wood_sum_x, wood_sum_y, wood_sum_z, wood_counter, 'Wood')
                     
         # TODO: (Private Test) 新增：将所有满足条件的点组成一个点云并一次性发布，保留原始字段（含颜色）
-        if test_points:
-            cloud = pc2.create_cloud(msg.header, msg.fields, test_points)
-            self.test_pub.publish(cloud)
+        if test_points_box:
+            box_cloud = pc2.create_cloud(msg.header, msg.fields, test_points_box)
+            self.test_pub_box.publish(box_cloud)
+
+        if test_points_cube:
+            cube_cloud = pc2.create_cloud(msg.header, msg.fields, test_points_cube)
+            self.test_pub_cube.publish(cube_cloud)
 
         self.publish_2d_cloud(grey_points, msg.header)
 

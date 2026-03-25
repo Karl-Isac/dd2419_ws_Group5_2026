@@ -42,8 +42,8 @@ class Detection(Node):
             PointCloud2, '/realsense/depth/color/ds_points', 10)
         
         # TODO: (Private Test) Test the belief range of point cloud of realsense, initialization
-        self.test_pub = self.create_publisher(
-            PointCloud2, '/test_points', 10
+        self.test_pub_box = self.create_publisher(
+            PointCloud2, '/test_points_box', 10
         )
 
         # Subscribe to point cloud topic and call callback function on each received message
@@ -188,7 +188,7 @@ class Detection(Node):
         """
 
         # TODO: (Private Test) 新增：用于收集所有满足条件的点，并在最后一次性发布成一个新的点云，方便调试和可视化
-        test_points = []
+        test_points_box = []
 
         # Convert ROS -> NumPy
 
@@ -273,7 +273,7 @@ class Detection(Node):
 
                 if y > 0.045 and y < 0.055:
                     # TODO: (Private Test) 新增：满足条件的点直接append原始gen[idx]，保留所有字段
-                    test_points.append(gen[idx])
+                    test_points_box.append(gen[idx])
                     if is_grey(h,s,v):
                         grey_points.append([z ,-x])
 
@@ -294,9 +294,9 @@ class Detection(Node):
             self.object_detection(msg, wood_sum_x, wood_sum_y, wood_sum_z, wood_counter, 'Wood')
                     
         # TODO: (Private Test) 新增：将所有满足条件的点组成一个点云并一次性发布，保留原始字段（含颜色）
-        if test_points:
-            cloud = pc2.create_cloud(msg.header, msg.fields, test_points)
-            self.test_pub.publish(cloud)
+        if test_points_box:
+            cloud = pc2.create_cloud(msg.header, msg.fields, test_points_box)
+            self.test_pub_box.publish(cloud)
 
         self.publish_2d_cloud(grey_points, msg.header)
 

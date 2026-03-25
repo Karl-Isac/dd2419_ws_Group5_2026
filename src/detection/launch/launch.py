@@ -10,18 +10,18 @@ def generate_launch_description():
 
     # static tf brodcaster：map -> odom
     
-    static_tf_node = Node(
-        package='tf2_ros',
-        executable='static_transform_publisher',
-        name='static_map_to_realsense',
-        arguments=[
-            '0.49', '0.50', '0',        # x, y, z (in meters)
-            '0', '0', '0',        # yaw, pitch, roll (in rads)
-            'map',                # parent frame
-            'odom'  # child frame
-        ],
-        output='screen'
-    )
+    # static_tf_node = Node(
+    #     package='tf2_ros',
+    #     executable='static_transform_publisher',
+    #     name='static_map_to_realsense',
+    #     arguments=[
+    #         '0.49', '0.50', '0',        # x, y, z (in meters)
+    #         '0', '0', '0',        # yaw, pitch, roll (in rads)
+    #         'map',                # parent frame
+    #         'odom'  # child frame
+    #     ],
+    #     output='screen'
+    # )
 
     # static tf brodcaster：map -> base_link
 
@@ -66,4 +66,4 @@ def generate_launch_description():
     #     output='screen'
     # )
 
-    return LaunchDescription([static_tf_node, rviz_node])
+    return LaunchDescription([rviz_node])
