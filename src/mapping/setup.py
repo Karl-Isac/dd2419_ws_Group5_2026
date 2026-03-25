@@ -27,7 +27,7 @@ setup(
             'space = mapping.make_space:main',
             'stuff = mapping.place_stuff:main',
             'keyboard = mapping.keyboard_node:main',
-            'controller = mapping.controller:main'
+            'controller = mapping.controller:main',
             'fix_pose = mapping.fix_pose:main',
         ],
     },

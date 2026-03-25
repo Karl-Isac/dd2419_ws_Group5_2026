@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import csv
 import math
+from pathlib import Path
 
 import rclpy
 from rclpy.node import Node
@@ -14,9 +15,10 @@ from dataclasses import dataclass
     # TODO: Change path
 ######################################################################################## 
 
-
-KNOWN_PATH = '/home/grumpy/dd2419_ws_Group5_2026/Workspace/map_1_1.csv'
-NEW_PATH = '/home/grumpy/dd2419_ws_Group5_2026/Workspace/the_map.csv'
+base_dir = Path(__file__).resolve().parent.parent.parent.parent.parent.parent.parent.parent
+WS_PATH = base_dir / 'Workspace/workspace_1.csv'
+KNOWN_PATH = base_dir / 'Workspace/map_1_1.csv'
+NEW_PATH = base_dir / 'Workspace/the_map.csv'
 
 class make_space(Node):
     

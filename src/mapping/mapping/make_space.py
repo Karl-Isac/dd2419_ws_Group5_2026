@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import csv
+from pathlib import Path
 
 import rclpy
 from rclpy.node import Node
@@ -12,8 +13,9 @@ from visualization_msgs.msg import Marker
     # TODO: Change path
 ######################################################################################## 
 
-
-WS_PATH = '/home/grumpy/dd2419_ws_Group5_2026/Workspace/workspace_1.csv'
+base_dir = Path(__file__).resolve().parent.parent.parent.parent.parent.parent.parent.parent
+WS_PATH = base_dir / 'Workspace/workspace_1.csv'
+print(WS_PATH)
 
 class make_space(Node):
     
