@@ -1,0 +1,26 @@
+
+How others should use it:
+
+
+Bofore pickup:
+
+ros2 topic pub /nav/phase std_msgs/String "{data: object}" -1
+ros2 topic pub /nav/goal geometry_msgs/PoseStamped "header:
+  frame_id: map
+pose:
+  position: {x: 1.0, y: 0.5, z: 0.0}
+  orientation: {w: 1.0}" -1
+
+
+After pickup:
+
+ros2 topic pub /nav/phase std_msgs/String "{data: box}" -1
+ros2 topic pub /nav/goal geometry_msgs/PoseStamped "header:
+  frame_id: map
+pose:
+  position: {x: -0.5, y: 0.2, z: 0.0}
+  orientation: {w: 1.0}" -1
+
+
+# test with fake workspace
+ros2 run grumpy_navigation_py planner --ros-args -p workspace_file:=/absolute/path/to/workspace.yaml

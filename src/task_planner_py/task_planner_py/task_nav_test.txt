@@ -1,0 +1,18 @@
+ros2 run grumpy_navigation_py controller
+
+ros2 run grumpy_navigation_py planner
+
+ros2 run tf2_ros static_transform_publisher 1.0 0.0 0 0 0 0 map object_0
+ros2 run tf2_ros static_transform_publisher 2.0 0.0 0 0 0 0 map box_0
+
+ros2 run tf2_ros static_transform_publisher 0 0 0 0 0 0 map odom
+
+ros2 run odometry odometry
+
+pixi run phidgets
+
+ros2 run task_planner fake_arm_node
+
+
+
+

@@ -23,6 +23,10 @@ phidgets = { cmd = "ros2 launch robp_launch phidgets_launch.yaml" }
 realsense = { cmd = "ros2 launch robp_launch realsense_launch.yaml" }
 keyboard = { cmd = "ros2 run learning_tf2_py keyboard" }
 rviz = { cmd = "ros2 run rviz2 rviz2"}
+arm_init = { cmd = "bash -c 'source install/setup.bash && ros2 launch learning_tf2_py arm_init.xml'"}
+
+# launch = "ros2 launch task_planner_py final_test.launch.py"
+launch = {cmd = "ros2 launch task_planner_py final_test.launch.py"}
 
 [tasks.install_udev_rules]
 cmd = '''
@@ -105,3 +109,5 @@ platformio = ">=6.1.18,<7"
 RMW_IMPLEMENTATION = "rmw_cyclonedds_cpp"
 ROS_AUTOMATIC_DISCOVERY_RANGE = "SUBNET"  # LOCALHOST, SUBNET
 ROS_DOMAIN_ID = "5"                       # Change to group number
+
+

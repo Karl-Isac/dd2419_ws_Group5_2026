@@ -1,17 +1,11 @@
 #!/usr/bin/env python
-
-import rclpy
-from rclpy.node import Node
-
-from sensor_msgs.msg import Image
-from robp_interfaces.msg import ArmControl
-
-import sys          ## return to these
 import math
 import cv2
 import numpy as np
 from cv_bridge import CvBridge      # to convert between ros2 image and numpy array (for opencv)
-import time
+
+# Imports from Michael:
+from detection.detection import rgb_to_hsv
 
 def approx_to_polygon(contour):
     # Approximate contour to polygon
@@ -52,6 +46,20 @@ def is_square(approx):
 
         if cos_angle > 0.3:  # ~72–108 degrees                      # might need to finetune
             return False
+        
+    # Side length check (Is it a square or a rectangle)
+    side_lengths = []
+    for i in range(4):
+        p1 = pts[i]
+        p2 = pts[(i + 1) % 4]
+        side_length = np.linalg.norm(p1 - p2)
+        side_lengths.append(side_length)
+    min_side = min(side_lengths)
+    max_side = max(side_lengths)
+
+    aspect_tolerance = 0.2   # 20% tolerance, tunable parameter
+    if (max_side - min_side) / max_side > aspect_tolerance:
+        return False
 
     return True
 
@@ -65,166 +73,198 @@ def draw_cs_on_image(image,centerpoint,angle):
     # Y axis:
     cv2.arrowedLine(image, (int(cx), int(cy)), (int(cx-arrow_length*math.sin(theta)),int(cy+arrow_length*math.cos(theta))),(0,255,0),2)
 
+def draw_target_on_image(image,x,y):
+    cv2.drawMarker(image,(int(x),int(y)),(0,0,255),cv2.MARKER_CROSS,15,2)
+
 def saturate_difference(current,previous,limit):
     if abs(current - previous) > limit:
         if (current - previous) > 0:
             return previous + limit
         else:
             return previous - limit
+    else:
+        return current
+    
+def is_the_target_cube_colored(msg, width_target, height_target, publisher):
+    # Takes a square area around the target pixel in the input image, 
+    # and checks whether its average color matches one of the possible cube colors
 
-        
+    # Convert ros2 Image to numpy array
+    bridge = CvBridge()
+    raw_image = bridge.imgmsg_to_cv2(       
+        msg,
+        desired_encoding='passthrough'
+    )
+    bgr_image = cv2.cvtColor(raw_image,cv2.COLOR_YUV2BGR_YUY2)
+    ksl = 7      # kernel side length, how big of a square to analyze around the target pixel
+    crop = bgr_image[height_target-ksl:height_target+ksl+1, width_target-ksl:width_target+ksl+1]
+    average = np.mean(crop, axis=(0, 1))
+    b,g,r = average/255
 
-
-class Pickup(Node):
-    def __init__(self):
-        super().__init__('pickup')
-
-        # Initialize the publisher                      # maybe disable to save even more computations
-        self._pub = self.create_publisher(
-            Image, '/arm/camera/image_debug', 10)
-        self._pub2 = self.create_publisher(
-            Image, '/arm/camera/image_debug2', 10)
-        
-        self._pub_control = self.create_publisher(
-            ArmControl, '/arm/safe_control', 10)
-
-        # Subscribe to the arm camera topic and call callback function on each received image
-        self.create_subscription(
-            Image, '/arm/camera/image_raw', self.image_callback, 10)
-        
-        # Initialize the arm position
-        msg = ArmControl()
-        msg.header.stamp = self.get_clock().now().to_msg()
-        msg.time = [1000,1000,1000,1000,1000,1000]
-        msg.position = [10,120,30,180,100,120]
-        self._pub_control.publish(msg)
-        time.sleep(1)
-
-
-        
-        # Send out a control action every 0.1 seconds
-        timer_period = 0.1  # seconds
-        self.timer = self.create_timer(timer_period, self.timer_callback)
-
-        
-        self.cube_position_available = False
-
-        self.joint5target = 120
-        self.joint1target = 120
-
-
-    def timer_callback(self):
-        if self.cube_position_available:
-            # Control gains:
-            k_sideways = 0.2
-            k_rotation = 1
-
-            # Previous targets:
-            prev_joint1target = self.joint1target
-            prev_joint5target = self.joint5target
-
-            image_half_width = self.image_shape[1]/2
-            cx,cy = self.cube_position_in_frame
-            rotation = self.cube_orientation_in_frame
-            self.cube_position_available = False
-            # Sideways control
-            sideways_error = image_half_width-cx
-            self.joint5target = 120 + k_sideways*sideways_error
-            # Rotation control
-            rotation_error = rotation % 90
-            if rotation_error > 45:
-                rotation_error = rotation_error - 90
-            self.joint1target = 120 + k_rotation*rotation_error
-
-            # Max motor speed 60 deg / 0.22 sec
-            # => 25 deg per 0.1 tick
-            limit = 25
-            self.joint1target = saturate_difference(self.joint1target,prev_joint1target,limit)
-            self.joint5target = saturate_difference(self.joint5target,prev_joint5target,limit)
-            
-
-            msg = ArmControl()
-            msg.header.stamp = self.get_clock().now().to_msg()
-            msg.time = [1000,1000,1000,1000,1000,1000]
-            msg.position = [10,self.joint1target,30,180,100,self.joint5target]
-            print("joint1target: " + str(self.joint1target))
-            print("joint5target: " + str(self.joint5target))
-            self._pub_control.publish(msg)
-        return
-        
-        
-        
-    def image_callback(self, msg: Image):
-        # For each image received on /arm/camera/image_raw it updates the cube position and orientation variables
-        # Known issues: it can detect multiple cubes/cube-like objects in the same frame, and both get written to the same attribute
-
-        publish_debug_images = True
-
-        # Convert ros2 Image to numpy array
-        bridge = CvBridge()
-        raw_image = bridge.imgmsg_to_cv2(       
-            msg,
-            desired_encoding='passthrough'
+    # Debug
+    out_msg = bridge.cv2_to_imgmsg(
+            crop,
+            encoding='bgr8'
         )
+    out_msg.header = msg.header
+    publisher.publish(out_msg)
+    
+    h,s,v = rgb_to_hsv(r, g, b)
+    print("HSV of picked up thing:")
+    print(h,s,v)
+    if is_red(h,s,v): 
+        print("Red cube grabbed")
+        return True
+    elif is_blue(h,s,v): 
+        print("Blue cube grabbed")
+        return True
+    elif is_green(h,s,v): 
+        print("Green cube grabbed")
+        return True
+    elif is_wood(h,s,v): 
+        print("Wood cube grabbed")
+        return True
+    else:
+        return False
+              
+    
+def find_cube_in_image_msg(msg, publisher1, publisher2, publisher3, publisher4, width_target, height_target, publish_debug_images):
+    # Looks for cube top face position and orientation in image
+    # Debug: publishes substep images of the detection process using the given publishers
 
-        # Image preprocess - grayscale, blur so texture wont get detected as edges, Canny edge detection
-        gray = cv2.cvtColor(raw_image, cv2.COLOR_YUV2GRAY_YUY2)
-        gray = cv2.GaussianBlur(gray, (5, 5), 1.5)
-        canny = cv2.Canny(gray, 50, 150)
-        self.image_shape = gray.shape
+    # Convert ros2 Image to numpy array
+    bridge = CvBridge()
+    raw_image = bridge.imgmsg_to_cv2(       
+        msg,
+        desired_encoding='passthrough'
+    )
 
-        if publish_debug_images:
-            bgr_image = cv2.cvtColor(raw_image,cv2.COLOR_YUV2BGR_YUY2)
+    # Check whether camera settings are as intended
+    image_shape = raw_image.shape
+    image_half_width = image_shape[1]/2
+    image_half_height = image_shape[0]/2
+    assert image_half_width == 320      
+    assert image_half_height == 240
 
-        # Thicken edges so cube faces become distinctly separate
-        kernel = np.ones((5,5), np.uint8)
-        canny = cv2.dilate(canny, kernel)
-        canny = cv2.bitwise_not(canny)
+    # Image preprocess:
+    # HSL filtering - non-aggressive, just takes out really dark and really gray pixels
+    bgr_image = cv2.cvtColor(raw_image,cv2.COLOR_YUV2BGR_YUY2)
+    hls = cv2.cvtColor(bgr_image, cv2.COLOR_BGR2HLS)
+    lower = np.array([0, 25, 25])     # H, L, S
+    upper = np.array([179, 255, 255])
+    mask = cv2.inRange(hls, lower, upper)
+    filtered = cv2.bitwise_and(bgr_image, bgr_image, mask=mask)
 
+    # Grayscale, blur so texture wont get detected as edges, Canny edge detection
+    gray = cv2.cvtColor(filtered, cv2.COLOR_BGR2GRAY)
+    gray = cv2.GaussianBlur(gray, (5, 5), 1.5)
+    canny = cv2.Canny(gray, 50,150)
+        
+    # Thicken edges so cube faces become distinctly separate
+    kernel = np.ones((5,5), np.uint8)
+    canny = cv2.dilate(canny, kernel)
+    canny = cv2.bitwise_not(canny)
+
+    cube_position_in_frame = False
+    cube_orientation_in_frame = False
+    cube_position_available = False
+
+    # Pass 1: If it can clearly see the cube top face, mark it
+    contours, hierarchy = cv2.findContours(
+        canny, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
+    )
+    for i in range(len(contours)):
+        #if hierarchy[0][i][2] == -1:            # look for only the innermost square, sometimes the cube shadow seems like an enveloping larger cube face
+        poly = approx_to_polygon(contours[i])
+        if is_square(poly):
+            rect = cv2.minAreaRect(poly)  # returns ((cx, cy), (width, height), angle)
+            centerpoint = rect[0]
+            angle = rect[2]         # in degrees
+            cube_position_in_frame = centerpoint
+            cube_orientation_in_frame = angle
+            cube_position_available = True
+            if publish_debug_images:    # mark cube pose in debug image
+                cv2.drawContours(bgr_image, contours, i, (255,0,0), 4)
+                draw_cs_on_image(bgr_image,centerpoint,angle)
+
+    # Pass 2: If it cannot see a clear cube top face, try to mark a large smudge distinct from the background
+    if not cube_position_available:
+        _, bw = cv2.threshold(gray, 100, 255, cv2.THRESH_BINARY)
+        kernel = np.ones((9,9), np.uint8)
+        bw_opened = cv2.morphologyEx(bw, cv2.MORPH_OPEN, kernel, iterations=2)
+        
         contours, hierarchy = cv2.findContours(
-            canny, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
+            bw_opened, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
         )
         for i in range(len(contours)):
-            if hierarchy[0][i][2] == -1:            # look for only the innermost square, sometimes the cube shadow seems like an enveloping larger cube face
-                poly = approx_to_polygon(contours[i])
-                if is_square(poly):
-                    rect = cv2.minAreaRect(poly)  # returns ((cx, cy), (width, height), angle)
-                    centerpoint = rect[0]
-                    angle = rect[2]         # in degrees
-                    self.cube_position_in_frame = centerpoint
-                    self.cube_orientation_in_frame = angle
-                    self.cube_position_available = True
-                    if publish_debug_images:
-                        cv2.drawContours(bgr_image, contours, i, (255,0,0), 4)
-                        draw_cs_on_image(bgr_image,centerpoint,angle)
+            area = cv2.contourArea(contours[i])     # if the smudge is large enough, treat it as the cube       
+            min_area = 1000                          # might need to finetune
+            if area > min_area:
+                rect = cv2.minAreaRect(contours[i])  # returns ((cx, cy), (width, height), angle)
+                centerpoint = rect[0]
+                angle = rect[2]         # in degrees
+                cube_position_in_frame = centerpoint
+                cube_orientation_in_frame = angle
+                cube_position_available = True
+                if publish_debug_images:    # mark cube pose in debug image
+                    cv2.drawContours(bgr_image, contours, i, (255,0,0), 4)
+                    draw_cs_on_image(bgr_image,centerpoint,angle)
 
-        if publish_debug_images:
-            out_msg = bridge.cv2_to_imgmsg(         # convert the np array back to ros2 Image msg
-                canny,
-                encoding='mono8'#msg.encoding
+    if publish_debug_images:
+        out_msg = bridge.cv2_to_imgmsg(         # convert the np array back to ros2 Image msg
+            gray,
+            encoding='mono8'
+        )
+        out_msg.header = msg.header
+        publisher1.publish(out_msg)     
+
+        out_msg = bridge.cv2_to_imgmsg(
+            canny,
+            encoding='mono8'
+        )
+        out_msg.header = msg.header
+        publisher3.publish(out_msg)   
+
+        draw_target_on_image(bgr_image,width_target,height_target)
+        out_msg2 = bridge.cv2_to_imgmsg(
+            bgr_image,
+            encoding='bgr8'
+        )
+        out_msg2.header = msg.header
+        publisher2.publish(out_msg2)
+
+        try:
+            out_msg = bridge.cv2_to_imgmsg( 
+                bw_opened,
+                encoding='mono8'
             )
             out_msg.header = msg.header
-            self._pub.publish(out_msg)      
+            publisher4.publish(out_msg)
+        except:
+            pass
+    
+    # Return pose if something was detected, otherwise raise an error
+    if cube_position_available:    
+        return cube_position_in_frame, cube_orientation_in_frame
+    else:
+        raise Exception("Cube not found in frame")
 
-            out_msg2 = bridge.cv2_to_imgmsg(         # convert the np array back to ros2 Image msg
-                bgr_image,
-                encoding='bgr8'
-            )
-            out_msg2.header = msg.header
-            self._pub2.publish(out_msg2)          
-        return
+def is_red(h,s,v):          # Tuned for arm camera, not the same as the values used in detection
+    return True if (h <= 20 or h >= 340) and s > 0.5 and v > 0.5 else False
 
-        
+def is_blue(h,s,v):
+    return True if (h >= 180 and h <= 240) and s > 0.5 and v > 0.4 else False
+
+def is_green(h,s,v):
+    return True if 140 <= h <= 180 and s > 0.5 and v > 0.25 else False
+
+def is_wood(h,s,v):
+    return True if (h <= 60 or h >= 340) and 0.2 < s < 0.6 and 0.3 < v < 0.8 else False
+
+
 
 def main():
-    raise("dont run it, talk to Andrew first")
-    rclpy.init()
-    node = Pickup()
-    try:
-        rclpy.spin(node)
-    except KeyboardInterrupt:
-        pass
-    rclpy.shutdown()
+    raise Exception("old, do not use, keeping this here just for safety")
 
 
 if __name__ == '__main__':

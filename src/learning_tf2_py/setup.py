@@ -10,6 +10,7 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
+        ('share/learning_tf2_py/launch', ['launch/arm_init.xml']),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -33,6 +34,9 @@ setup(
             'pickup = learning_tf2_py.pickup:main',
             'random_nav = learning_tf2_py.random_nav:main',
             'arm_safe_republisher = learning_tf2_py.arm_safe_republisher:main',
+            'jitter_test = learning_tf2_py.jitter_test:main',
+            'arm_control = learning_tf2_py.arm_control:main',
+            'arm_cube_detection_test = learning_tf2_py.arm_cube_detection_test:main',
         ],
     },
 )
