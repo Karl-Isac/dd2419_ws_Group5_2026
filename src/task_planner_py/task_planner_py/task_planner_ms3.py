@@ -48,6 +48,8 @@ class TaskPlannerNode(Node):
         # Active task
         self.current_object = None
         self.current_box = None
+        
+        self.current_explaration_point = None
 
         self.ox = None
         self.oy = None
@@ -59,15 +61,16 @@ class TaskPlannerNode(Node):
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, self)
 
         # Planner state
-        self.state = "SELECT_OBJECT"
+        # self.state = "SELECT_OBJECT"
+        self.state = "GENERATE_EXPLORATION_POSE"
         self.nav_reached = False
         self.pick_done = False
         self.place_done = False
         self._published_this_state = False
 
         # Publishers
-        self.goal_pub = self.create_publisher(Goal, "/nav/goal", 10)
-        self.path_pub = self.create_publisher(PathWithType, "/nav/path", 10)
+        self.goal_pub = self.create_publisher(PoseStamped, "/nav/goal", 10)
+        self.path_to_controller_pub = self.create_publisher(PathWithType, "/nav/path_to_controller", 10)
         self.arm_pub = self.create_publisher(String, "/arm/cmd", 10)
 
         # create pub and sub
@@ -79,6 +82,7 @@ class TaskPlannerNode(Node):
 
         # Subscribers
         self.create_subscription(Bool, "/nav/reached", self.on_reached, 10)
+        self.create_subscription(Path, "/nav/path_from_planner", self.on_path_from_planner, 10)
         self.create_subscription(String, "/arm/report_back", self.on_report_back, 10)
         self.create_subscription(PoseArray, "/detected_objects", self.on_objects, 10)
         self.create_subscription(PoseArray, "/detected_boxes", self.on_boxes, 10)
@@ -97,6 +101,14 @@ class TaskPlannerNode(Node):
             "Pub: /nav/goal, /arm/cmd  "
             "Sub: /nav/reached, /arm/report_back, /detected_objects, /detected_boxes"
         )
+
+    def on_exploration_point(self, msg: Point):
+        self.current_exploration_point = msg
+        self.generate_exploartion_pose_object_success = True
+
+
+    def on_path_from_planner(self):
+
 
     def distance_sq(self, x1: float, y1: float, x2: float, y2: float) -> float:
         dx = x1 - x2
@@ -188,6 +200,23 @@ class TaskPlannerNode(Node):
         self.goal_pub.publish(goal)
         self.get_logger().info(f"Published {goal_type} goal ({x:.2f}, {y:.2f})")
 
+    def publish_pose_to_path_planner(x: float, y: float):
+        p = PoseStamped()
+        p.header.frame_id = self.world_frame
+        p.header.stamp = self.get_clock().now().to_msg()
+        p.pose.position.x = x
+        p.pose.position.y = y
+        p.pose.position.z = 0.0
+        p.pose.orientation.w = 1.0
+
+        self.goal_pub.publish(p)
+        self.get_logger().info(f"Published PoseStamped to path planner: ({x:.2f}, {y:.2f})")
+
+
+
+
+
+
     def publish_path_to_controller(self, path: Path, goal_type: str):
         path_to_goal = PathWithType()
         if goal_type == "object":
@@ -209,6 +238,33 @@ class TaskPlannerNode(Node):
             return
 
         rx, ry = robot
+
+        if self.state == "GENERATE_EXPLORATION_POSE":
+            if not self._published_this_state:
+                self.exploration_pub.publish("Generate path")
+
+                self._published_this_state = True
+                self.generate_exploartion_pose_object_success = False
+                self.get_logger().info("GENERATE_EXPLORATION_POSE: published path request")
+
+
+            if self.generate_exploartion_pose_object_success:
+                self.enter_state("EXECUTE_EXPLORATION_PATH")
+
+        if self.state == "EXECUTE_EXPLORATION_PATH":
+            if not self._published_this_state:
+                self.goal_pub.publish(self.current_exploration_point.x, self.current_exploration_point.y)
+                self._published_this_state = True
+                self.execute_exploration_path_success = False
+            
+            if self.execute_exploration_path_success:
+                # if not object or box
+                self.enter_state("GENERATE_EXPLORATION_POSE")
+                
+                # if object and box:
+                #   state -> SELECT_OBJECT
+
+
 
         if self.state == "SELECT_OBJECT":
             if len(self.known_objects) == 0 or len(self.known_boxes) == 0:
@@ -236,31 +292,25 @@ class TaskPlannerNode(Node):
                 f"and box id={self.current_box.id} at ({self.bx:.2f}, {self.by:.2f})"
             )
 
-            self.enter_state("NAV_TO_OBJECT")
+            self.enter_state("GENERATE_PATH_TO_OBJECT")
             return
 
         if self.current_object is None and self.state not in ("SELECT_OBJECT", "DONE", "DROP_OBJECT"):
             return
 
 
-        # TODO: create these new states
-        # GENERATE_PATH_TO_OBJECT
-        # EXECUTE_PATH_TO_OBJECT
-        # GENERATE_PATH_TO_BOX
-        # EXECUTE_PATH_TO_BOX
-
-        # TODO: next create for box as well
-
         # TODO: 
         # states: 
         # genereate exploration pose 
         # execute exploration pose 
         # 
+
+
         
         if self.state == "GENERATE_PATH_TO_OBJECT": 
             if not self._published_this_state:
                 #self.publish_goal_xy(self.ox, self.oy, goal_type="object") # TODO: probably dont need goal type here
-                self.publish_goal_xy() # TODO: probably dont need goal type here
+                self.publish_pose_to_path_planner(self.ox, self.oy)
                 self._published_this_state = True
                 self.generate_path_object_success = False
                 self.get_logger().info("GENERATE_PATH_TO_OBJECT: published object goal")
@@ -281,7 +331,8 @@ class TaskPlannerNode(Node):
 
         if self.state == "GENERATE_PATH_TO_BOX": 
             if not self._published_this_state:
-                self.publish_goal_xy(self.bx, self.by) 
+                # self.publish_goal_xy(self.bx, self.by) 
+                self.publish_pose_to_path_planner(self.bx, self.by)
                 self._published_this_state = True
                 self.generate_path_box_success = False
                 self.get_logger().info("GENERATE_PATH_TO_BOX: published object goal")
