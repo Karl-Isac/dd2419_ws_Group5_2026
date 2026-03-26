@@ -10,10 +10,10 @@ from rclpy.node import Node
 from tf2_ros import TransformBroadcaster
 from tf_transformations import quaternion_from_euler, euler_from_quaternion
 
-from geometry_msgs.msg import TransformStamped, PoseStamped
+from geometry_msgs.msg import TransformStamped
 from robp_interfaces.msg import Encoders
-from sensor_msgs.msg import Imu
 from nav_msgs.msg import Path
+from geometry_msgs.msg import PoseStamped
 
 
 class Odometry(Node):
@@ -31,66 +31,51 @@ class Odometry(Node):
 
         # Subscribe to encoder topic and call callback function on each recieved message
         self.create_subscription(
-            Encoders,
-            '/phidgets/motor/encoders',
-            self.encoder_callback,
-            10
-        )
-        
-        self.create_subscription(
-            Imu,
-            '/phidgets/imu/data_raw',
-            self.imu_callback,
-            10
-        )
-        
-        self._yaw_imu = 0.0
-        self._IMU_offset = None
-        self._start_offset = 0 # If start yaw is not 0, change it here
-        # self._start_offset = -3.2428191 # For Lidar_bag
+            Encoders, '/phidgets/motor/encoders', self.encoder_callback, 10)
 
         # 2D pose
         self._x = 0.0
         self._y = 0.0
         self._yaw = 0.0
-        
-    def imu_callback(self, msg: Imu):
-        q = msg.orientation
-        # Convert quaternion → Euler
-        _, _, yaw = euler_from_quaternion([q.x, q.y, q.z, q.w])
-        
-        if self._IMU_offset is None:
-            self._IMU_offset = yaw
-            
-        self._yaw_imu = -yaw + self._IMU_offset - self._start_offset # type: ignore
 
     def encoder_callback(self, msg: Encoders):
+        """Takes encoder readings and updates the odometry.
+
+        This function is called every time the encoders are updated (i.e., when a message is published on the '/motor/encoders' topic).
+
+        Your task is to update the odometry based on the encoder data in 'msg'. You are allowed to add/change things outside this function.
+
+        Keyword arguments:
+        msg -- An encoders ROS message. To see more information about it 
+        run 'ros2 interface show robp_interfaces/msg/Encoders' in a terminal.
+        """
 
         # The kinematic parameters for the differential configuration
         dt = 50 / 1000
-        ticks_per_rev = 50 * 64
-        wheel_radius = 0.04916
-        #base = 0.315
+        ticks_per_rev = 48 * 64
+        wheel_radius = 0.04921  
+        base = 0.315  
 
         # Ticks since last message
         delta_ticks_left = msg.delta_encoder_left
         delta_ticks_right = msg.delta_encoder_right
+        dL = delta_ticks_left
+        dR = delta_ticks_right
 
         # TODO: Fill in
-        phi_L = (delta_ticks_left/ticks_per_rev)*2*math.pi # d_phi = K*delta_E
-        phi_R = (delta_ticks_right/ticks_per_rev)*2*math.pi
-        D = wheel_radius/2 * (phi_R + phi_L)
+
+        K = 2*math.pi / ticks_per_rev
+        D = K * wheel_radius / 2 * ( dR + dL)
+        dTheta = K * wheel_radius / base * (dR - dL)
+
+        self._x = self._x + D * math.cos(self._yaw)  # TODO: Fill in
+        self._y = self._y + D * math.sin(self._yaw) # TODO: Fill in
+        self._yaw = self._yaw + dTheta  # TODO: Fill in
         
-        self._yaw = self._yaw_imu
-        self._yaw = math.atan2(math.sin(self._yaw), math.cos(self._yaw))
-        self._x += D * math.cos(self._yaw)
-        self._y += D * math.sin(self._yaw)
-        
-        stamp = msg.header.stamp
+        stamp = msg.header.stamp # TODO: Fill in
 
         self.broadcast_transform(stamp, self._x, self._y, self._yaw)
         self.publish_path(stamp, self._x, self._y, self._yaw)
-        
 
     def broadcast_transform(self, stamp, x, y, yaw):
         """Takes a 2D pose and broadcasts it as a ROS transform.

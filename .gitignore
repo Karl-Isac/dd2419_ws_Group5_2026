@@ -73,10 +73,10 @@ bags/*
 .vscode
 
 build/
-install/
+# install/
 log/
 **/build/
-**/install/
+# **/install/
 **/log/
 
 rosbags/

@@ -21,7 +21,8 @@ arm_camera = { cmd = "ros2 launch robp_launch arm_camera_launch.yaml" }
 lidar = { cmd = "ros2 launch robp_launch lidar_launch.yaml" }
 phidgets = { cmd = "ros2 launch robp_launch phidgets_launch.yaml" }
 realsense = { cmd = "ros2 launch robp_launch realsense_launch.yaml" }
-keyboard = { cmd = "ros2 run learning_tf2_py keyboard" }
+keyboard = { cmd = "ros2 run mapping keyboard" }
+controller = { cmd = "ros2 run mapping controller" }
 rviz = { cmd = "ros2 run rviz2 rviz2"}
 arm_init = { cmd = "bash -c 'source install/setup.bash && ros2 launch learning_tf2_py arm_init.xml'"}
 
@@ -83,9 +84,17 @@ ros-jazzy-learning-tf2-py = { path = "src/learning_tf2_py" }
 ros-jazzy-odometry = { path = "src/odometry" }
 ros-jazzy-display-markers = { path = "src/display_markers" }
 ros-jazzy-detection = { path = "src/detection" }
+ros-jazzy-mapping = { path = "src/mapping" }
 
 # Other
 argcomplete = ">=3.6.3,<4"
+colcon-common-extensions = ">=0.3.0,<0.4"
+ros-jazzy-rosidl-default-generators = ">=1.6.0,<2"
+ros-jazzy-rosidl-default-runtime = ">=1.6.0,<2"
+ros-jazzy-ament-lint-auto = ">=0.17.3,<0.18"
+ros-jazzy-ament-lint-common = ">=0.17.3,<0.18"
+ros-jazzy-ros-base = ">=0.11.0,<0.12"
+ros-jazzy-joy = ">=3.3.0,<4"
 
 [target.linux-64.dependencies]
 # ROS

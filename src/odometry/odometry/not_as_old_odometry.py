@@ -43,34 +43,93 @@ class Odometry(Node):
             self.imu_callback,
             10
         )
+
+        self._imu_yaw_rate = 0.0
         
-        self._yaw_imu = 0.0
-        self._IMU_offset = None
-        self._start_offset = 0 # If start yaw is not 0, change it here
-        # self._start_offset = -3.2428191 # For Lidar_bag
+        self.gain = 1
+        print("Gain = ", self.gain)
 
         # 2D pose
         self._x = 0.0
         self._y = 0.0
         self._yaw = 0.0
+        #self._yaw = -2.77 * (1- self.gain)
+        #self._yaw = -0.8275568 - 1.932388
+        
         
     def imu_callback(self, msg: Imu):
-        q = msg.orientation
-        # Convert quaternion → Euler
-        _, _, yaw = euler_from_quaternion([q.x, q.y, q.z, q.w])
-        
-        if self._IMU_offset is None:
-            self._IMU_offset = yaw
-            
-        self._yaw_imu = -yaw + self._IMU_offset - self._start_offset # type: ignore
+        self._imu_yaw_rate = msg.angular_velocity.z
 
     def encoder_callback(self, msg: Encoders):
+        """Takes encoder readings and updates the odometry.
+
+        This function is called every time the encoders are updated (i.e., when a message is published on the '/motor/encoders' topic).
+
+        Your task is to update the odometry based on the encoder data in 'msg'. You are allowed to add/change things outside this function.
+
+        Keyword arguments:
+        msg -- An encoders ROS message. To see more information about it 
+        run 'ros2 interface show robp_interfaces/msg/Encoders' in a terminal.
+        """
+        
+        '''
+        ---
+        header:
+        stamp:
+            sec: 1774296502
+            nanosec: 222521995
+        frame_id: imu_link
+        orientation:
+        x: -0.007713497616350651
+        y: 0.011861552484333515
+        z: -0.542012631893158
+        w: 0.8402512669563293
+        orientation_covariance:
+        - 0.0
+        - 0.0
+        - 0.0
+        - 0.0
+        - 0.0
+        - 0.0
+        - 0.0
+        - 0.0
+        - 0.0
+        angular_velocity:
+        x: -0.0016090190374135724
+        y: -0.001497667031136334
+        z: 0.0012870057904206186
+        angular_velocity_covariance:
+        - 0.0
+        - 0.0
+        - 0.0
+        - 0.0
+        - 0.0
+        - 0.0
+        - 0.0
+        - 0.0
+        - 0.0
+        linear_acceleration:
+        x: 0.135920169
+        y: 0.24673531399999996
+        z: -9.742906775
+        linear_acceleration_covariance:
+        - 0.0
+        - 0.0
+        - 0.0
+        - 0.0
+        - 0.0
+        - 0.0
+        - 0.0
+        - 0.0
+        - 0.0
+        ---
+        '''
 
         # The kinematic parameters for the differential configuration
         dt = 50 / 1000
-        ticks_per_rev = 50 * 64
-        wheel_radius = 0.04916
-        #base = 0.315
+        ticks_per_rev = 48 * 64
+        wheel_radius = 0.04921
+        base = 0.315
 
         # Ticks since last message
         delta_ticks_left = msg.delta_encoder_left
@@ -79,14 +138,33 @@ class Odometry(Node):
         # TODO: Fill in
         phi_L = (delta_ticks_left/ticks_per_rev)*2*math.pi # d_phi = K*delta_E
         phi_R = (delta_ticks_right/ticks_per_rev)*2*math.pi
+        
+        # v = wheel_radius/2 * (phi_R + phi_L)/dt
+        # w = wheel_radius/base * (phi_R - phi_L)/dt
+        
         D = wheel_radius/2 * (phi_R + phi_L)
+        d_theta_wheel = wheel_radius/base * (phi_R - phi_L)
         
-        self._yaw = self._yaw_imu
-        self._yaw = math.atan2(math.sin(self._yaw), math.cos(self._yaw))
-        self._x += D * math.cos(self._yaw)
-        self._y += D * math.sin(self._yaw)
+        d_theta_Imu = self._imu_yaw_rate * dt
+        gain = self.gain
         
-        stamp = msg.header.stamp
+        d_theta = gain * d_theta_wheel - (1 - gain) * d_theta_Imu
+        #print(d_theta)
+
+        # theta_mid = self._yaw + d_theta / 2.0
+
+        new_yaw = self._yaw + d_theta
+
+        # Use midpoint heading for position update
+        self._x += D * math.cos(self._yaw + d_theta / 2.0)                            #self._x = self._x + D * math.cos(self._yaw)
+        self._y += D * math.sin(self._yaw + d_theta / 2.0)                            #self._y = self._y + D * math.sin(self._yaw)
+
+        # Normalize yaw to [-pi, pi]
+        self._yaw = math.atan2(math.sin(new_yaw), math.cos(new_yaw))                  #self._yaw = self._yaw + d_theta  # TODO: Fill in
+        #self._yaw = math.atan2(2*(wy + xz), 1 - 2*(y*y + z*z))
+        
+        stamp = msg.header.stamp # TODO: Fill in
+        # print(stamp)
 
         self.broadcast_transform(stamp, self._x, self._y, self._yaw)
         self.publish_path(stamp, self._x, self._y, self._yaw)
