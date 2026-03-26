@@ -16,6 +16,11 @@ msg/_*.py
 build_isolated/
 devel_isolated/
 rosbags/
+*.yaml
+.DS_store
+*.pdf
+*.gv
+pixi.lock
 length_1/
 length_2/
 length_3/
@@ -68,15 +73,18 @@ bags/*
 *.db3
 *.mcap
 /rosbags
+rosbags/
+Rosbags/
+Rosbags_2/
 
 # VS Code
 .vscode
 
 build/
-install/
+# install/
 log/
 **/build/
-**/install/
+# **/install/
 **/log/
 
 rosbags/
