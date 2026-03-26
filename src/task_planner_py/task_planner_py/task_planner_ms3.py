@@ -60,11 +60,22 @@ class TaskPlannerNode(Node):
         # TF
         self.tf_buffer = tf2_ros.Buffer()
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, self)
+            
+        # ===== state flags =====
+        self.generate_exploration_pose_success = False
+        self.generate_exploration_path_success = False
+        self.execute_exploration_path_success = False
+
+        self.generate_path_object_success = False
+        self.execute_path_object_success = False
+
+        self.generate_path_box_success = False
+        self.execute_path_box_success = False
 
         # Planner state
         # self.state = "SELECT_OBJECT"
         self.state = "GENERATE_EXPLORATION_POSE"
-        self.nav_reached = False
+        #self.nav_reached = False
         self.pick_done = False
         self.place_done = False
         self._published_this_state = False
@@ -91,8 +102,8 @@ class TaskPlannerNode(Node):
         # Update ICP state
         self.ICP_pub = self.create_publisher(String, "/localization/start_update_ICP", 10)  # contant can be anything
         self.create_subscription(String, "/localization/finished_update_ICP", self.on_finished_update_ICP, 10)  # contant can be anything
-        self.icp_timer = self.create_timer(10, self.start_update_ICP)
-        self.state_before_update_ICP = None
+        # self.icp_timer = self.create_timer(10, self.start_update_ICP)
+        self.state_after_update_icp = None
         self.update_ICP_done = False
         self.update_ICP_start_time = None
         self.update_ICP_timeout = 3.0  # seconds
@@ -107,26 +118,43 @@ class TaskPlannerNode(Node):
             "Sub: /nav/reached, /arm/report_back, /detected_objects, /detected_boxes"
         )
 
+    # def reset_flags(self):
+    #     self.generate_exploration_pose_success = False
+    #     self.generate_exploration_path_success = False
+    #     self.execute_exploration_path_success = False
+    #     self.generate_path_object_success = False
+    #     self.execute_path_object_success = False
+    #     self.generate_path_box_success = False
+    #     self.execute_path_box_success = False
+
     def on_finished_update_ICP(self, msg):
         self.update_ICP_done = True
 
-    def start_update_ICP(self):
-        self.state_before_update_ICP = self.state
-        self.enter_state("UPDATE_ICP")
+    # def start_update_ICP(self):
+    #     self.state_after_update_icp = self.state
+    #     self.enter_state("UPDATE_ICP")
+    #     self.update_ICP_start_time = self.get_clock().now()
+    #     self.update_ICP_done = False
+
+    def start_update_icp(self, next_state: str):
+        self.state_after_update_icp = next_state
         self.update_ICP_start_time = self.get_clock().now()
         self.update_ICP_done = False
-        
+        self.enter_state("UPDATE_ICP")
 
     def on_exploration_point(self, msg: Point):
         self.current_exploration_point = msg
-        self.generate_exploartion_pose_object_success = True
+        self.generate_exploration_pose_success = True
 
 
     def on_path_from_planner(self, msg: Path):
+        self.path_to_goal = msg
         if self.state == "GENERATE_PATH_TO_OBJECT":
             self.generate_path_object_success = True
-        if self.state == "EXECUTE_PATH_TO_OBJECT":
+        elif self.state == "GENERATE_PATH_TO_BOX":
             self.generate_path_box_success = True
+        elif self.state == "GENERATE_EXPLORATION_PATH":
+            self.generate_exploration_path_success = True
 
     
     def distance_sq(self, x1: float, y1: float, x2: float, y2: float) -> float:
@@ -136,7 +164,7 @@ class TaskPlannerNode(Node):
 
     def on_objects(self, msg: PoseArray):
         # Replace with latest tracked objects from detection
-        self.known_objects = []
+        #self.known_objects = []
 
         for p in msg.poses:
             x = float(p.position.x)
@@ -150,7 +178,7 @@ class TaskPlannerNode(Node):
 
     def on_boxes(self, msg: PoseArray):
         # Replace with latest tracked boxes from detection
-        self.known_boxes = []
+        #self.known_boxes = []
 
         for p in msg.poses:
             x = float(p.position.x)
@@ -244,15 +272,17 @@ class TaskPlannerNode(Node):
 
 
     def publish_path_to_controller(self, path: Path, goal_type: str):
-        path_to_goal = PathWithType()
-        path_to_goal.path = path
+        path_with_type = PathWithType()
+        path_with_type.path = path
 
         if goal_type == "object":
-            path_to_goal.type = 0 
+            path_with_type.type = 0 
         elif goal_type == "box":
-            path_to_goal.type = 1 
+            path_with_type.type = 1 
+        elif goal_type == "exploration_point":
+            path_with_type.type = 2
 
-        self.path_to_controller_pub.publish(path_to_goal)
+        self.path_to_controller_pub.publish(path_with_type)
         self.get_logger().info(f"Published {goal_type}") 
 
     def enter_state(self, new_state: str):
@@ -269,10 +299,11 @@ class TaskPlannerNode(Node):
 
         # ICP:
         if self.state == "UPDATE_ICP":
-            if not self._not_published_this_state:
+            if not self._published_this_state:
                 self.ICP_pub.publish(String(data="update"))
+                self._published_this_state = True
             if self.update_ICP_done:
-                self.enter_state(self.state_before_update_ICP)
+                self.enter_state(self.state_after_update_icp)
                 return
 
             # timeout case
@@ -281,50 +312,68 @@ class TaskPlannerNode(Node):
 
             if elapsed > self.update_ICP_timeout:
                 self.get_logger().warn("ICP update timeout")
-                self.enter_state(self.state_before_update_ICP)
+                self.enter_state(self.state_after_update_icp)
+                return
 
-        if self.state == "GENERATE_EXPLORATION_POSE":
+            return
+
+        elif self.state == "GENERATE_EXPLORATION_POSE":
             if not self._published_this_state:
                 self.exploration_pub.publish(String(data="Generate path"))
-
                 self._published_this_state = True
-                self.generate_exploartion_pose_object_success = False
-                self.get_logger().info("GENERATE_EXPLORATION_POSE: published path request")
+                self.generate_exploration_pose_success = False
+
+            if self.generate_exploration_pose_success:
+                self.enter_state("GENERATE_EXPLORATION_PATH")
 
 
-            if self.generate_exploartion_pose_object_success:
-                self.enter_state("EXECUTE_EXPLORATION_PATH")
-
-        if self.state == "EXECUTE_EXPLORATION_PATH":
+        elif self.state == "GENERATE_EXPLORATION_PATH":
             if not self._published_this_state:
-                # self.goal_pub.publish(self.current_exploration_point.x, self.current_exploration_point.y)
                 self.publish_pose_to_path_planner(
                     self.current_exploration_point.x,
                     self.current_exploration_point.y
                 )
                 self._published_this_state = True
+                self.generate_exploration_path_success = False
+
+            if self.generate_exploration_path_success:
+                # self.enter_state("EXECUTE_EXPLORATION_PATH")
+                self.start_update_icp("EXECUTE_EXPLORATION_PATH")
+
+
+        elif self.state == "EXECUTE_EXPLORATION_PATH":
+            if not self._published_this_state:
+                self.publish_path_to_controller(self.path_to_goal, goal_type="exploration_point")  # or exploration type if you add one
+                self._published_this_state = True
                 self.execute_exploration_path_success = False
-            
+
             if self.execute_exploration_path_success:
-                # if not object or box
-                self.enter_state("GENERATE_EXPLORATION_POSE")
-                
-                # if object and box:
-                #   state -> SELECT_OBJECT
+                if len(self.known_objects) > 0 and len(self.known_boxes) > 0:
+                    self.enter_state("SELECT_OBJECT")
+                else:
+                    self.enter_state("GENERATE_EXPLORATION_POSE")
 
 
 
-        if self.state == "SELECT_OBJECT":
+        elif self.state == "SELECT_OBJECT":
             if len(self.known_objects) == 0 or len(self.known_boxes) == 0:
+                self.enter_state("GENERATE_EXPLORATION_POSE")
                 return
 
-            # choose closest object to robot
+            available_objects = [obj for obj in self.known_objects if obj.status == "detected"]
+            if len(self.known_boxes) == 0:
+                self.enter_state("GENERATE_EXPLORATION_POSE")
+                return
+
+            if len(available_objects) == 0:
+                self.enter_state("GENERATE_EXPLORATION_POSE")
+                return
+
             self.current_object = min(
-                self.known_objects,
+                available_objects,
                 key=lambda obj: self.distance_sq(rx, ry, obj.x, obj.y)
             )
 
-            # choose closest box to robot
             self.current_box = min(
                 self.known_boxes,
                 key=lambda box: self.distance_sq(rx, ry, box.x, box.y)
@@ -364,7 +413,9 @@ class TaskPlannerNode(Node):
                 self.get_logger().info("GENERATE_PATH_TO_OBJECT: published object goal")
 
             if self.generate_path_object_success:
-                self.enter_state("EXECUTE_PATH_TO_OBJECT")
+                # self.enter_state("EXECUTE_PATH_TO_OBJECT")
+                self.start_update_icp("EXECUTE_PATH_TO_OBJECT")
+
 
         elif self.state == "EXECUTE_PATH_TO_OBJECT": 
             if not self._published_this_state:
@@ -386,7 +437,8 @@ class TaskPlannerNode(Node):
                 self.get_logger().info("GENERATE_PATH_TO_BOX: published object goal")
 
             if self.generate_path_box_success:
-                self.enter_state("EXECUTE_PATH_TO_BOX")
+                # self.enter_state("EXECUTE_PATH_TO_BOX")
+                self.start_update_icp("EXECUTE_PATH_TO_BOX")
 
 
         elif self.state == "EXECUTE_PATH_TO_BOX": 
