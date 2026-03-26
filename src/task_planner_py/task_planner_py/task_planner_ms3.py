@@ -198,6 +198,7 @@ class TaskPlannerNode(Node):
 
         elif msg.data == "pick_fail":
             self.pick_done = False
+            # self.current_object.status == "detected" # TODO: check if this is nessessary
             self.current_object = None
             self.enter_state("SELECT_OBJECT")
 
