@@ -38,6 +38,21 @@ def generate_launch_description():
     #     output='screen'
     # )
 
+    # static tf brodcaster：odom -> base_link
+    
+    # static_tf_node = Node(
+    #     package='tf2_ros',
+    #     executable='static_transform_publisher',
+    #     name='static_odom_to_base_link',
+    #     arguments=[
+    #         '0', '0', '0',        # x, y, z (in meters)
+    #         '0', '0', '0',        # yaw, pitch, roll (in rads)
+    #         'odom',               # parent frame
+    #         'base_link'  # child frame
+    #     ],
+    #     output='screen'
+    # )
+
     rviz_node = Node(
         package='rviz2',
         executable='rviz2',

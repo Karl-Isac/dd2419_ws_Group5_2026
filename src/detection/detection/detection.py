@@ -279,19 +279,19 @@ class Detection(Node):
 
         # red 
         if red_counter > 10:
-            self.object_detection(msg, red_sum_x, red_sum_y, red_sum_z, red_counter, 'Red')
+            self.object_publish(msg, red_sum_x, red_sum_y, red_sum_z, red_counter, 'Red')
 
         # blue
         if blue_counter > 10:
-            self.object_detection(msg, blue_sum_x, blue_sum_y, blue_sum_z, blue_counter, 'Blue')
+            self.object_publish(msg, blue_sum_x, blue_sum_y, blue_sum_z, blue_counter, 'Blue')
         
         # green
         if green_counter > 10:
-            self.object_detection(msg, green_sum_x, green_sum_y, green_sum_z, green_counter, 'Green')
+            self.object_publish(msg, green_sum_x, green_sum_y, green_sum_z, green_counter, 'Green')
 
         # wood
         if wood_counter > 10:
-            self.object_detection(msg, wood_sum_x, wood_sum_y, wood_sum_z, wood_counter, 'Wood')
+            self.object_publish(msg, wood_sum_x, wood_sum_y, wood_sum_z, wood_counter, 'Wood')
                     
         # TODO: (Private Test) 新增：将所有满足条件的点组成一个点云并一次性发布，保留原始字段（含颜色）
         if test_points_box:
@@ -372,7 +372,7 @@ class Detection(Node):
             except TransformException as ex:
                 self.get_logger().error(f'Transform failed: {ex}')
     
-    def object_detection(self, msg, sum_x, sum_y, sum_z, counter, color):
+    def object_publish(self, msg, sum_x, sum_y, sum_z, counter, color):
         # object_num is the number of detected objects, regardless of color, used for TF frame naming
         self.get_logger().debug(f'{color} object detected.')
         self.object = tf2_geometry_msgs.PoseStamped()
