@@ -1,71 +1,364 @@
 #!/usr/bin/env python3
+import yaml
 import rclpy
 from rclpy.node import Node
 
-from geometry_msgs.msg import PoseStamped
-from nav_msgs.msg import Path
+from geometry_msgs.msg import PoseStamped, PoseArray
+from nav_msgs.msg import Path, OccupancyGrid
+
+import numpy as np
+
+import heapq
+import math
 
 
 class AStarPlannerNode(Node):
     def __init__(self):
         super().__init__("astar_planner_node")
 
+        # ---- Parameters ----
         self.declare_parameter("world_frame", "map")
+        self.declare_parameter("workspace_file", "workspace.yaml")
+        self.declare_parameter("grid_resolution", 0.1)
+
+        # temporary fixed start position
+        self.declare_parameter("start_x", 0.0)
+        self.declare_parameter("start_y", 0.0)
+
         self.world_frame = self.get_parameter("world_frame").value
+        self.workspace_file = self.get_parameter("workspace_file").value
+        self.resolution = float(self.get_parameter("grid_resolution").value)
+        self.start_x = float(self.get_parameter("start_x").value)
+        self.start_y = float(self.get_parameter("start_y").value)
 
-        self.goal_sub = self.create_subscription(PoseStamped, "/nav/goal", self.on_goal, 10)
-        self.path_pub = self.create_publisher(Path, "/nav/path_from_planner", 10)
+        # ---- Storage ----
+        self.objects = []
+        self.boxes = []
+        self.obstacles = []
+        self.goal = None
 
-        self.get_logger().info("AStarPlannerNode started")
+        # ---- Workspace ----
+        self.workspace_poly = None
+        self.min_x = 0.0
+        self.max_x = 0.0
+        self.min_y = 0.0
+        self.max_y = 0.0
+        self.load_workspace()
 
-    def get_start(self):
-        # TODO: replace with TF lookup
-        return (0.0, 0.0)
+        # ---- ROS ----
+        self.create_subscription(PoseArray, "/detected_objects", self.on_objects, 10)
+        self.create_subscription(PoseArray, "/detected_boxes", self.on_boxes, 10)
+        self.create_subscription(PoseStamped, "/fake_obstacles", self.on_obstacle, 10)
+        self.create_subscription(PoseStamped, "/nav/goal", self.on_goal, 10)
 
-    def build_occupancy_grid(self):
-        # TODO: fill from obstacles
-        return None
+        self.path_pub = self.create_publisher(Path, "/nav/path", 10)
+        self.grid_pub = self.create_publisher(OccupancyGrid, "/nav/grid", 10)
 
-    def run_astar(self, start, goal, grid):
-        # TODO: implement A*
-        return []
+        self.get_logger().info("Planner ready")
 
-    def grid_path_to_ros_path(self, cells):
+    # ---------------------------------------
+    # Workspace
+    # ---------------------------------------
+    def load_workspace(self):
+        try:
+            with open(self.workspace_file, "r") as f:
+                data = yaml.safe_load(f)
+
+            self.workspace_poly = [tuple(p) for p in data["workspace"]["perimeter"]]
+
+            xs = [p[0] for p in self.workspace_poly]
+            ys = [p[1] for p in self.workspace_poly]
+
+            self.min_x = min(xs)
+            self.max_x = max(xs)
+            self.min_y = min(ys)
+            self.max_y = max(ys)
+
+        except Exception as e:
+            self.get_logger().error(f"Workspace load failed: {e}")
+            self.workspace_poly = None
+
+    def inside_poly(self, x, y):
+        if self.workspace_poly is None:
+            return True
+
+        inside = False
+        poly = self.workspace_poly
+        j = len(poly) - 1
+
+        for i in range(len(poly)):
+            xi, yi = poly[i]
+            xj, yj = poly[j]
+
+            if ((yi > y) != (yj > y)) and (
+                x < (xj - xi) * (y - yi) / (yj - yi + 1e-12) + xi
+            ):
+                inside = not inside
+            j = i
+
+        return inside
+
+    # ---------------------------------------
+    # Callbacks
+    # ---------------------------------------
+    def on_objects(self, msg):
+        for p in msg.poses:
+            self.objects.append((p.position.x, p.position.y))
+        self.rebuild_grid()
+
+    def on_boxes(self, msg):
+        for p in msg.poses:
+            self.boxes.append((p.position.x, p.position.y))
+        self.rebuild_grid()
+
+    def on_obstacle(self, msg):
+        x = msg.pose.position.x
+        y = msg.pose.position.y
+        self.obstacles.append((x, y))
+        self.rebuild_grid()
+
+    def on_goal(self, msg):
+        self.goal = (msg.pose.position.x, msg.pose.position.y)
+
+        grid = self.rebuild_grid()
+        if grid is None:
+            return
+
+        start = self.world_to_grid(self.start_x, self.start_y)
+        goal = self.world_to_grid(self.goal[0], self.goal[1])
+
+        if not self.cell_in_bounds(start[0], start[1], grid):
+            self.get_logger().warn("Start cell out of bounds")
+            return
+
+        if not self.cell_in_bounds(goal[0], goal[1], grid):
+            self.get_logger().warn("Goal cell out of bounds")
+            return
+
+        if grid[start[1]][start[0]] != 0:
+            self.get_logger().warn("Start cell is occupied")
+            return
+
+        if grid[goal[1]][goal[0]] != 0:
+            self.get_logger().warn("Goal cell is occupied")
+            return
+
+        cells = self.run_astar(grid, start, goal)
+
+        if not cells:
+            self.get_logger().warn("A* returned no path")
+            self.publish_empty_path()
+            return
+
+        self.publish_path(cells)
+
+    # ---------------------------------------
+    # Grid helpers
+    # ---------------------------------------
+    def world_to_grid(self, x, y):
+        gx = int((x - self.min_x) / self.resolution)
+        gy = int((y - self.min_y) / self.resolution)
+        return gx, gy
+
+    def grid_to_world(self, gx, gy):
+        x = self.min_x + (gx + 0.5) * self.resolution
+        y = self.min_y + (gy + 0.5) * self.resolution
+        return x, y
+
+    def cell_in_bounds(self, gx, gy, grid):
+        h = len(grid)
+        w = len(grid[0])
+        return 0 <= gx < w and 0 <= gy < h
+
+    def rebuild_grid(self):
+        if self.workspace_poly is None:
+            self.get_logger().warn("No workspace polygon loaded")
+            return None
+
+        w = int((self.max_x - self.min_x) / self.resolution)
+        h = int((self.max_y - self.min_y) / self.resolution)
+
+        grid = [[0 for _ in range(w)] for _ in range(h)]
+
+        # outside workspace = occupied
+        for gy in range(h):
+            for gx in range(w):
+                x, y = self.grid_to_world(gx, gy)
+                if not self.inside_poly(x, y):
+                    grid[gy][gx] = 100
+
+        # mark all known points as occupied
+        for (x, y) in self.obstacles + self.objects + self.boxes:
+            gx, gy = self.world_to_grid(x, y)
+            if 0 <= gx < w and 0 <= gy < h:
+                grid[gy][gx] = 100
+
+        # free goal cell so planner can reach it
+        if self.goal is not None:
+            gx, gy = self.world_to_grid(self.goal[0], self.goal[1])
+            if 0 <= gx < w and 0 <= gy < h:
+                grid[gy][gx] = 0
+
+        self.publish_grid(grid, w, h)
+        return grid
+
+    def publish_grid(self, grid, w, h):
+        msg = OccupancyGrid()
+        msg.header.stamp = self.get_clock().now().to_msg()
+        msg.header.frame_id = self.world_frame
+
+        msg.info.resolution = self.resolution
+        msg.info.width = w
+        msg.info.height = h
+        msg.info.origin.position.x = self.min_x
+        msg.info.origin.position.y = self.min_y
+        msg.info.origin.orientation.w = 1.0
+
+        msg.data = [cell for row in grid for cell in row]
+        self.grid_pub.publish(msg)
+
+    # ---------------------------------------
+    # Path publishing
+    # ---------------------------------------
+    def publish_path(self, cells):
         path = Path()
         path.header.stamp = self.get_clock().now().to_msg()
         path.header.frame_id = self.world_frame
 
-        for x, y in cells:
+        for gx, gy in cells:
+            x, y = self.grid_to_world(gx, gy)
+
             p = PoseStamped()
             p.header = path.header
-            p.pose.position.x = float(x)
-            p.pose.position.y = float(y)
+            p.pose.position.x = x
+            p.pose.position.y = y
+            p.pose.position.z = 0.0
             p.pose.orientation.w = 1.0
+
             path.poses.append(p)
 
-        return path
+        self.path_pub.publish(path)
 
-    def on_goal(self, goal_msg: PoseStamped):
-        start = self.get_start()
-        goal = (
-            goal_msg.pose.position.x,
-            goal_msg.pose.position.y,
-        )
-
-        grid = self.build_occupancy_grid()
-        cells = self.run_astar(start, goal, grid)
-        path = self.grid_path_to_ros_path(cells)
+    def publish_empty_path(self):
+        path = Path()
+        path.header.stamp = self.get_clock().now().to_msg()
+        path.header.frame_id = self.world_frame
         self.path_pub.publish(path)
 
 
-def main(args=None):
-    rclpy.init(args=args)
+    # def run_astar(self, grid, start, goal):
+    #     """
+    #     grid[y][x] == 0    -> free
+    #     grid[y][x] != 0    -> occupied
+    #
+    #     start = (gx, gy)
+    #     goal  = (gx, gy)
+    #
+    #     Return:
+    #         [(gx1, gy1), (gx2, gy2), ...]
+    #     """
+    #
+    #     def dist(x1,y1,x2,y2):
+    #         return np.sqrt((x1-x2)**2 + (y1-y2)**2)
+    #     
+    #     open_set = deque()
+    #
+    #     open_set.append(start)
+    #
+    #     came_from = grid
+    #
+    #     g = 0
+    #     h = dist(start, goal)
+    #     f = g + h
+    #
+    #     while len(open_set) != 0:
+    #
+    #         current = open_set.popleft()
+    #
+    #         if current == goal:
+    #             return reconstruct_path(came_from, current)
+    #
+    #         for i in range(current[0]-1, current[0]+1):
+    #             for j in range(current[1]-1, current[1]+1):
+    #                 if grid[i,j] != 0 or (i,j) != current:
+    #                     continue
+
+    def astar(self, grid, start, goal):
+        """
+        grid[y][x] = 0 free, !=0 occupied
+        start = (x, y)
+        goal  = (x, y)
+        """
+
+        def h(a, b):
+            dx = a[0] - b[0]
+            dy = a[1] - b[1]
+            return math.sqrt(dx * dx + dy * dy)
+
+        def reconstruct(came_from, current):
+            path = [current]
+            while current in came_from:
+                current = came_from[current]
+                path.append(current)
+            return path[::-1]
+
+        open_heap = []
+        heapq.heappush(open_heap, (0, start))
+
+        came_from = {}
+        g_score = {start: 0}
+
+        while open_heap:
+            _, current = heapq.heappop(open_heap)
+
+            if current == goal:
+                return reconstruct(came_from, current)
+
+            cx, cy = current
+
+            neighbors = [
+                (cx + 1, cy, 1.0),
+                (cx - 1, cy, 1.0),
+                (cx, cy + 1, 1.0),
+                (cx, cy - 1, 1.0),
+                (cx + 1, cy + 1, math.sqrt(2)),
+                (cx - 1, cy + 1, math.sqrt(2)),
+                (cx + 1, cy - 1, math.sqrt(2)),
+                (cx - 1, cy - 1, math.sqrt(2)),
+            ]
+
+            for nx, ny, cost in neighbors:
+                if ny < 0 or ny >= len(grid) or nx < 0 or nx >= len(grid[0]):
+                    continue
+
+                if grid[ny][nx] != 0:
+                    continue
+
+                neighbor = (nx, ny)
+                tentative_g = g_score[current] + cost
+
+                if neighbor not in g_score or tentative_g < g_score[neighbor]:
+                    came_from[neighbor] = current
+                    g_score[neighbor] = tentative_g
+                    f = tentative_g + h(neighbor, goal)
+                    heapq.heappush(open_heap, (f, neighbor))
+
+        return []
+
+
+        
+
+
+
+        return []
+
+
+def main():
+    rclpy.init()
     node = AStarPlannerNode()
-    try:
-        rclpy.spin(node)
-    finally:
-        node.destroy_node()
-        rclpy.shutdown()
+    rclpy.spin(node)
+    node.destroy_node()
+    rclpy.shutdown()
 
 
 if __name__ == "__main__":
