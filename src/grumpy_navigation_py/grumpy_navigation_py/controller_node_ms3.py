@@ -1,7 +1,6 @@
-
-
 #!/usr/bin/env python3
 import math
+
 import rclpy
 from rclpy.node import Node
 import tf2_ros
@@ -29,26 +28,33 @@ class PathControllerNode(Node):
     def __init__(self):
         super().__init__("path_controller_node")
 
+        # Frames / timing
         self.declare_parameter("world_frame", "map")
         self.declare_parameter("base_frame", "base_link")
         self.declare_parameter("rate_hz", 20.0)
 
-        # Different stopping distances per phase
-        self.declare_parameter("object_stop_distance", 0.180)  # stop standoff for pickup
-        self.declare_parameter("box_stop_distance", 0.25)     # stop standoff for dropoff
+        # Stop distances
+        self.declare_parameter("object_stop_distance", 0.18)
+        self.declare_parameter("box_stop_distance", 0.25)
 
-        # Tracking / steering
+        # Path tracking
         self.declare_parameter("lookahead", 0.40)
-        self.declare_parameter("angle_tolerance", 0.25)
+        self.declare_parameter("advance_tolerance", 0.10)
+        self.declare_parameter("angle_tolerance", 0.20)
 
-        # Motor output
-        self.declare_parameter("duty_forward", 0.20)
-        self.declare_parameter("duty_turn", 0.15)
+        # Motion commands
+        self.declare_parameter("forward_duty", 0.22)
+        self.declare_parameter("turn_duty", 0.18)
+        self.declare_parameter("min_forward_duty", 0.18)
+        self.declare_parameter("min_turn_duty", 0.16)
         self.declare_parameter("max_duty", 0.35)
-        self.declare_parameter("min_forward_duty", 0.15)
-        self.declare_parameter("creep_band", 0.20)
-        self.declare_parameter("slow_band", 0.50)        # meters
-        self.declare_parameter("min_turn_scale", 0.30)   # keep some turning authority near goal
+
+        # Slowdown near goal
+        self.declare_parameter("slowdown_distance", 0.35)
+
+        # Optional motor bias correction
+        self.declare_parameter("left_scale", 1.0)
+        self.declare_parameter("right_scale", 1.0)
 
         self.world_frame = self.get_parameter("world_frame").value
         self.base_frame = self.get_parameter("base_frame").value
@@ -59,14 +65,12 @@ class PathControllerNode(Node):
         self.cmd_pub = self.create_publisher(DutyCycles, "/phidgets/motor/duty_cycles", 10)
         self.reached_pub = self.create_publisher(Bool, "/nav/reached", 10)
 
-        
         self.path_sub = self.create_subscription(Path, "/nav/path", self.on_path, 10)
         self.phase_sub = self.create_subscription(String, "/nav/phase", self.on_phase, 10)
 
         self.path = None
         self.next_idx = 0
-
-        self.phase = "object"  # default
+        self.phase = "object"
         self.reached_latched = False
 
         rclpy.get_default_context().on_shutdown(self.stop)
@@ -74,54 +78,72 @@ class PathControllerNode(Node):
         dt = 1.0 / float(self.get_parameter("rate_hz").value)
         self.timer = self.create_timer(dt, self.step)
 
-        self.get_logger().info("PathControllerNode up. Sub: /nav/path, /nav/phase  Pub: duty_cycles, /nav/reached")
+        self.get_logger().info(
+            "PathControllerNode up. Sub: /nav/path, /nav/phase  Pub: /phidgets/motor/duty_cycles, /nav/reached"
+        )
 
     def on_phase(self, msg: String):
         p = (msg.data or "").strip().lower()
         if p not in ("object", "box"):
             self.get_logger().warn(f"/nav/phase must be 'object' or 'box', got '{msg.data}'")
             return
+
         if p != self.phase:
             self.get_logger().info(f"Phase changed: {self.phase} -> {p}")
-        self.phase = p
-        # When phase changes, allow reaching again
-        self.reached_latched = False
+            self.phase = p
+            self.reached_latched = False
 
     def on_path(self, msg: Path):
         if not msg.poses:
             self.path = None
             self.next_idx = 0
             self.reached_latched = False
+            self.get_logger().info("Received empty path. Stopping.")
             return
+
         if msg.header.frame_id and msg.header.frame_id != self.world_frame:
             self.get_logger().warn(
                 f"Path frame '{msg.header.frame_id}' != '{self.world_frame}'. Publish path in {self.world_frame}."
             )
             return
+
         self.path = msg
         self.next_idx = 0
-        self.reached_latched = False  # new plan => can reach again
+        self.reached_latched = False
+        self.get_logger().info(f"Received new path with {len(msg.poses)} poses.")
 
     def get_pose(self):
         try:
-            tf = self.tf_buffer.lookup_transform(self.world_frame, self.base_frame, rclpy.time.Time())
+            tf = self.tf_buffer.lookup_transform(
+                self.world_frame,
+                self.base_frame,
+                rclpy.time.Time()
+            )
         except Exception as e:
-            self.get_logger().info(f"transform lookup error: {e}", throttle_duration_sec=1.0)
+            self.get_logger().info(f"Transform lookup error: {e}", throttle_duration_sec=1.0)
             return None
+
         t = tf.transform.translation
         yaw = quat_to_yaw(tf.transform.rotation)
-        return (t.x, t.y, yaw)
+        return t.x, t.y, yaw
 
     def publish_duty(self, left: float, right: float):
+        left_scale = float(self.get_parameter("left_scale").value)
+        right_scale = float(self.get_parameter("right_scale").value)
+        max_duty = float(self.get_parameter("max_duty").value)
+
+        left = clamp(left * left_scale, -max_duty, max_duty)
+        right = clamp(right * right_scale, -max_duty, max_duty)
+
         msg = DutyCycles()
         msg.duty_cycle_left = float(left)
         msg.duty_cycle_right = float(right)
         self.cmd_pub.publish(msg)
 
     def publish_reached(self, value: bool):
-        b = Bool()
-        b.data = bool(value)
-        self.reached_pub.publish(b)
+        msg = Bool()
+        msg.data = bool(value)
+        self.reached_pub.publish(msg)
 
     def stop(self):
         self.publish_duty(0.0, 0.0)
@@ -146,111 +168,89 @@ class PathControllerNode(Node):
 
         stop_dist = self.stop_distance()
         lookahead = float(self.get_parameter("lookahead").value)
+        advance_tol = float(self.get_parameter("advance_tolerance").value)
+        angle_tol = float(self.get_parameter("angle_tolerance").value)
 
-        # Distance to FINAL goal (we stop at standoff, not exactly on it)
+        base_forward = float(self.get_parameter("forward_duty").value)
+        base_turn = float(self.get_parameter("turn_duty").value)
+        min_forward = float(self.get_parameter("min_forward_duty").value)
+        min_turn = float(self.get_parameter("min_turn_duty").value)
+        slowdown_distance = float(self.get_parameter("slowdown_distance").value)
+
+        # Final goal distance
         final = self.path.poses[-1].pose.position
         d_final = math.hypot(final.x - x, final.y - y)
 
+        # Stop when inside standoff distance
         if d_final <= stop_dist:
             self.stop()
+
             if not self.reached_latched:
                 self.publish_reached(True)
                 self.reached_latched = True
                 self.get_logger().info(
-                    f"Reached ({self.phase}) within {stop_dist:.2f} m (d={d_final:.2f}). Stopping."
+                    f"Reached ({self.phase}) within {stop_dist:.2f} m (d={d_final:.2f})."
                 )
             return
         else:
-            # Not reached: publish False (or keep last; I prefer explicit False)
             self.publish_reached(False)
             self.reached_latched = False
 
-        # Advance next_idx a bit (use a smaller tolerance than stop_dist so we still progress)
-        advance_tol = min(0.20, 0.5 * stop_dist)
+        # Advance along the path
         while self.next_idx + 1 < len(self.path.poses):
             p = self.path.poses[self.next_idx].pose.position
-            if math.hypot(p.x - x, p.y - y) < advance_tol:
+            d = math.hypot(p.x - x, p.y - y)
+            if d < advance_tol:
                 self.next_idx += 1
             else:
                 break
 
-        # Pick lookahead target
+        # Choose lookahead target
         target_idx = len(self.path.poses) - 1
         for i in range(self.next_idx, len(self.path.poses)):
             p = self.path.poses[i].pose.position
-            if math.hypot(p.x - x, p.y - y) >= lookahead:
+            d = math.hypot(p.x - x, p.y - y)
+            if d >= lookahead:
                 target_idx = i
                 break
 
         target = self.path.poses[target_idx].pose.position
-        dx, dy = target.x - x, target.y - y
-        dist = math.hypot(dx, dy)
+        dx = target.x - x
+        dy = target.y - y
 
-        desired = math.atan2(dy, dx)
-        err = wrap_pi(desired - yaw)
+        desired_yaw = math.atan2(dy, dx)
+        err = wrap_pi(desired_yaw - yaw)
 
-        angle_tol = float(self.get_parameter("angle_tolerance").value)
-        duty_fwd = float(self.get_parameter("duty_forward").value)
-        duty_turn = float(self.get_parameter("duty_turn").value)
-        max_duty = float(self.get_parameter("max_duty").value)
-
-        # # Slow down as we approach stop distance to avoid overshoot
-        # # When d_final == stop_dist => scale ~0
-        # slow_band = max(0.10, 0.50)  # meters of slowdown band
-        # scale = clamp((d_final - stop_dist) / slow_band, 0.0, 1.0)
-        #
-        # if abs(err) > angle_tol:
-        #     if err > 0.0:
-        #         left, right = -duty_turn, +duty_turn
-        #     else:
-        #         left, right = +duty_turn, -duty_turn
-        # else:
-        #     left = duty_fwd * scale
-        #     right = duty_fwd * scale
-        #
-        # self.publish_duty(
-        #     clamp(left, -max_duty, max_duty),
-        #     clamp(right, -max_duty, max_duty),
-        # )
-
-        # --- Slowdown / creep logic (avoid deadband stall) ---
-        slow_band = max(0.10, float(self.get_parameter("slow_band").value))
-        creep_band = max(0.0, float(self.get_parameter("creep_band").value))
-        min_fwd = float(self.get_parameter("min_forward_duty").value)
-        min_turn_scale = float(self.get_parameter("min_turn_scale").value)
-
-        gap = d_final - stop_dist              # > 0 here (since reached-case returned earlier)
-
-        # scale goes 1 far away -> 0 at stop_dist
-        scale = clamp(gap / slow_band, 0.0, 1.0)
-
-        # forward command: scaled far away, but creep with a minimum duty near goal
-        if gap <= creep_band:
-            fwd_cmd = min_fwd
+        # Slow down near final goal, but never below physical minimum
+        if d_final <= stop_dist + slowdown_distance:
+            ratio = clamp((d_final - stop_dist) / slowdown_distance, 0.0, 1.0)
+            forward_cmd = max(min_forward, base_forward * ratio)
+            turn_cmd = max(min_turn, base_turn * ratio)
         else:
-            fwd_cmd = duty_fwd * scale
+            forward_cmd = base_forward
+            turn_cmd = base_turn
 
-        # also reduce turning a bit near goal (optional but helps)
-        turn_cmd = duty_turn * max(min_turn_scale, scale)
-
+        # Control law:
+        # If heading error is too large -> turn in place
+        # Otherwise -> drive forward
         if abs(err) > angle_tol:
             if err > 0.0:
-                left, right = -turn_cmd, +turn_cmd
+                left = -turn_cmd
+                right = +turn_cmd
             else:
-                left, right = +turn_cmd, -turn_cmd
+                left = +turn_cmd
+                right = -turn_cmd
         else:
-            left, right = fwd_cmd, fwd_cmd
+            left = forward_cmd
+            right = forward_cmd
 
-        self.publish_duty(
-            clamp(left, -max_duty, max_duty),
-            clamp(right, -max_duty, max_duty),
-        )
-
+        self.publish_duty(left, right)
 
 
 def main():
     rclpy.init()
     node = PathControllerNode()
+
     try:
         rclpy.spin(node)
     finally:
