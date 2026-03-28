@@ -246,54 +246,21 @@ class AStarPlannerNode(Node):
         self.path_pub.publish(path)
 
 
-    # def run_astar(self, grid, start, goal):
-    #     """
-    #     grid[y][x] == 0    -> free
-    #     grid[y][x] != 0    -> occupied
-    #
-    #     start = (gx, gy)
-    #     goal  = (gx, gy)
-    #
-    #     Return:
-    #         [(gx1, gy1), (gx2, gy2), ...]
-    #     """
-    #
-    #     def dist(x1,y1,x2,y2):
-    #         return np.sqrt((x1-x2)**2 + (y1-y2)**2)
-    #     
-    #     open_set = deque()
-    #
-    #     open_set.append(start)
-    #
-    #     came_from = grid
-    #
-    #     g = 0
-    #     h = dist(start, goal)
-    #     f = g + h
-    #
-    #     while len(open_set) != 0:
-    #
-    #         current = open_set.popleft()
-    #
-    #         if current == goal:
-    #             return reconstruct_path(came_from, current)
-    #
-    #         for i in range(current[0]-1, current[0]+1):
-    #             for j in range(current[1]-1, current[1]+1):
-    #                 if grid[i,j] != 0 or (i,j) != current:
-    #                     continue
 
-    def astar(self, grid, start, goal):
+    def run_astar(self, grid, start, goal):
         """
-        grid[y][x] = 0 free, !=0 occupied
-        start = (x, y)
-        goal  = (x, y)
+        grid[y][x] == 0    -> free
+        grid[y][x] != 0    -> occupied
+
+        start = (gx, gy)
+        goal  = (gx, gy)
+
+        Return:
+            [(gx1, gy1), (gx2, gy2), ...]
         """
 
-        def h(a, b):
-            dx = a[0] - b[0]
-            dy = a[1] - b[1]
-            return math.sqrt(dx * dx + dy * dy)
+        def h(a,b):
+            return math.sqrt((a[0]-b[0])**2 + (a[1]-b[1])**2)
 
         def reconstruct(came_from, current):
             path = [current]
@@ -302,17 +269,23 @@ class AStarPlannerNode(Node):
                 path.append(current)
             return path[::-1]
 
-        open_heap = []
-        heapq.heappush(open_heap, (0, start))
+        open_set = []
+        heapq.heappush(open_set, (0, start))
 
         came_from = {}
-        g_score = {start: 0}
 
-        while open_heap:
-            _, current = heapq.heappop(open_heap)
+        g_score = {}
+        g_score[start] = 0
 
+        f_score = {}
+        f_score[start] = h(start, goal)
+
+        while len(open_set) != 0:
+            current = open_set[0]
             if current == goal:
                 return reconstruct(came_from, current)
+
+            heapq.heappop(open_set)
 
             cx, cy = current
 
@@ -334,23 +307,86 @@ class AStarPlannerNode(Node):
                 if grid[ny][nx] != 0:
                     continue
 
-                neighbor = (nx, ny)
-                tentative_g = g_score[current] + cost
+                neighbor = (nx,ny)
 
+                tentative_g = g_score[current] + cost
                 if neighbor not in g_score or tentative_g < g_score[neighbor]:
                     came_from[neighbor] = current
                     g_score[neighbor] = tentative_g
                     f = tentative_g + h(neighbor, goal)
-                    heapq.heappush(open_heap, (f, neighbor))
+                    heapq.heappush(open_set, (f, neighbor))
+
+
 
         return []
 
 
         
 
+    # def astar(self, grid, start, goal):
+    #     """
+    #     grid[y][x] = 0 free, !=0 occupied
+    #     start = (x, y)
+    #     goal  = (x, y)
+    #     """
+    #
+    #     def h(a, b):
+    #         dx = a[0] - b[0]
+    #         dy = a[1] - b[1]
+    #         return math.sqrt(dx * dx + dy * dy)
+    #
+    #     def reconstruct(came_from, current):
+    #         path = [current]
+    #         while current in came_from:
+    #             current = came_from[current]
+    #             path.append(current)
+    #         return path[::-1]
+    #
+    #     open_heap = []
+    #     heapq.heappush(open_heap, (0, start))
+    #
+    #     came_from = {}
+    #     g_score = {start: 0}
+    #
+    #     while open_heap:
+    #         _, current = heapq.heappop(open_heap)
+    #
+    #         if current == goal:
+    #             return reconstruct(came_from, current)
+    #
+    #         cx, cy = current
+    #
+    #         neighbors = [
+    #             (cx + 1, cy, 1.0),
+    #             (cx - 1, cy, 1.0),
+    #             (cx, cy + 1, 1.0),
+    #             (cx, cy - 1, 1.0),
+    #             (cx + 1, cy + 1, math.sqrt(2)),
+    #             (cx - 1, cy + 1, math.sqrt(2)),
+    #             (cx + 1, cy - 1, math.sqrt(2)),
+    #             (cx - 1, cy - 1, math.sqrt(2)),
+    #         ]
+    #
+    #         for nx, ny, cost in neighbors:
+    #             if ny < 0 or ny >= len(grid) or nx < 0 or nx >= len(grid[0]):
+    #                 continue
+    #
+    #             if grid[ny][nx] != 0:
+    #                 continue
+    #
+    #             neighbor = (nx, ny)
+    #             tentative_g = g_score[current] + cost
+    #
+    #             if neighbor not in g_score or tentative_g < g_score[neighbor]:
+    #                 came_from[neighbor] = current
+    #                 g_score[neighbor] = tentative_g
+    #                 f = tentative_g + h(neighbor, goal)
+    #                 heapq.heappush(open_heap, (f, neighbor))
+    #
+    #     return []
 
 
-        return []
+
 
 
 def main():
