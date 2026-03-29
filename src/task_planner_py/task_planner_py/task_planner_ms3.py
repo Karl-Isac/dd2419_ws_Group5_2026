@@ -324,6 +324,8 @@ class TaskPlannerNode(Node):
                 self._published_this_state = True
                 self.generate_exploration_pose_success = False
 
+                print("generate exploration state")
+
             if self.generate_exploration_pose_success:
                 self.enter_state("GENERATE_EXPLORATION_PATH")
 

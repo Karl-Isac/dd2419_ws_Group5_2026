@@ -7,24 +7,15 @@ import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import PoseStamped
 
-from ament_index_python.packages import get_package_share_directory
-import os
-
-
 
 class FakeObstacleNode(Node):
     def __init__(self):
         super().__init__("fake_obstacle_node")
 
         self.frame_id = "map"
-#         self.csv_file = os.path.join(
-#             os.path.dirname(os.path.abspath(__file__)),
-#             "fake_obstacles.csv",
-#         )
-
-        package_share = get_package_share_directory("grumpy_navigation_py")
         self.csv_file = os.path.join(
-            package_share, "config", "fake_obstacles.csv"
+            os.path.dirname(os.path.abspath(__file__)),
+            "fake_obstacles.csv",
         )
 
         self.pub = self.create_publisher(PoseStamped, "/fake_obstacles", 10)

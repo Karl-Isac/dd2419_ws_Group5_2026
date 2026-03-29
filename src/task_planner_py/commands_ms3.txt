@@ -1,0 +1,10 @@
+
+pixi run colcon build --packages-select grumpy_navigation_py detection learning_tf2_py task_planner_py odometry grumpy_interfaces
+
+source install/setup.bash
+
+pixi run ros2 launch task_planner_py ms3_test.launch.py
+
+pixi run detection detection
+
+

@@ -45,7 +45,7 @@ class Odometry(Node):
         print("odometry node is up")
 
     def encoder_callback(self, msg: Encoders):
-        print ("encoder callback")
+        # print ("encoder callback")
         """Takes encoder readings and updates the odometry.
 
         This function is called every time the encoders are updated (i.e., when a message is published on the '/motor/encoders' topic).

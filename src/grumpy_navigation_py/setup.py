@@ -13,6 +13,8 @@ setup(
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
         (os.path.join('share', package_name, 'launch'), glob('launch/*.launch.py')),
+        (os.path.join('share', package_name, 'config'), glob('config/*')),
+
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -37,7 +39,7 @@ setup(
             # 'controller = grumpy_navigation_py.path_controller_node:main',
             'controller = grumpy_navigation_py.controller_node_ms3:main',
 
-            'fake_obstacles = grumpy_navigation_py.fake_obstacle_node:main',
+            'fake_obstacles = grumpy_navigation_py.fake_obsctacle_node:main',
 
         ],
     },

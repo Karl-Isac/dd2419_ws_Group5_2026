@@ -11,6 +11,9 @@ import numpy as np
 import heapq
 import math
 
+from ament_index_python.packages import get_package_share_directory
+import os
+
 
 class AStarPlannerNode(Node):
     def __init__(self):
@@ -18,7 +21,7 @@ class AStarPlannerNode(Node):
 
         # ---- Parameters ----
         self.declare_parameter("world_frame", "map")
-        self.declare_parameter("workspace_file", "workspace.yaml")
+        self.declare_parameter("workspace_file", "fake_workspace.yaml")
         self.declare_parameter("grid_resolution", 0.1)
 
         # temporary fixed start position
@@ -26,7 +29,17 @@ class AStarPlannerNode(Node):
         self.declare_parameter("start_y", 0.0)
 
         self.world_frame = self.get_parameter("world_frame").value
-        self.workspace_file = self.get_parameter("workspace_file").value
+
+        # self.workspace_file = self.get_parameter("workspace_file").value
+#         workspace_file_param = self.get_parameter("workspace_file").value
+#         script_dir = os.path.dirname(os.path.abspath(__file__))
+#         self.workspace_file = os.path.join(script_dir, workspace_file_param)
+
+        package_share = get_package_share_directory("grumpy_navigation_py")
+        self.workspace_file = os.path.join(
+            package_share, "config", "fake_workspace.yaml"
+        )
+
         self.resolution = float(self.get_parameter("grid_resolution").value)
         self.start_x = float(self.get_parameter("start_x").value)
         self.start_y = float(self.get_parameter("start_y").value)

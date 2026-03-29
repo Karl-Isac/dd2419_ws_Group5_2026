@@ -24,3 +24,7 @@ pose:
 
 # test with fake workspace
 ros2 run grumpy_navigation_py planner --ros-args -p workspace_file:=/absolute/path/to/workspace.yaml
+
+# Fake obstacles:
+ros2 run grumpy_navigation_py fake_obstacles \
+  --ros-args -p csv_file:=/full/path/to/obstacles.csv

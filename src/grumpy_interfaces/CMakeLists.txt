@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.10)
 project(grumpy_interfaces)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
@@ -9,13 +9,15 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(nav_msgs REQUIRED)
+
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Item.msg"
   "msg/ItemArray.msg"
   "msg/Goal.msg"
   "msg/PathWithType.msg"
-  DEPENDENCIES geometry_msgs
+  DEPENDENCIES geometry_msgs nav_msgs
 )
 
 if(BUILD_TESTING)
