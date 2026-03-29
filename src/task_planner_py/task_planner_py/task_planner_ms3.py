@@ -298,6 +298,20 @@ class TaskPlannerNode(Node):
 
         rx, ry = robot
 
+        # Preempt exploration as soon as we know at least one object and one box
+        exploration_states = (
+            "GENERATE_EXPLORATION_POSE",
+            "GENERATE_EXPLORATION_PATH",
+            "EXECUTE_EXPLORATION_PATH",
+        )
+        if (
+            self.state in exploration_states
+            and len(self.known_objects) > 0
+            and len(self.known_boxes) > 0
+        ):
+            self.enter_state("SELECT_OBJECT")
+            return
+
         # ICP:
         if self.state == "UPDATE_ICP":
             if not self._published_this_state:
