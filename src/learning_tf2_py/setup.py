@@ -37,6 +37,7 @@ setup(
             'jitter_test = learning_tf2_py.jitter_test:main',
             'arm_control = learning_tf2_py.arm_control:main',
             'arm_cube_detection_test = learning_tf2_py.arm_cube_detection_test:main',
+            'exploration_mapper = learning_tf2_py.exploration_mapper:main',
         ],
     },
 )

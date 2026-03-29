@@ -86,6 +86,7 @@ ros-jazzy-detection = { path = "src/detection" }
 
 # Other
 argcomplete = ">=3.6.3,<4"
+shapely = ">=2.1.2,<3"
 
 [target.linux-64.dependencies]
 # ROS
