@@ -89,7 +89,8 @@ class TaskPlannerNode(Node):
 
         # Exploration
         self.exploration_pub = self.create_publisher(String, "/exploration/request_unexplored_point", 10) # content can be anything
-        self.create_subscription(Point, "/exploration/return_unexplored_point", self.on_exploration_point, 10) # z value irrelevant
+        self.create_subscription(Point, "/exploration/return_unexplored_point", self.on_exploration_point, 10) # z value irrelevant, 
+        # TODO: if z is not 0 -> stop exploring
 
         # Subscribers
         self.create_subscription(Bool, "/nav/reached", self.on_reached, 10)

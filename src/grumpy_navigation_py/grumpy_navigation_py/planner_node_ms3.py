@@ -22,7 +22,7 @@ class AStarPlannerNode(Node):
         # ---- Parameters ----
         self.declare_parameter("world_frame", "map")
         self.declare_parameter("workspace_file", "fake_workspace.yaml")
-        self.declare_parameter("grid_resolution", 0.1)
+        self.declare_parameter("grid_resolution", 0.02)
 
         # temporary fixed start position
         self.declare_parameter("start_x", 0.0)
@@ -116,11 +116,16 @@ class AStarPlannerNode(Node):
     # ---------------------------------------
     def on_objects(self, msg):
         for p in msg.poses:
+            # REMOVE LATER
+            if len(self.objects) >= 2:
+                break
             self.objects.append((p.position.x, p.position.y))
         self.rebuild_grid()
 
     def on_boxes(self, msg):
         for p in msg.poses:
+            if len(self.boxes) >=1:
+                break
             self.boxes.append((p.position.x, p.position.y))
         self.rebuild_grid()
 
@@ -134,6 +139,7 @@ class AStarPlannerNode(Node):
         self.goal = (msg.pose.position.x, msg.pose.position.y)
 
         grid = self.rebuild_grid()
+
         if grid is None:
             return
 
@@ -171,9 +177,25 @@ class AStarPlannerNode(Node):
     # ---------------------------------------
     # Grid helpers
     # ---------------------------------------
+#     def world_to_grid(self, x, y):
+#         gx = int((x - self.min_x) / self.resolution)
+#         gy = int((y - self.min_y) / self.resolution)
+# 
+# #         gx = max(0, min(gx, self.grid_width - 1))
+# #         gy = max(0, min(gy, self.grid_height - 1))
+# 
+#         return gx, gy
+
     def world_to_grid(self, x, y):
         gx = int((x - self.min_x) / self.resolution)
         gy = int((y - self.min_y) / self.resolution)
+
+        w = int(math.ceil((self.max_x - self.min_x) / self.resolution))
+        h = int(math.ceil((self.max_y - self.min_y) / self.resolution))
+
+        gx = max(0, min(gx, w - 1))
+        gy = max(0, min(gy, h - 1))
+
         return gx, gy
 
     def grid_to_world(self, gx, gy):
@@ -191,8 +213,11 @@ class AStarPlannerNode(Node):
             self.get_logger().warn("No workspace polygon loaded")
             return None
 
-        w = int((self.max_x - self.min_x) / self.resolution)
-        h = int((self.max_y - self.min_y) / self.resolution)
+        w = int(math.ceil((self.max_x - self.min_x) / self.resolution))
+        h = int(math.ceil((self.max_y - self.min_y) / self.resolution))
+
+        self.grid_width = w
+        self.grid_height = h
 
         grid = [[0 for _ in range(w)] for _ in range(h)]
 
@@ -203,17 +228,27 @@ class AStarPlannerNode(Node):
                 if not self.inside_poly(x, y):
                     grid[gy][gx] = 100
 
-        # mark all known points as occupied
+        goal_cell = None
+        if self.goal is not None:
+            goal_cell = self.world_to_grid(self.goal[0], self.goal[1])
+
         for (x, y) in self.obstacles + self.objects + self.boxes:
             gx, gy = self.world_to_grid(x, y)
+
+            if goal_cell is not None and (gx, gy) == goal_cell:
+                print(f"Skipping blocker at goal cell: world=({x}, {y}) grid=({gx}, {gy})")
+                continue
+
             if 0 <= gx < w and 0 <= gy < h:
                 grid[gy][gx] = 100
 
-        # free goal cell so planner can reach it
-        if self.goal is not None:
-            gx, gy = self.world_to_grid(self.goal[0], self.goal[1])
+
+        if goal_cell is not None:
+            gx, gy = goal_cell
             if 0 <= gx < w and 0 <= gy < h:
                 grid[gy][gx] = 0
+
+            print("goal_cell =", goal_cell, "value =", grid[goal_cell[1]][goal_cell[0]])
 
         self.publish_grid(grid, w, h)
         return grid
