@@ -28,6 +28,8 @@ import os
 import ctypes
 import struct
 
+np.random.seed(42)  # for reproducibility
+
 # Criteria of colors are at Line 677-690
 
 ######################################################################################################
@@ -66,18 +68,20 @@ class Detection(Node):
         self.objects_pub = self.create_publisher(PoseArray, '/detected_objects', 10)
         self.boxes_pub = self.create_publisher(PoseArray, '/detected_boxes', 10)
 
-        # open and load map file (csv)
+        # open and load map file and workspace (csv)
         package_path = get_package_share_directory('detection')
-        csv_path = os.path.join(package_path, 'config', 'blank.csv')
+        map_path = os.path.join(package_path, 'config', 'blank.csv')
+        workspace_path = os.path.join(package_path, 'config', 'workspace_1.csv')
         self.metadata_rows = []
+        self.boundary = [] # List of intersection of edges of workspace, in format of [[x1, y1], [x2, y2], ...] 
 
         # location of final map file (csv)
-        self.output_csv_path = os.path.join(
+        self.output_map_path = os.path.join(
             os.path.expanduser('~/dd2419_ws_Group5_2026/src/detection/config/'),
             'detection_output.csv'
         )
-        os.makedirs(os.path.dirname(self.output_csv_path), exist_ok=True)
-        self.get_logger().info(f'Output CSV will be written to {self.output_csv_path}')
+        os.makedirs(os.path.dirname(self.output_map_path), exist_ok=True)
+        self.get_logger().info(f'Output CSV will be written to {self.output_map_path}')
 
         self.object_poses = []
         self.box_poses = []
@@ -93,7 +97,8 @@ class Detection(Node):
         self.cloud_queue = deque(maxlen=100)
         self.timer = self.create_timer(0.05, self.process_queue)
 
-        with open(csv_path, mode='r', encoding='utf-8') as file:
+        # Reading map file
+        with open(map_path, mode='r', encoding='utf-8') as file:
             reader = csv.reader(file)
             # skip the first line (header)
             header = next(reader)
@@ -146,6 +151,16 @@ class Detection(Node):
 
         self.publish_arrays(self.object_poses, None, self.box_poses, None)
         # print(self.object_lists)
+
+        # Reading workspace file to get boundary
+        with open(workspace_path, mode='r', encoding='utf-8') as file:
+            reader = csv.reader(file)
+            # skip the first line (header)
+            header = next(reader)
+            for row in reader:
+                x = int(row[0])
+                y = int(row[1])
+                self.boundary.append([x, y])
     
         static_tf = TransformStamped()
         static_tf.header.stamp = self.get_clock().now().to_msg()
@@ -429,6 +444,10 @@ class Detection(Node):
                 self.get_logger().debug(f"repeated object {self.object_lists.index(item)} detection, discarded")
                 break
         else:
+            if is_point_in_polygon(object_map.pose.position.x * 100, object_map.pose.position.y * 100, self.boundary):
+                 self.get_logger().debug("object detected outside of workspace boundary, discarded")
+                 return
+            
             self.object_lists.append([int(round(object_map.pose.position.x * 100)), int(round(object_map.pose.position.y * 100)), 0])
             new_object_msg = Pose()
             new_object_msg.position.x = object_map.pose.position.x
@@ -691,7 +710,7 @@ class Detection(Node):
     
     def write_csv(self):
         try:
-            with open(self.output_csv_path, mode='w', encoding='utf-8', newline='') as file:
+            with open(self.output_map_path, mode='w', encoding='utf-8', newline='') as file:
                 writer = csv.writer(file)
                 writer.writerow(['Type', 'x', 'y', 'angle'])
                 for meta_row in self.metadata_rows:
@@ -700,7 +719,7 @@ class Detection(Node):
                     writer.writerow(['O'] + obj)
                 for box in self.box_lists:
                     writer.writerow(['B'] + box)
-            self.get_logger().debug(f'CSV file updated: {self.output_csv_path}')
+            self.get_logger().debug(f'CSV file updated: {self.output_map_path}')
         except Exception as e:
             self.get_logger().error(f'Failed to write CSV: {e}')
 
@@ -751,6 +770,23 @@ def rgb_to_hsv(r, g, b):
         v = c_max
 
         return h, s, v
+
+# Checking if a point is a valid one, which means it is within the boundary of the workspace
+def is_point_in_polygon(x, y, polygon):
+    n = len(polygon)
+    inside = False
+
+    for i in range(n):
+        xi, yi = polygon[i]
+        xj, yj = polygon[(i + 1) % n]
+
+        intersect = ((yi > y) != (yj > y)) and \
+                    (x < xi + (y - yi) * (xj - xi) / (yj - yi))
+
+        if intersect:
+            inside = not inside
+
+    return inside
 
 if __name__ == '__main__':
     main()
