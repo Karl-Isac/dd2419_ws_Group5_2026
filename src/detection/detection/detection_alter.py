@@ -28,6 +28,8 @@ import os
 import ctypes
 import struct
 
+np.random.seed(42)  # for reproducibility
+
 # Criteria of colors are at Line 677-690
 
 ######################################################################################################
