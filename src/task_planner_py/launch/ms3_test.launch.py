@@ -12,12 +12,12 @@ def generate_launch_description():
         output='screen'
     )
 
-    planner = Node(
-        package='grumpy_navigation_py',
-        executable='planner',
-        name='planner',
-        output='screen'
-    )
+#     planner = Node(
+#         package='grumpy_navigation_py',
+#         executable='planner',
+#         name='planner',
+#         output='screen'
+#     )
 
     fake_obstacles = Node(
         package='grumpy_navigation_py',
@@ -84,7 +84,7 @@ def generate_launch_description():
 
     return LaunchDescription([
         controller,
-        planner,
+        # planner,
         fake_obstacles,
         tf_odom,
         odometry,

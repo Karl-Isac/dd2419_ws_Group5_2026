@@ -140,6 +140,9 @@ class AStarPlannerNode(Node):
         start = self.world_to_grid(self.start_x, self.start_y)
         goal = self.world_to_grid(self.goal[0], self.goal[1])
 
+        print(f"world (x, y) = {self.goal[0]}, {self.goal[1]}")
+        print(f"grid (x, y) = {goal[0]}, {goal[1]}")
+
         if not self.cell_in_bounds(start[0], start[1], grid):
             self.get_logger().warn("Start cell out of bounds")
             return

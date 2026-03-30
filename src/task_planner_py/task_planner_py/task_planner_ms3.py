@@ -314,6 +314,8 @@ class TaskPlannerNode(Node):
 
         # ICP:
         if self.state == "UPDATE_ICP":
+
+            self.get_logger().info("UPDATE_ICP")
             if not self._published_this_state:
                 self.ICP_pub.publish(String(data="update"))
                 self._published_this_state = True
@@ -333,6 +335,7 @@ class TaskPlannerNode(Node):
             return
 
         elif self.state == "GENERATE_EXPLORATION_POSE":
+            self.get_logger().info("GENERATE_EXPLORATION_POSE")
             if not self._published_this_state:
                 self.exploration_pub.publish(String(data="Generate path"))
                 self._published_this_state = True
@@ -345,6 +348,7 @@ class TaskPlannerNode(Node):
 
 
         elif self.state == "GENERATE_EXPLORATION_PATH":
+            self.get_logger().info("GENERATE_EXPLORATION_PATH")
             if not self._published_this_state:
                 self.publish_pose_to_path_planner(
                     self.current_exploration_point.x,
@@ -359,6 +363,7 @@ class TaskPlannerNode(Node):
 
 
         elif self.state == "EXECUTE_EXPLORATION_PATH":
+            self.get_logger().info("EXECUTE_EXPLORATION_PATH")
             if not self._published_this_state:
                 self.publish_path_to_controller(self.path_to_goal, goal_type="exploration_point")  # or exploration type if you add one
                 self._published_this_state = True
@@ -373,6 +378,7 @@ class TaskPlannerNode(Node):
 
 
         elif self.state == "SELECT_OBJECT":
+            self.get_logger().info("SELECT_OBJECT")
             if len(self.known_objects) == 0 or len(self.known_boxes) == 0:
                 self.enter_state("GENERATE_EXPLORATION_POSE")
                 return
@@ -422,6 +428,7 @@ class TaskPlannerNode(Node):
 
         
         if self.state == "GENERATE_PATH_TO_OBJECT": 
+            self.get_logger().info("GENERATE_PATH_TO_OBJECT")
             if not self._published_this_state:
                 #self.publish_goal_xy(self.ox, self.oy, goal_type="object") # TODO: probably dont need goal type here
                 self.publish_pose_to_path_planner(self.ox, self.oy)
