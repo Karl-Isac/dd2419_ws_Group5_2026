@@ -262,7 +262,6 @@ class AStarPlannerNode(Node):
         self.path_pub.publish(path)
 
 
-
     def run_astar(self, grid, start, goal):
         """
         grid[y][x] == 0    -> free
@@ -275,8 +274,8 @@ class AStarPlannerNode(Node):
             [(gx1, gy1), (gx2, gy2), ...]
         """
 
-        def h(a,b):
-            return math.sqrt((a[0]-b[0])**2 + (a[1]-b[1])**2)
+        def h(a, b):
+            return math.sqrt((a[0] - b[0])**2 + (a[1] - b[1])**2)
 
         def reconstruct(came_from, current):
             path = [current]
@@ -286,22 +285,16 @@ class AStarPlannerNode(Node):
             return path[::-1]
 
         open_set = []
-        heapq.heappush(open_set, (0, start))
+        heapq.heappush(open_set, (h(start, goal), start))
 
         came_from = {}
+        g_score = {start: 0.0}
 
-        g_score = {}
-        g_score[start] = 0
+        while open_set:
+            _, current = heapq.heappop(open_set)
 
-        f_score = {}
-        f_score[start] = h(start, goal)
-
-        while len(open_set) != 0:
-            current = open_set[0]
             if current == goal:
                 return reconstruct(came_from, current)
-
-            heapq.heappop(open_set)
 
             cx, cy = current
 
@@ -323,18 +316,89 @@ class AStarPlannerNode(Node):
                 if grid[ny][nx] != 0:
                     continue
 
-                neighbor = (nx,ny)
-
+                neighbor = (nx, ny)
                 tentative_g = g_score[current] + cost
+
                 if neighbor not in g_score or tentative_g < g_score[neighbor]:
                     came_from[neighbor] = current
                     g_score[neighbor] = tentative_g
                     f = tentative_g + h(neighbor, goal)
                     heapq.heappush(open_set, (f, neighbor))
 
-
-
         return []
+
+    # def run_astar(self, grid, start, goal):
+    #     """
+    #     grid[y][x] == 0    -> free
+    #     grid[y][x] != 0    -> occupied
+    #
+    #     start = (gx, gy)
+    #     goal  = (gx, gy)
+    #
+    #     Return:
+    #         [(gx1, gy1), (gx2, gy2), ...]
+    #     """
+    #
+    #     def h(a,b):
+    #         return math.sqrt((a[0]-b[0])**2 + (a[1]-b[1])**2)
+    #
+    #     def reconstruct(came_from, current):
+    #         path = [current]
+    #         while current in came_from:
+    #             current = came_from[current]
+    #             path.append(current)
+    #         return path[::-1]
+    #
+    #     open_set = []
+    #     heapq.heappush(open_set, (0, start))
+    #
+    #     came_from = {}
+    #
+    #     g_score = {}
+    #     g_score[start] = 0
+    #
+    #     f_score = {}
+    #     f_score[start] = h(start, goal)
+    #
+    #     while len(open_set) != 0:
+    #         current = open_set[0]
+    #         if current == goal:
+    #             return reconstruct(came_from, current)
+    #
+    #         heapq.heappop(open_set)
+    #
+    #         cx, cy = current
+    #
+    #         neighbors = [
+    #             (cx + 1, cy, 1.0),
+    #             (cx - 1, cy, 1.0),
+    #             (cx, cy + 1, 1.0),
+    #             (cx, cy - 1, 1.0),
+    #             (cx + 1, cy + 1, math.sqrt(2)),
+    #             (cx - 1, cy + 1, math.sqrt(2)),
+    #             (cx + 1, cy - 1, math.sqrt(2)),
+    #             (cx - 1, cy - 1, math.sqrt(2)),
+    #         ]
+    #
+    #         for nx, ny, cost in neighbors:
+    #             if ny < 0 or ny >= len(grid) or nx < 0 or nx >= len(grid[0]):
+    #                 continue
+    #
+    #             if grid[ny][nx] != 0:
+    #                 continue
+    #
+    #             neighbor = (nx,ny)
+    #
+    #             tentative_g = g_score[current] + cost
+    #             if neighbor not in g_score or tentative_g < g_score[neighbor]:
+    #                 came_from[neighbor] = current
+    #                 g_score[neighbor] = tentative_g
+    #                 f = tentative_g + h(neighbor, goal)
+    #                 heapq.heappush(open_set, (f, neighbor))
+    #
+    #
+    #
+    #     return []
 
 
         
