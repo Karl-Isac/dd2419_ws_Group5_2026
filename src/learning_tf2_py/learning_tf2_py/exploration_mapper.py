@@ -66,10 +66,10 @@ class ExplorationMapper(Node):
             x = self.grid_xvalues[j]
             y = self.grid_yvalues[i]
             z = 0
-        except:     # if any error z => -1 to tell global task planner of crash or everything explored
+        except:     # if any error z => 42 to tell global task planner of crash or everything explored
             x = 0
             y = 0
-            z = -1
+            z = 42
         msg = Point()
         msg.x = x
         msg.y = y
