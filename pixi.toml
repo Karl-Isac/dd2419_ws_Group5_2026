@@ -55,6 +55,9 @@ echo "Finished"
 '''
 
 [dependencies]
+eigen = "*"
+cmake = "*"
+ninja = "*"
 # ROS
 ros2-distro-mutex = ">=0.13,<0.14"
 ros-jazzy-ros2run = ">=0.32.6,<0.33"

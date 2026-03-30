@@ -11,10 +11,6 @@ from geometry_msgs.msg import PoseStamped
 from visualization_msgs.msg import Marker
 from dataclasses import dataclass
 
-########################################################################################
-    # TODO: Change path
-######################################################################################## 
-
 base_dir = Path(__file__).resolve().parent.parent.parent.parent.parent.parent.parent.parent
 WS_PATH = base_dir / 'Workspace/workspace_1.csv'
 KNOWN_PATH = base_dir / 'Workspace/map_1_1.csv'

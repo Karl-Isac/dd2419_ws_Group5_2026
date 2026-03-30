@@ -9,10 +9,6 @@ from rclpy.qos import QoSProfile, QoSDurabilityPolicy, QoSReliabilityPolicy
 from geometry_msgs.msg import PoseStamped
 from visualization_msgs.msg import Marker
 
-########################################################################################
-    # TODO: Change path
-######################################################################################## 
-
 base_dir = Path(__file__).resolve().parent.parent.parent.parent.parent.parent.parent.parent
 WS_PATH = base_dir / 'Workspace/workspace_1.csv'
 print(WS_PATH)
