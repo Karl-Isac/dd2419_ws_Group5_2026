@@ -177,6 +177,8 @@ class Detection(Node):
 
         self.static_broadcaster.sendTransform(static_tf)
 
+        self.counter = 0 # keep frames of every x frames
+
     def publish_arrays(self, object_poses, object_timestamp, box_poses, box_timestamp):
         """publish object and box poses from map file to ROS topics."""
         # objects
@@ -200,6 +202,11 @@ class Detection(Node):
     def cloud_callback(self, msg: PointCloud2):
         # Spacial and color filtering, reconstructing cloud as [Timestamp, header, fields, candidates, grey_points],
         # where candidates are points (x,y,z,r,g,b) for object detection and grey_points are points (z, -x) for box detection
+        
+        num = 3 # keep one frame every 3 frames
+        self.counter += 1
+        if self.counter % num != 0:
+            return
         
         # Initialization
         candidates = []
@@ -239,9 +246,10 @@ class Detection(Node):
 
             # spatial filtering for candidate points (keep points in front of camera and within 0.8m, and at the ground)
             if y > 0.045 and y < 0.0865 and z > 0.05 and z < 1:
+            # if z > 0.05 and z < 1:
                 # object detection candidate points 
                 if y > 0.05:
-                    test_points_box.append(gen[idx]) # for testing the point cloud range for box detection, can be removed later
+                    test_points_cube.append(gen[idx]) # for testing the point cloud range for box detection, can be removed later
                     candidates.append([x, y, z, r, g, b])
                 # box detection candidate points
                 if y < 0.055:
@@ -259,10 +267,10 @@ class Detection(Node):
             frame = header.frame_id
 
             # TODO: (Private Test) Print out the time difference between timestamp of pointcloud and latest TF
-            # latest_tf_time = self.tf_buffer.get_latest_common_time('map', 'realsense_camera_link').to_msg()
-            # self.get_logger().info(f"Time difference: {t_cloud.sec - latest_tf_time.sec}.{t_cloud.nanosec - latest_tf_time.nanosec}")
-            # self.get_logger().info(f"Pointcloud Timestamp: {t_cloud.sec}.{t_cloud.nanosec}")
-            # self.get_logger().info(f"Latest TF Timestamp: {latest_tf_time.sec}.{latest_tf_time.nanosec}")
+            latest_tf_time = self.tf_buffer.get_latest_common_time('map', 'realsense_camera_link').to_msg()
+            self.get_logger().info(f"Time difference: {t_cloud.sec - latest_tf_time.sec}.{t_cloud.nanosec - latest_tf_time.nanosec}")
+            self.get_logger().info(f"Pointcloud Timestamp: {t_cloud.sec}.{t_cloud.nanosec}")
+            self.get_logger().info(f"Latest TF Timestamp: {latest_tf_time.sec}.{latest_tf_time.nanosec}")
 
             # 判断 TF 是否已经准备好
             if self.tf_buffer.can_transform(
@@ -274,11 +282,11 @@ class Detection(Node):
                 # ✅ 可以 transform → 正式处理
                 # self.get_logger().debug("TF is ready, processing point cloud.")
                 self.process_point_cloud([t_cloud, header, fields, candidates, grey_points, test_points_box, test_points_cube])
-                # new_queue = deque()
-                # for m in self.cloud_queue:
-                #     if m.header.stamp.sec > t_cloud.sec or (m.header.stamp.sec == t_cloud.sec and m.header.stamp.nanosec > t_cloud.nanosec):
-                #         new_queue.append(m)
-                # self.cloud_queue = new_queue
+                new_queue = deque()
+                for m in self.cloud_queue:
+                    if m[0].sec > t_cloud.sec or (m[0].sec == t_cloud.sec and m[0].nanosec > t_cloud.nanosec):
+                        new_queue.append(m)
+                self.cloud_queue = new_queue
 
     def process_point_cloud(self, data):
 
