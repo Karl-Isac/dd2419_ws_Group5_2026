@@ -1,0 +1,1 @@
+/home/grumpy/dd2419_ws_Group5_2026/build/phidgets_accelerometer/ament_cmake_environment_hooks/local_setup.sh

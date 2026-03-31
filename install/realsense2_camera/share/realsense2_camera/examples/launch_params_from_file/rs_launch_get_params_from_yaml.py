@@ -1,0 +1,1 @@
+/home/grumpy/dd2419_ws_Group5_2026/src/realsense-ros/realsense2_camera/examples/launch_params_from_file/rs_launch_get_params_from_yaml.py

@@ -1,0 +1,1 @@
+/home/grumpy/dd2419_ws_Group5_2026/build/phidgets_msgs/rosidl_typesupport_fastrtps_c/phidgets_msgs/srv/detail/trigger__rosidl_typesupport_fastrtps_c.h

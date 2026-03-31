@@ -1,0 +1,1 @@
+/home/grumpy/dd2419_ws_Group5_2026/build/aruco/ament_cmake_core/arucoConfig.cmake

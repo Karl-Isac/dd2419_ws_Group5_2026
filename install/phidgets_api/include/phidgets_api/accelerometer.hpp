@@ -1,0 +1,1 @@
+/home/grumpy/dd2419_ws_Group5_2026/src/phidgets_drivers/phidgets_api/include/phidgets_api/accelerometer.hpp

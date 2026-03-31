@@ -1,0 +1,1 @@
+/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/lib/python3.12/site-packages/ament_package/template/environment_hook/library_path.sh

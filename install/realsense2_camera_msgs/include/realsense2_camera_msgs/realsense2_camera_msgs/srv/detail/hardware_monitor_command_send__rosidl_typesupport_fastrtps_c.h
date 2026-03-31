@@ -1,0 +1,1 @@
+/home/grumpy/dd2419_ws_Group5_2026/build/realsense2_camera_msgs/rosidl_typesupport_fastrtps_c/realsense2_camera_msgs/srv/detail/hardware_monitor_command_send__rosidl_typesupport_fastrtps_c.h

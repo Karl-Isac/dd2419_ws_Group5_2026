@@ -1,0 +1,1 @@
+/home/grumpy/dd2419_ws_Group5_2026/src/realsense-ros/realsense2_camera/examples/align_depth/rs_align_depth_launch.py

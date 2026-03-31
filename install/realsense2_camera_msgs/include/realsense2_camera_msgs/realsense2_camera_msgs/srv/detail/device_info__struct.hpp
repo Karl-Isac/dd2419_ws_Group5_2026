@@ -1,0 +1,1 @@
+/home/grumpy/dd2419_ws_Group5_2026/build/realsense2_camera_msgs/rosidl_generator_cpp/realsense2_camera_msgs/srv/detail/device_info__struct.hpp

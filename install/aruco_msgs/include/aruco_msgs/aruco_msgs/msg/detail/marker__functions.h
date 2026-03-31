@@ -1,0 +1,1 @@
+/home/grumpy/dd2419_ws_Group5_2026/build/aruco_msgs/rosidl_generator_c/aruco_msgs/msg/detail/marker__functions.h

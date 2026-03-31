@@ -1,0 +1,1 @@
+/home/grumpy/dd2419_ws_Group5_2026/build/robp_interfaces/rosidl_typesupport_fastrtps_c/robp_interfaces/msg/detail/arm_control__rosidl_typesupport_fastrtps_c.h

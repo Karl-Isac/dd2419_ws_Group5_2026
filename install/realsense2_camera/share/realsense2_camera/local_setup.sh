@@ -1,0 +1,1 @@
+/home/grumpy/dd2419_ws_Group5_2026/build/realsense2_camera/ament_cmake_environment_hooks/local_setup.sh

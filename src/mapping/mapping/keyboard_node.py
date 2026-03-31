@@ -25,6 +25,7 @@ class KeyboardTeleop(Node):
         msg = DutyCycles()
         while rclpy.ok():
             key = self.get_key()
+            print(f'Key pressed: {key}')
             if key == 'w':
                 msg.duty_cycle_left = 0.5
                 msg.duty_cycle_right = 0.5
@@ -38,18 +39,18 @@ class KeyboardTeleop(Node):
                 msg.duty_cycle_left = 0.25
                 msg.duty_cycle_right = -0.25
                 
-            if key == 'i':
-                msg.duty_cycle_left = 0.5
-                msg.duty_cycle_right = 0.25
-            elif key == 'j':
-                msg.duty_cycle_left = -0.25
-                msg.duty_cycle_right = -0.5
-            elif key == 'k':
-                msg.duty_cycle_left = -0.6
-                msg.duty_cycle_right = 0.6
-            elif key == 'l':
-                msg.duty_cycle_left = 0.6
-                msg.duty_cycle_right = -0.6
+            # if key == 'i':
+            #     msg.duty_cycle_left = 0.5
+            #     msg.duty_cycle_right = 0.25
+            # elif key == 'j':
+            #     msg.duty_cycle_left = -0.25
+            #     msg.duty_cycle_right = -0.5
+            # elif key == 'k':
+            #     msg.duty_cycle_left = -0.6
+            #     msg.duty_cycle_right = 0.6
+            # elif key == 'l':
+            #     msg.duty_cycle_left = 0.6
+            #     msg.duty_cycle_right = -0.6
             
             
             

@@ -1,0 +1,1 @@
+/home/grumpy/dd2419_ws_Group5_2026/src/realsense-ros/realsense2_description/launch/view_model.launch.py

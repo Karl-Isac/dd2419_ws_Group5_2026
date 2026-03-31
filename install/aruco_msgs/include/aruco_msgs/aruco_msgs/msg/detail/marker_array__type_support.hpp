@@ -1,0 +1,1 @@
+/home/grumpy/dd2419_ws_Group5_2026/build/aruco_msgs/rosidl_generator_cpp/aruco_msgs/msg/detail/marker_array__type_support.hpp

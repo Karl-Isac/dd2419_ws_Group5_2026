@@ -1,0 +1,1 @@
+/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/share/ament_cmake_core/cmake/environment_hooks/environment/path.sh

@@ -1,0 +1,1 @@
+/home/grumpy/dd2419_ws_Group5_2026/build/realsense2_description/ament_cmake_core/realsense2_descriptionConfig.cmake

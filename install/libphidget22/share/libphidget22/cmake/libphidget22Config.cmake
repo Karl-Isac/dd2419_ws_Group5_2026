@@ -1,0 +1,1 @@
+/home/grumpy/dd2419_ws_Group5_2026/build/libphidget22/ament_cmake_core/libphidget22Config.cmake
