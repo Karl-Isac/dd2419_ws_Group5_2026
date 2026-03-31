@@ -91,8 +91,6 @@ class ExplorationMapper(Node):
             y = t.y
             yaw = quat_to_yaw(r)
 
-            self.get_logger().info(f"The current robot location is: x={x}, y={y}")
-
             # Create a triangle in front of the robot
             FOV = 60                # degrees,  set these based on detection performance
             detection_range = 0.6   # meters - this is the triangle height, not edge length
@@ -112,7 +110,6 @@ class ExplorationMapper(Node):
                         point = shapelyPoint(x,y)
                         if seen_triangle.contains(point):
                             self.grid[i,j] = 2      # mark as explored if its within the detection triangle
-                            self.get_logger().info("something just got explored")
         except (LookupException, ConnectivityException, ExtrapolationException):
             self.get_logger().warn("Transform not available")
         
