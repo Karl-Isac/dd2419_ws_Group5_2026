@@ -14,6 +14,9 @@ import math
 from ament_index_python.packages import get_package_share_directory
 import os
 
+import matplotlib.pyplot as plt
+
+
 
 class AStarPlannerNode(Node):
     def __init__(self):
@@ -117,15 +120,15 @@ class AStarPlannerNode(Node):
     def on_objects(self, msg):
         for p in msg.poses:
             # REMOVE LATER
-            if len(self.objects) >= 2:
-                break
+#             if len(self.objects) >= 2:
+#                 break
             self.objects.append((p.position.x, p.position.y))
         self.rebuild_grid()
 
     def on_boxes(self, msg):
         for p in msg.poses:
-            if len(self.boxes) >=1:
-                break
+#             if len(self.boxes) >=1:
+#                 break
             self.boxes.append((p.position.x, p.position.y))
         self.rebuild_grid()
 
@@ -185,6 +188,36 @@ class AStarPlannerNode(Node):
 # #         gy = max(0, min(gy, self.grid_height - 1))
 # 
 #         return gx, gy
+
+    def visualize_grid(self, grid, filename="grid.png"):
+        """
+        Visualize occupancy grid and save as image.
+
+        grid: 2D list [y][x]
+        """
+
+        # Convert to numpy
+        grid_np = np.array(grid)
+
+        plt.figure()
+
+        # Show grid (flip so origin matches world frame visually)
+        plt.imshow(grid_np, origin="lower")
+
+        plt.colorbar(label="Occupancy (0=free, 100=occupied)")
+        plt.title("Occupancy Grid")
+
+        # Save to file (inside your package config or wherever you want)
+        save_path = os.path.join(
+            get_package_share_directory("grumpy_navigation_py"),
+            "config",
+            filename
+        )
+
+        plt.savefig(save_path)
+        plt.close()
+
+        self.get_logger().info(f"Saved grid visualization to: {save_path}")
 
     def world_to_grid(self, x, y):
         gx = int((x - self.min_x) / self.resolution)
@@ -251,6 +284,9 @@ class AStarPlannerNode(Node):
             print("goal_cell =", goal_cell, "value =", grid[goal_cell[1]][goal_cell[0]])
 
         self.publish_grid(grid, w, h)
+
+        self.visualize_grid(grid)
+
         return grid
 
     def publish_grid(self, grid, w, h):
