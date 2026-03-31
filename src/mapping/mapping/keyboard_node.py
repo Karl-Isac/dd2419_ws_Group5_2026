@@ -27,11 +27,11 @@ class KeyboardTeleop(Node):
             key = self.get_key()
             print(f'Key pressed: {key}')
             if key == 'w':
-                msg.duty_cycle_left = 0.5
-                msg.duty_cycle_right = 0.5
+                msg.duty_cycle_left = 0.4
+                msg.duty_cycle_right = 0.4
             elif key == 's':
-                msg.duty_cycle_left = -0.5
-                msg.duty_cycle_right = -0.5
+                msg.duty_cycle_left = -0.4
+                msg.duty_cycle_right = -0.4
             elif key == 'a':
                 msg.duty_cycle_left = -0.25
                 msg.duty_cycle_right = 0.25

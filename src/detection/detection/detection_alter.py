@@ -95,7 +95,7 @@ class Detection(Node):
 
         # Using a deque as a buffer to store incoming point cloud messages for processing
         self.cloud_queue = deque(maxlen=100)
-        self.timer = self.create_timer(0.05, self.process_queue)
+        self.timer = self.create_timer(0.025, self.process_queue)
 
         # Reading map file
         with open(map_path, mode='r', encoding='utf-8') as file:
@@ -224,11 +224,11 @@ class Detection(Node):
                 # ✅ 可以 transform → 正式处理
                 # self.get_logger().debug("TF is ready, processing point cloud.")
                 self.process_point_cloud(msg)
-                new_queue = deque()
-                for m in self.cloud_queue:
-                    if m.header.stamp.sec > t_cloud.sec or (m.header.stamp.sec == t_cloud.sec and m.header.stamp.nanosec > t_cloud.nanosec):
-                        new_queue.append(m)
-                self.cloud_queue = new_queue
+                # new_queue = deque()
+                # for m in self.cloud_queue:
+                #     if m.header.stamp.sec > t_cloud.sec or (m.header.stamp.sec == t_cloud.sec and m.header.stamp.nanosec > t_cloud.nanosec):
+                #         new_queue.append(m)
+                # self.cloud_queue = new_queue
 
     def process_point_cloud(self, msg):
 
@@ -267,7 +267,7 @@ class Detection(Node):
             h, s, v = rgb_to_hsv(r, g, b)
 
             # spatial filtering for candidate points (keep points in front of camera and within 0.8m, and at the ground)
-            if y > 0.045 and y < 0.085 and z > 0.05 and z < 0.8:
+            if y > 0.045 and y < 0.0865 and z > 0.05 and z < 0.8:
                 # object detection candidate points 
                 if y > 0.05:
                     test_points_cube.append(gen[idx])
@@ -283,14 +283,19 @@ class Detection(Node):
         if test_points_box:
             box_cloud = pc2.create_cloud(msg.header, msg.fields, test_points_box)
             self.test_pub_box.publish(box_cloud)
-        if test_points_cube:
-            cube_cloud = pc2.create_cloud(msg.header, msg.fields, test_points_cube)
-            self.test_pub_cube.publish(cube_cloud)
+        # if test_points_cube:
+        #     cube_cloud = pc2.create_cloud(msg.header, msg.fields, test_points_cube)
+        #     self.test_pub_cube.publish(cube_cloud)
+        
 
         # DBSCAN for clustering object candidate points, and then color-based classification and centroid calculation for each cluster
-        if len(candidates) >= 10:
+        if len(candidates) >= 8:
             cand_array = np.array(candidates)
             pts_xyz = cand_array[:, :3]
+
+            if test_points_cube:
+                cube_cloud = pc2.create_cloud(msg.header, msg.fields, test_points_cube)
+                self.test_pub_cube.publish(cube_cloud)
 
             # DBSCAN 
             eps = 0.025          # cluster radius, tuned based on the point cloud density and object size (0.025m = 2.5cm)
@@ -324,7 +329,7 @@ class Detection(Node):
                 # vote for color classification based on pixel-wise HSV values
                 color_counts = {'Red': red_cnt, 'Blue': blue_cnt, 'Green': green_cnt, 'Wood': wood_cnt}
                 max_color = max(color_counts, key=color_counts.get)
-                if color_counts[max_color] / total > 0.4:
+                if color_counts[max_color] / total > 0.3:
                     # centroid
                     sum_x = np.sum(cluster_pts[:, 0])
                     sum_y = np.sum(cluster_pts[:, 1])
