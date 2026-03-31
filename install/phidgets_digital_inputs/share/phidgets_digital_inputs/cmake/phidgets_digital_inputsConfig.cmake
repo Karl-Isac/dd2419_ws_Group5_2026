@@ -1,1 +1,0 @@
-/home/mr-datian/dd2419_ws_Group5_2026/build/phidgets_digital_inputs/ament_cmake_core/phidgets_digital_inputsConfig.cmake

@@ -1,1 +1,0 @@
-/home/mr-datian/dd2419_ws_Group5_2026/build/phidgets_msgs/rosidl_typesupport_introspection_cpp/phidgets_msgs/msg/detail/stepper_state__rosidl_typesupport_introspection_cpp.hpp

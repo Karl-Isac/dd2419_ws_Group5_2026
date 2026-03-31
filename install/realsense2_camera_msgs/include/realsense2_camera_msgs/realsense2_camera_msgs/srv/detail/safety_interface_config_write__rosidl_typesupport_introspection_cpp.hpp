@@ -1,1 +1,0 @@
-/home/mr-datian/dd2419_ws_Group5_2026/build/realsense2_camera_msgs/rosidl_typesupport_introspection_cpp/realsense2_camera_msgs/srv/detail/safety_interface_config_write__rosidl_typesupport_introspection_cpp.hpp

@@ -1,1 +1,0 @@
-/home/mr-datian/dd2419_ws_Group5_2026/build/phidgets_msgs/rosidl_typesupport_fastrtps_c/phidgets_msgs/msg/detail/encoder_decimated_speed__rosidl_typesupport_fastrtps_c.h

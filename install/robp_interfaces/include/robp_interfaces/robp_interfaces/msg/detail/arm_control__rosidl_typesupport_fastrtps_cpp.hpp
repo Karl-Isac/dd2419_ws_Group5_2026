@@ -1,1 +1,0 @@
-/home/mr-datian/dd2419_ws_Group5_2026/build/robp_interfaces/rosidl_typesupport_fastrtps_cpp/robp_interfaces/msg/detail/arm_control__rosidl_typesupport_fastrtps_cpp.hpp

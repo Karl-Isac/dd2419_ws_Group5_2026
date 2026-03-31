@@ -1,1 +1,0 @@
-/home/mr-datian/dd2419_ws_Group5_2026/build/robp_interfaces/rosidl_typesupport_introspection_cpp/robp_interfaces/msg/detail/arm_feedback__rosidl_typesupport_introspection_cpp.hpp

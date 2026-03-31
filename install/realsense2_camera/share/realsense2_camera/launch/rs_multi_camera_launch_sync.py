@@ -1,1 +1,0 @@
-/home/mr-datian/dd2419_ws_Group5_2026/src/realsense-ros/realsense2_camera/launch/rs_multi_camera_launch_sync.py

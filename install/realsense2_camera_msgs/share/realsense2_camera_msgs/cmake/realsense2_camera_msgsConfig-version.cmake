@@ -1,1 +1,0 @@
-/home/mr-datian/dd2419_ws_Group5_2026/build/realsense2_camera_msgs/ament_cmake_core/realsense2_camera_msgsConfig-version.cmake

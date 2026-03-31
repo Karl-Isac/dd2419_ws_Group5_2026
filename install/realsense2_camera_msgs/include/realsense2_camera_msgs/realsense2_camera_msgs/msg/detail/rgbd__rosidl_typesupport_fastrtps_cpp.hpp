@@ -1,1 +1,0 @@
-/home/mr-datian/dd2419_ws_Group5_2026/build/realsense2_camera_msgs/rosidl_typesupport_fastrtps_cpp/realsense2_camera_msgs/msg/detail/rgbd__rosidl_typesupport_fastrtps_cpp.hpp
