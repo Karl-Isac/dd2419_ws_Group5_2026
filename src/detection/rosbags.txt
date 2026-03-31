@@ -3,7 +3,7 @@ pixi run realsense
 pixi run phidgets
 pixi run ros2 run odometry odometry
 pixi run ros2 run detection alter
-pixi run ros2 run learning_tf2_py keyboard
+pixi run ros2 run mapping keyboard
 pixi run ros2 bag record -a --include-hidden-topics -o rosbags/detection_bag
 
 play:
