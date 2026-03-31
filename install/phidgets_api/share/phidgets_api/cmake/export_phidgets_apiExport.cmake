@@ -7,7 +7,7 @@ if(CMAKE_VERSION VERSION_LESS "2.8.12")
    message(FATAL_ERROR "CMake >= 2.8.12 required")
 endif()
 cmake_policy(PUSH)
-cmake_policy(VERSION 2.8.12...4.0)
+cmake_policy(VERSION 2.8.12...4.1)
 #----------------------------------------------------------------
 # Generated CMake target import file.
 #----------------------------------------------------------------
@@ -60,8 +60,8 @@ add_library(phidgets_api::phidgets_api SHARED IMPORTED)
 
 set_target_properties(phidgets_api::phidgets_api PROPERTIES
   INTERFACE_COMPILE_FEATURES "cxx_std_17"
-  INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include;/home/grumpy/dd2419_ws_Group5_2026/install/libphidget22/share/libphidget22/cmake/../../../opt/libphidget22/include"
-  INTERFACE_LINK_LIBRARIES "/home/grumpy/dd2419_ws_Group5_2026/install/libphidget22/share/libphidget22/cmake/../../../opt/libphidget22/lib/libphidget22.so"
+  INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include;/home/mr-datian/dd2419_ws_Group5_2026/install/libphidget22/share/libphidget22/cmake/../../../opt/libphidget22/include"
+  INTERFACE_LINK_LIBRARIES "/home/mr-datian/dd2419_ws_Group5_2026/install/libphidget22/share/libphidget22/cmake/../../../opt/libphidget22/lib/libphidget22.so"
 )
 
 # Load information for each installed configuration.

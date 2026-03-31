@@ -1,5 +1,1 @@
-<?xml version="1.0"?>
-<launch>
-	<!-- run rviz -->
-	<node pkg="rviz2" exec="rviz2" name="rviz" args="-d $(find-pkg-share robp_boot_camp_launch)/rviz/boot_camp_part1.rviz" />
-</launch>
+/home/mr-datian/dd2419_ws_Group5_2026/build/robp_boot_camp_launch/launch/boot_camp_part1_launch.xml

@@ -1,1 +1,1 @@
-/home/grumpy/dd2419_ws_Group5_2026/build/rplidar_ros/ament_cmake_core/rplidar_rosConfig-version.cmake
+/home/mr-datian/dd2419_ws_Group5_2026/build/rplidar_ros/ament_cmake_core/rplidar_rosConfig-version.cmake

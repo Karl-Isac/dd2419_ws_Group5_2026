@@ -1,1 +1,1 @@
-/home/grumpy/dd2419_ws_Group5_2026/build/phidgets_magnetometer/ament_cmake_core/phidgets_magnetometerConfig-version.cmake
+/home/mr-datian/dd2419_ws_Group5_2026/build/phidgets_magnetometer/ament_cmake_core/phidgets_magnetometerConfig-version.cmake

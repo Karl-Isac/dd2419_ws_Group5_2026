@@ -1,1 +1,1 @@
-/home/grumpy/dd2419_ws_Group5_2026/build/aruco_msgs/ament_cmake_core/aruco_msgsConfig.cmake
+/home/mr-datian/dd2419_ws_Group5_2026/build/aruco_msgs/ament_cmake_core/aruco_msgsConfig.cmake

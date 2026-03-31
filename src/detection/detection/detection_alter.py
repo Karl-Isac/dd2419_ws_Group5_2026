@@ -198,48 +198,15 @@ class Detection(Node):
         # self.get_logger().info(f'Published {len(object_poses)} objects and {len(box_poses)} boxes')
 
     def cloud_callback(self, msg: PointCloud2):
-        self.cloud_queue.append(msg)
+        # Spacial and color filtering, reconstructing cloud as [Timestamp, header, fields, candidates, grey_points],
+        # where candidates are points (x,y,z,r,g,b) for object detection and grey_points are points (z, -x) for box detection
         
-    def process_queue(self):
-        if not self.cloud_queue:
-            return
-
-        while self.cloud_queue:
-            msg = self.cloud_queue.popleft()
-            t_cloud = msg.header.stamp
-
-            # TODO: (Private Test) Print out the time difference between timestamp of pointcloud and latest TF
-            # latest_tf_time = self.tf_buffer.get_latest_common_time('map', 'realsense_camera_link').to_msg()
-            # self.get_logger().info(f"Time difference: {t_cloud.sec - latest_tf_time.sec}.{t_cloud.nanosec - latest_tf_time.nanosec}")
-            # self.get_logger().info(f"Pointcloud Timestamp: {t_cloud.sec}.{t_cloud.nanosec}")
-            # self.get_logger().info(f"Latest TF Timestamp: {latest_tf_time.sec}.{latest_tf_time.nanosec}")
-
-            # 判断 TF 是否已经准备好
-            if self.tf_buffer.can_transform(
-                'map',
-                msg.header.frame_id,
-                t_cloud,
-                timeout=rclpy.duration.Duration(seconds=0.01)
-            ):
-                # ✅ 可以 transform → 正式处理
-                # self.get_logger().debug("TF is ready, processing point cloud.")
-                self.process_point_cloud(msg)
-                # new_queue = deque()
-                # for m in self.cloud_queue:
-                #     if m.header.stamp.sec > t_cloud.sec or (m.header.stamp.sec == t_cloud.sec and m.header.stamp.nanosec > t_cloud.nanosec):
-                #         new_queue.append(m)
-                # self.cloud_queue = new_queue
-
-    def process_point_cloud(self, msg):
-
-        # list of position filtered points with position and color
-        candidates = []   # [x, y, z, r, g, b]
-        
+        # Initialization
+        candidates = []
         grey_points = []
-
-        # test pointclouds for box and cube
-        test_points_box = []
-        test_points_cube = []
+        Timestamp = msg.header.stamp
+        header = msg.header
+        fields = msg.fields
 
         # read original pointcloud
         gen = pc2.read_points_numpy(msg, skip_nans=True)
@@ -270,21 +237,57 @@ class Detection(Node):
             if y > 0.045 and y < 0.0865 and z > 0.05 and z < 0.8:
                 # object detection candidate points 
                 if y > 0.05:
-                    test_points_cube.append(gen[idx])
                     candidates.append([x, y, z, r, g, b])
                 # box detection candidate points
                 if y < 0.055:
-                    test_points_box.append(gen[idx])
                     if is_grey(h, s, v):
                         grey_points.append([z, -x])
-               
+        self.cloud_queue.append([Timestamp, header, fields, candidates, grey_points])
+        
+    def process_queue(self):
+        if not self.cloud_queue:
+            return
+
+        while self.cloud_queue:
+            [t_cloud, header, fields, candidates, grey_points] = self.cloud_queue.popleft()
+            frame = header.frame_id
+
+            # TODO: (Private Test) Print out the time difference between timestamp of pointcloud and latest TF
+            # latest_tf_time = self.tf_buffer.get_latest_common_time('map', 'realsense_camera_link').to_msg()
+            # self.get_logger().info(f"Time difference: {t_cloud.sec - latest_tf_time.sec}.{t_cloud.nanosec - latest_tf_time.nanosec}")
+            # self.get_logger().info(f"Pointcloud Timestamp: {t_cloud.sec}.{t_cloud.nanosec}")
+            # self.get_logger().info(f"Latest TF Timestamp: {latest_tf_time.sec}.{latest_tf_time.nanosec}")
+
+            # 判断 TF 是否已经准备好
+            if self.tf_buffer.can_transform(
+                'map',
+                frame,
+                t_cloud,
+                timeout=rclpy.duration.Duration(seconds=0.01)
+            ):
+                # ✅ 可以 transform → 正式处理
+                # self.get_logger().debug("TF is ready, processing point cloud.")
+                self.process_point_cloud([t_cloud, header, fields, candidates, grey_points])
+                # new_queue = deque()
+                # for m in self.cloud_queue:
+                #     if m.header.stamp.sec > t_cloud.sec or (m.header.stamp.sec == t_cloud.sec and m.header.stamp.nanosec > t_cloud.nanosec):
+                #         new_queue.append(m)
+                # self.cloud_queue = new_queue
+
+    def process_point_cloud(self, data):
+
+        [timestamp, header, fields, candidates, grey_points] = data
+
+        # test pointclouds for box and cube
+        test_points_box = []
+        test_points_cube = []
 
         # TODO: (Private Test) publish the candidate points for visualization and debugging, can be removed later
-        if test_points_box:
-            box_cloud = pc2.create_cloud(msg.header, msg.fields, test_points_box)
-            self.test_pub_box.publish(box_cloud)
+        # if test_points_box:
+        #     box_cloud = pc2.create_cloud(header, fields, test_points_box)
+        #     self.test_pub_box.publish(box_cloud)
         # if test_points_cube:
-        #     cube_cloud = pc2.create_cloud(msg.header, msg.fields, test_points_cube)
+        #     cube_cloud = pc2.create_cloud(header, fields, test_points_cube)
         #     self.test_pub_cube.publish(cube_cloud)
         
 
@@ -292,10 +295,6 @@ class Detection(Node):
         if len(candidates) >= 8:
             cand_array = np.array(candidates)
             pts_xyz = cand_array[:, :3]
-
-            if test_points_cube:
-                cube_cloud = pc2.create_cloud(msg.header, msg.fields, test_points_cube)
-                self.test_pub_cube.publish(cube_cloud)
 
             # DBSCAN 
             eps = 0.025          # cluster radius, tuned based on the point cloud density and object size (0.025m = 2.5cm)
@@ -336,7 +335,7 @@ class Detection(Node):
                     sum_z = np.sum(cluster_pts[:, 2])
                     counter = len(cluster_pts)
                     # publish the detected object with its color and centroid position
-                    self.object_publish(msg, sum_x, sum_y, sum_z, counter, max_color)
+                    self.object_publish(header, timestamp, sum_x, sum_y, sum_z, counter, max_color)
 
         # box detection
         if grey_points:
@@ -347,7 +346,7 @@ class Detection(Node):
                 try:
                     point_camera = PointStamped()
                     point_camera.header.frame_id = 'realsense_camera_link'
-                    point_camera.header.stamp = msg.header.stamp
+                    point_camera.header.stamp = timestamp
                     point_camera.point.x = float(center[0])
                     point_camera.point.y = float(center[1])
                     point_camera.point.z = 0.0
@@ -355,7 +354,7 @@ class Detection(Node):
 
                     dir_camera = Vector3Stamped()
                     dir_camera.header.frame_id = 'realsense_camera_link'
-                    dir_camera.header.stamp = msg.header.stamp
+                    dir_camera.header.stamp = timestamp
                     dir_camera.vector.x = np.cos(yaw)
                     dir_camera.vector.y = np.sin(yaw)
                     dir_camera.vector.z = 0.0
@@ -377,7 +376,7 @@ class Detection(Node):
                     else:
                         self.box_num += 1
                         tf_map_box = TransformStamped()
-                        tf_map_box.header.stamp = msg.header.stamp
+                        tf_map_box.header.stamp = timestamp
                         tf_map_box.header.frame_id = 'map'
                         tf_map_box.child_frame_id = f'box_{self.box_num}'
                         tf_map_box.transform.translation.x = point_map.point.x
@@ -400,18 +399,18 @@ class Detection(Node):
                         new_box_msg.orientation.y = tf_map_box.transform.rotation.y
                         new_box_msg.orientation.z = tf_map_box.transform.rotation.z
                         new_box_msg.orientation.w = tf_map_box.transform.rotation.w
-                        self.publish_arrays(None, None, [new_box_msg], msg.header.stamp)
+                        self.publish_arrays(None, None, [new_box_msg], timestamp)
 
                 except TransformException as ex:
                     self.get_logger().error(f'Transform failed: {ex}')
 
     
-    def object_publish(self, msg, sum_x, sum_y, sum_z, counter, color):
+    def object_publish(self, header, timestamp, sum_x, sum_y, sum_z, counter, color):
         # object_num is the number of detected objects, regardless of color, used for TF frame naming
         self.get_logger().debug(f'{color} object detected.')
         self.object = tf2_geometry_msgs.PoseStamped()
-        self.object.header = msg.header
-        self.object.header.stamp = msg.header.stamp
+        self.object.header = header
+        self.object.header.stamp = timestamp
         self.object.pose.position.x = sum_x / counter
         self.object.pose.position.y = sum_y / counter
         self.object.pose.position.z = sum_z / counter
@@ -420,7 +419,7 @@ class Detection(Node):
         self.object.pose.orientation.z = 0.0
         self.object.pose.orientation.w = 1.0
 
-        msg_time = msg.header.stamp
+        msg_time = timestamp
         if not self.tf_buffer.can_transform(
                 'map',
                 self.object.header.frame_id,
@@ -466,7 +465,7 @@ class Detection(Node):
             self.object_num += 1
 
             tf = TransformStamped()
-            tf.header.stamp = msg.header.stamp
+            tf.header.stamp = timestamp
             tf.header.frame_id = 'map'
             tf.child_frame_id = f'object_{self.object_num}'
             tf.transform.translation.x = object_map.pose.position.x

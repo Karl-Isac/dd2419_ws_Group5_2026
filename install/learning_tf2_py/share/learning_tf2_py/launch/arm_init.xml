@@ -1,11 +1,1 @@
-<?xml version="1.0"?>
-<launch>
-	<!-- run rviz -->
-	<node pkg="rviz2" exec="rviz2" name="rviz" output="screen"/>
-	<!--add output="screen" to node for console output-->
-	<node pkg="rqt_gui" exec="rqt_gui" name="rqt_gui" output="screen"/>
-	<node pkg="learning_tf2_py" exec="arm_safe_republisher" name="arm_safe_republisher"/>
-
-    <include file="$(find-pkg-share robp_launch)/launch/arm_launch.yaml"/>
-	<include file="$(find-pkg-share robp_launch)/launch/arm_camera_launch.yaml"/>
-</launch>
+/home/mr-datian/dd2419_ws_Group5_2026/build/learning_tf2_py/launch/arm_init.xml
