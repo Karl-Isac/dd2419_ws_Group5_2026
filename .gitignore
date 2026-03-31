@@ -72,8 +72,8 @@ bags/*
 # VS Code
 .vscode
 
-
-
+install/
+build/
 log/
 **/build/
 # **/install/
