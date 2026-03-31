@@ -208,6 +208,10 @@ class Detection(Node):
         header = msg.header
         fields = msg.fields
 
+        test_points_box = []
+        test_points_cube = [] # for testing the point cloud range for cube detection, can be removed later
+
+
         # read original pointcloud
         gen = pc2.read_points_numpy(msg, skip_nans=True)
         points = gen[:, :3]
@@ -234,22 +238,24 @@ class Detection(Node):
             h, s, v = rgb_to_hsv(r, g, b)
 
             # spatial filtering for candidate points (keep points in front of camera and within 0.8m, and at the ground)
-            if y > 0.045 and y < 0.0865 and z > 0.05 and z < 0.8:
+            if y > 0.045 and y < 0.0865 and z > 0.05 and z < 1:
                 # object detection candidate points 
                 if y > 0.05:
+                    test_points_box.append(gen[idx]) # for testing the point cloud range for box detection, can be removed later
                     candidates.append([x, y, z, r, g, b])
                 # box detection candidate points
                 if y < 0.055:
                     if is_grey(h, s, v):
+                        test_points_box.append(gen[idx]) # for testing the point cloud range for box detection, can be removed later
                         grey_points.append([z, -x])
-        self.cloud_queue.append([Timestamp, header, fields, candidates, grey_points])
+        self.cloud_queue.append([Timestamp, header, fields, candidates, grey_points, test_points_box, test_points_cube])
         
     def process_queue(self):
         if not self.cloud_queue:
             return
 
         while self.cloud_queue:
-            [t_cloud, header, fields, candidates, grey_points] = self.cloud_queue.popleft()
+            [t_cloud, header, fields, candidates, grey_points, test_points_box, test_points_cube] = self.cloud_queue.popleft()
             frame = header.frame_id
 
             # TODO: (Private Test) Print out the time difference between timestamp of pointcloud and latest TF
@@ -267,7 +273,7 @@ class Detection(Node):
             ):
                 # ✅ 可以 transform → 正式处理
                 # self.get_logger().debug("TF is ready, processing point cloud.")
-                self.process_point_cloud([t_cloud, header, fields, candidates, grey_points])
+                self.process_point_cloud([t_cloud, header, fields, candidates, grey_points, test_points_box, test_points_cube])
                 # new_queue = deque()
                 # for m in self.cloud_queue:
                 #     if m.header.stamp.sec > t_cloud.sec or (m.header.stamp.sec == t_cloud.sec and m.header.stamp.nanosec > t_cloud.nanosec):
@@ -276,19 +282,15 @@ class Detection(Node):
 
     def process_point_cloud(self, data):
 
-        [timestamp, header, fields, candidates, grey_points] = data
-
-        # test pointclouds for box and cube
-        test_points_box = []
-        test_points_cube = []
+        [timestamp, header, fields, candidates, grey_points, test_points_box, test_points_cube] = data
 
         # TODO: (Private Test) publish the candidate points for visualization and debugging, can be removed later
-        # if test_points_box:
-        #     box_cloud = pc2.create_cloud(header, fields, test_points_box)
-        #     self.test_pub_box.publish(box_cloud)
-        # if test_points_cube:
-        #     cube_cloud = pc2.create_cloud(header, fields, test_points_cube)
-        #     self.test_pub_cube.publish(cube_cloud)
+        if test_points_box:
+            box_cloud = pc2.create_cloud(header, fields, test_points_box)
+            self.test_pub_box.publish(box_cloud)
+        if test_points_cube:
+            cube_cloud = pc2.create_cloud(header, fields, test_points_cube)
+            self.test_pub_cube.publish(cube_cloud)
         
 
         # DBSCAN for clustering object candidate points, and then color-based classification and centroid calculation for each cluster
@@ -328,7 +330,7 @@ class Detection(Node):
                 # vote for color classification based on pixel-wise HSV values
                 color_counts = {'Red': red_cnt, 'Blue': blue_cnt, 'Green': green_cnt, 'Wood': wood_cnt}
                 max_color = max(color_counts, key=color_counts.get)
-                if color_counts[max_color] / total > 0.3:
+                if color_counts[max_color] / total > 0.1:
                     # centroid
                     sum_x = np.sum(cluster_pts[:, 0])
                     sum_y = np.sum(cluster_pts[:, 1])
