@@ -5,9 +5,9 @@ import rclpy
 from rclpy.node import Node
 import tf2_ros
 
-from nav_msgs.msg import Path
-from std_msgs.msg import String, Bool
+from std_msgs.msg import Bool
 from robp_interfaces.msg import DutyCycles
+from grumpy_interfaces.msg import PathWithType
 
 
 def wrap_pi(a: float) -> float:
@@ -36,6 +36,7 @@ class PathControllerNode(Node):
         # Stop distances
         self.declare_parameter("object_stop_distance", 0.18)
         self.declare_parameter("box_stop_distance", 0.25)
+        self.declare_parameter("exploration_stop_distance", 0.10)
 
         # Path tracking
         self.declare_parameter("lookahead", 0.40)
@@ -65,12 +66,16 @@ class PathControllerNode(Node):
         self.cmd_pub = self.create_publisher(DutyCycles, "/phidgets/motor/duty_cycles", 10)
         self.reached_pub = self.create_publisher(Bool, "/nav/reached", 10)
 
-        self.path_sub = self.create_subscription(Path, "/nav/path", self.on_path, 10)
-        self.phase_sub = self.create_subscription(String, "/nav/phase", self.on_phase, 10)
+        self.path_sub = self.create_subscription(
+            PathWithType,
+            "/nav/path_to_controller",
+            self.on_path_with_type,
+            10,
+        )
 
         self.path = None
         self.next_idx = 0
-        self.phase = "object"
+        self.goal_type = PathWithType.OBJECT
         self.reached_latched = False
 
         rclpy.get_default_context().on_shutdown(self.stop)
@@ -79,38 +84,44 @@ class PathControllerNode(Node):
         self.timer = self.create_timer(dt, self.step)
 
         self.get_logger().info(
-            "PathControllerNode up. Sub: /nav/path, /nav/phase  Pub: /phidgets/motor/duty_cycles, /nav/reached"
+            "PathControllerNode up. "
+            "Sub: /nav/path_to_controller  "
+            "Pub: /phidgets/motor/duty_cycles, /nav/reached"
         )
 
-    def on_phase(self, msg: String):
-        p = (msg.data or "").strip().lower()
-        if p not in ("object", "box"):
-            self.get_logger().warn(f"/nav/phase must be 'object' or 'box', got '{msg.data}'")
-            return
+    def goal_type_name(self) -> str:
+        if self.goal_type == PathWithType.OBJECT:
+            return "object"
+        if self.goal_type == PathWithType.BOX:
+            return "box"
+        if self.goal_type == PathWithType.EXPLORATION_POINT:
+            return "exploration_point"
+        return f"unknown({self.goal_type})"
 
-        if p != self.phase:
-            self.get_logger().info(f"Phase changed: {self.phase} -> {p}")
-            self.phase = p
-            self.reached_latched = False
-
-    def on_path(self, msg: Path):
-        if not msg.poses:
+    def on_path_with_type(self, msg: PathWithType):
+        if not msg.path.poses:
             self.path = None
             self.next_idx = 0
             self.reached_latched = False
             self.get_logger().info("Received empty path. Stopping.")
             return
 
-        if msg.header.frame_id and msg.header.frame_id != self.world_frame:
+        if msg.path.header.frame_id and msg.path.header.frame_id != self.world_frame:
             self.get_logger().warn(
-                f"Path frame '{msg.header.frame_id}' != '{self.world_frame}'. Publish path in {self.world_frame}."
+                f"Path frame '{msg.path.header.frame_id}' != '{self.world_frame}'. "
+                f"Publish path in {self.world_frame}."
             )
             return
 
-        self.path = msg
+        self.path = msg.path
+        self.goal_type = msg.type
         self.next_idx = 0
         self.reached_latched = False
-        self.get_logger().info(f"Received new path with {len(msg.poses)} poses.")
+
+        self.get_logger().info(
+            f"Received new path with {len(msg.path.poses)} poses, "
+            f"type={self.goal_type_name()}."
+        )
 
     def get_pose(self):
         try:
@@ -149,8 +160,10 @@ class PathControllerNode(Node):
         self.publish_duty(0.0, 0.0)
 
     def stop_distance(self) -> float:
-        if self.phase == "box":
+        if self.goal_type == PathWithType.BOX:
             return float(self.get_parameter("box_stop_distance").value)
+        if self.goal_type == PathWithType.EXPLORATION_POINT:
+            return float(self.get_parameter("exploration_stop_distance").value)
         return float(self.get_parameter("object_stop_distance").value)
 
     def step(self):
@@ -189,7 +202,7 @@ class PathControllerNode(Node):
                 self.publish_reached(True)
                 self.reached_latched = True
                 self.get_logger().info(
-                    f"Reached ({self.phase}) within {stop_dist:.2f} m (d={d_final:.2f})."
+                    f"Reached ({self.goal_type_name()}) within {stop_dist:.2f} m (d={d_final:.2f})."
                 )
             return
         else:
@@ -230,7 +243,6 @@ class PathControllerNode(Node):
             forward_cmd = base_forward
             turn_cmd = base_turn
 
-        # Control law:
         # If heading error is too large -> turn in place
         # Otherwise -> drive forward
         if abs(err) > angle_tol:

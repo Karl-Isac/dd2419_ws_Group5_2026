@@ -67,7 +67,7 @@ class AStarPlannerNode(Node):
         self.create_subscription(PoseStamped, "/fake_obstacles", self.on_obstacle, 10)
         self.create_subscription(PoseStamped, "/nav/goal", self.on_goal, 10)
 
-        self.path_pub = self.create_publisher(Path, "/nav/path", 10)
+        self.path_pub = self.create_publisher(Path, "/nav/path_from_planner", 10)
         self.grid_pub = self.create_publisher(OccupancyGrid, "/nav/grid", 10)
 
         self.get_logger().info("Planner ready")
@@ -120,15 +120,15 @@ class AStarPlannerNode(Node):
     def on_objects(self, msg):
         for p in msg.poses:
             # REMOVE LATER
-#             if len(self.objects) >= 2:
-#                 break
+            if len(self.objects) >= 2:
+                break
             self.objects.append((p.position.x, p.position.y))
         self.rebuild_grid()
 
     def on_boxes(self, msg):
         for p in msg.poses:
-#             if len(self.boxes) >=1:
-#                 break
+            if len(self.boxes) >=1:
+                break
             self.boxes.append((p.position.x, p.position.y))
         self.rebuild_grid()
 
