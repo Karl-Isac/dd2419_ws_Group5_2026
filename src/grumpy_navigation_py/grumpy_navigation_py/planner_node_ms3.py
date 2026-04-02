@@ -146,7 +146,17 @@ class AStarPlannerNode(Node):
         if grid is None:
             return
 
-        start = self.world_to_grid(self.start_x, self.start_y)
+        robot = self.lookup_robot_xy()
+        if robot is None:
+            self.get_logger().warn("Could not get robot pose")
+            return
+
+        start = self.world_to_grid(robot[0], robot[1])
+        
+        # start = self.world_to_grid(self.start_x, self.start_y)
+
+
+
         goal = self.world_to_grid(self.goal[0], self.goal[1])
 
         print(f"world (x, y) = {self.goal[0]}, {self.goal[1]}")
@@ -176,6 +186,22 @@ class AStarPlannerNode(Node):
             return
 
         self.publish_path(cells)
+
+    # ------- Lookup transform ------
+
+    def lookup_robot_xy(self):
+        target_frame = "base_link"
+        try:
+            tf = self.tf_buffer.lookup_transform(
+                self.world_frame,
+                target_frame,
+                rclpy.time.Time()
+            )
+        except Exception:
+            return None
+
+        t = tf.transform.translation
+        return (float(t.x), float(t.y))
 
     # ---------------------------------------
     # Grid helpers
