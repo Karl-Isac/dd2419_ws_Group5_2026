@@ -52,6 +52,9 @@ class AStarPlannerNode(Node):
         self.start_x = float(self.get_parameter("start_x").value)
         self.start_y = float(self.get_parameter("start_y").value)
 
+        self.tf_buffer = Buffer()
+        self.tf_listener = TransformListener(self.tf_buffer, self)
+
         # ---- Storage ----
         self.objects = []
         self.boxes = []
@@ -162,6 +165,8 @@ class AStarPlannerNode(Node):
 
 
 
+
+
         goal = self.world_to_grid(self.goal[0], self.goal[1])
 
         print(f"world (x, y) = {self.goal[0]}, {self.goal[1]}")
@@ -204,6 +209,7 @@ class AStarPlannerNode(Node):
                 rclpy.time.Time()
             )
         except Exception:
+            self.get_logger().warn(f"TF lookup failed: {e}")
             return None
 
         t = tf.transform.translation
