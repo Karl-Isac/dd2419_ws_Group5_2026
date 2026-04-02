@@ -189,7 +189,7 @@ class TaskPlannerNode(Node):
             self.next_box_id += 1
             self.known_boxes.append(tracked_box)
 
-        self.get_logger().info(f"Updated boxes: {len(self.known_boxes)}")
+        # self.get_logger().info(f"Updated boxes: {len(self.known_boxes)}")
 
     def on_report_back(self, msg: String):
         self.get_logger().info(f"on_report_back: {msg.data}")
@@ -211,13 +211,17 @@ class TaskPlannerNode(Node):
             self.enter_state("GENERATE_PATH_TO_OBJECT")
 
     def on_reached(self, msg: Bool):
-        #self.nav_reached = bool(msg.data)
+        nav_reached = bool(msg.data)
+        # print(f"nav_reaced: {nav_reached}")
         if self.state == "EXECUTE_PATH_TO_OBJECT":
-            self.execute_path_object_success = True
+            if nav_reached:
+                self.execute_path_object_success = True
         elif self.state == "EXECUTE_PATH_TO_BOX":
-            self.execute_path_box_success = True
+            if nav_reached:
+                self.execute_path_box_success = True
         elif self.state == "EXECUTE_EXPLORATION_PATH":
-            self.execute_exploration_path_success = True
+            if nav_reached:
+                self.execute_exploration_path_success = True
 
 
     def lookup_xy(self, target_frame: str):
@@ -423,14 +427,6 @@ class TaskPlannerNode(Node):
         if self.current_object is None and self.state not in ("SELECT_OBJECT", "DONE", "DROP_OBJECT"):
             return
 
-
-        # TODO: 
-        # states: 
-        # genereate exploration pose 
-        # execute exploration pose 
-        # 
-
-
         
         if self.state == "GENERATE_PATH_TO_OBJECT": 
             if not self._published_this_state:
@@ -452,7 +448,7 @@ class TaskPlannerNode(Node):
                 self.publish_path_to_controller(path=self.path_to_goal, goal_type="object")
                 self._published_this_state = True
                 self.execute_path_object_success = False
-                self.get_logger().info("GENERATE_PATH_TO_OBJECT: published object goal")
+                self.get_logger().info("EXECUTE_PATH_TO_OBJECT: published object path")
 
             if self.execute_path_object_success:
                 self.enter_state("PICK_OBJECT")
@@ -478,7 +474,7 @@ class TaskPlannerNode(Node):
                 self.publish_path_to_controller(path=self.path_to_goal, goal_type="box")
                 self._published_this_state = True
                 self.execute_path_box_success = False
-                self.get_logger().info("GENERATE_PATH_TO_BOX: published object goal")
+                self.get_logger().info("EXECUTE_PATH_TO_BOX: published object path")
 
             if self.execute_path_box_success:
                 self.enter_state("DROP_OBJECT")

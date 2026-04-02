@@ -39,7 +39,7 @@ class PathControllerNode(Node):
         self.declare_parameter("exploration_stop_distance", 0.10)
 
         # Path tracking
-        self.declare_parameter("lookahead", 0.40)
+        self.declare_parameter("lookahead", 0.20)
         self.declare_parameter("advance_tolerance", 0.10)
         self.declare_parameter("angle_tolerance", 0.20)
 
