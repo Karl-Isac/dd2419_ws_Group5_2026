@@ -458,7 +458,7 @@ class Detection(Node):
                 self.get_logger().debug(f"repeated object {self.object_lists.index(item)} detection, discarded")
                 break
         else:
-            if is_point_in_polygon(object_map.pose.position.x * 100, object_map.pose.position.y * 100, self.boundary):
+            if not is_point_in_polygon(object_map.pose.position.x * 100, object_map.pose.position.y * 100, self.boundary):
                  self.get_logger().debug("object detected outside of workspace boundary, discarded")
                  return
             
