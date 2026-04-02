@@ -8,6 +8,7 @@ from collections import deque
 from sklearn.cluster import DBSCAN
 
 import rclpy
+from rclpy.time import Time
 from rclpy.node import Node
 
 import tf2_geometry_msgs
@@ -35,6 +36,7 @@ np.random.seed(42)  # for reproducibility
 ######################################################################################################
 # TODO: discuss the unit of the communication (PoseArray): m
 # TODO: (Private Test) deal with timestamp of messages and TF transforms, make sure to use the correct timestamp for each detection and transformation
+# TODO: keep 1 of 3 pointcloud frames as a robust plan, can be reduced to 2 if efficiency is higher
 ######################################################################################################
 
 class Detection(Node):
@@ -95,7 +97,7 @@ class Detection(Node):
 
         # Using a deque as a buffer to store incoming point cloud messages for processing
         self.cloud_queue = deque(maxlen=100)
-        self.timer = self.create_timer(0.025, self.process_queue)
+        self.timer = self.create_timer(0.2, self.process_queue)
 
         # Reading map file
         with open(map_path, mode='r', encoding='utf-8') as file:
@@ -203,6 +205,7 @@ class Detection(Node):
         # Spacial and color filtering, reconstructing cloud as [Timestamp, header, fields, candidates, grey_points],
         # where candidates are points (x,y,z,r,g,b) for object detection and grey_points are points (z, -x) for box detection
         
+        # Publish frequency of PointCloud: 6 FPS
         num = 3 # keep one frame every 3 frames
         self.counter += 1
         if self.counter % num != 0:
@@ -245,7 +248,7 @@ class Detection(Node):
             h, s, v = rgb_to_hsv(r, g, b)
 
             # spatial filtering for candidate points (keep points in front of camera and within 0.8m, and at the ground)
-            if y > 0.045 and y < 0.0865 and z > 0.05 and z < 1:
+            if y > 0.045 and y < 0.0865 and z > 0.05 and z < 0.9:
             # if z > 0.05 and z < 1:
                 # object detection candidate points 
                 if y > 0.05:
@@ -262,15 +265,27 @@ class Detection(Node):
         if not self.cloud_queue:
             return
 
-        while self.cloud_queue:
-            [t_cloud, header, fields, candidates, grey_points, test_points_box, test_points_cube] = self.cloud_queue.popleft()
+        if self.cloud_queue:
+            [t_cloud, header, fields, candidates, grey_points, test_points_box, test_points_cube] = self.cloud_queue[0]
+            # t_cloud, header, fields, candidates, grey_points, test_points_box, test_points_cube] = self.cloud_queue.popleft()
+            
             frame = header.frame_id
 
             # TODO: (Private Test) Print out the time difference between timestamp of pointcloud and latest TF
-            latest_tf_time = self.tf_buffer.get_latest_common_time('map', 'realsense_camera_link').to_msg()
-            self.get_logger().info(f"Time difference: {t_cloud.sec - latest_tf_time.sec}.{t_cloud.nanosec - latest_tf_time.nanosec}")
-            self.get_logger().info(f"Pointcloud Timestamp: {t_cloud.sec}.{t_cloud.nanosec}")
-            self.get_logger().info(f"Latest TF Timestamp: {latest_tf_time.sec}.{latest_tf_time.nanosec}")
+            # 假设 self.tf_buffer 是你的 Buffer
+            # try:
+            #     # time=Time() 不指定时间，表示使用 buffer 中最新的 transform
+            #     latest_tf = self.tf_buffer.lookup_transform(
+            #         'odom',                  # target frame
+            #         'base_link', # source frame
+            #         Time()                   # latest available
+            #     )
+            #     latest_tf_time = latest_tf.header.stamp  # rclpy.time.Time 消息
+            # except Exception as e:
+            #     self.get_logger().warn(f"Cannot get latest TF: {e}")
+            # self.get_logger().info(f"Time difference: {t_cloud.sec - latest_tf_time.sec}.{t_cloud.nanosec - latest_tf_time.nanosec}")
+            # self.get_logger().info(f"Pointcloud Timestamp: {t_cloud.sec}.{t_cloud.nanosec}")
+            # self.get_logger().info(f"Latest TF Timestamp: {latest_tf_time.sec}.{latest_tf_time.nanosec}")
 
             # 判断 TF 是否已经准备好
             if self.tf_buffer.can_transform(
@@ -280,13 +295,9 @@ class Detection(Node):
                 timeout=rclpy.duration.Duration(seconds=0.01)
             ):
                 # ✅ 可以 transform → 正式处理
-                # self.get_logger().debug("TF is ready, processing point cloud.")
-                self.process_point_cloud([t_cloud, header, fields, candidates, grey_points, test_points_box, test_points_cube])
-                new_queue = deque()
-                for m in self.cloud_queue:
-                    if m[0].sec > t_cloud.sec or (m[0].sec == t_cloud.sec and m[0].nanosec > t_cloud.nanosec):
-                        new_queue.append(m)
-                self.cloud_queue = new_queue
+                self.process_point_cloud(self.cloud_queue.popleft())
+            
+            
 
     def process_point_cloud(self, data):
 
