@@ -11,6 +11,8 @@ from geometry_msgs.msg import PoseStamped, PoseArray, Point
 
 from grumpy_interfaces.msg import Goal, PathWithType
 
+import sys
+
 
 class TrackedObject:
     def __init__(self, obj_id: int, x: float, y: float):
@@ -85,6 +87,8 @@ class TaskPlannerNode(Node):
         # Publishers
         self.goal_pub = self.create_publisher(PoseStamped, "/nav/goal", 10)
         self.path_to_controller_pub = self.create_publisher(PathWithType, "/nav/path_to_controller", 10)
+        self.path_to_controller_pub_viz = self.create_publisher(Path, "/nav/path_to_controller_viz", 10)
+
         self.arm_pub = self.create_publisher(String, "/arm/cmd", 10)
 
         # Exploration
@@ -289,6 +293,10 @@ class TaskPlannerNode(Node):
             path_with_type.type = 2
 
         self.path_to_controller_pub.publish(path_with_type)
+        self.path_to_controller_pub_viz.publish(path)
+
+        # sys.exit()
+
         self.get_logger().info(f"Published {goal_type}") 
 
     def enter_state(self, new_state: str):
@@ -443,7 +451,10 @@ class TaskPlannerNode(Node):
 
 
         elif self.state == "EXECUTE_PATH_TO_OBJECT": 
+
             if not self._published_this_state:
+
+                print("here")
                 # self.get_logger().info("EXECUTE_PATH_TO_OBJECT")
                 self.publish_path_to_controller(path=self.path_to_goal, goal_type="object")
                 self._published_this_state = True
