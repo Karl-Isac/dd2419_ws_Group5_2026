@@ -16,6 +16,11 @@ import os
 
 import matplotlib.pyplot as plt
 
+from rclpy.time import Time
+
+import tf2_ros
+from tf2_ros import Buffer, TransformListener
+
 
 
 class AStarPlannerNode(Node):
@@ -191,9 +196,10 @@ class AStarPlannerNode(Node):
 
     def lookup_robot_xy(self):
         target_frame = "base_link"
+        world_frame = "map"
         try:
             tf = self.tf_buffer.lookup_transform(
-                self.world_frame,
+                world_frame,
                 target_frame,
                 rclpy.time.Time()
             )
