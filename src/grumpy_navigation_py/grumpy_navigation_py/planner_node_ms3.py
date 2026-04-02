@@ -208,7 +208,7 @@ class AStarPlannerNode(Node):
                 target_frame,
                 rclpy.time.Time()
             )
-        except Exception:
+        except Exception as e:
             self.get_logger().warn(f"TF lookup failed: {e}")
             return None
 
@@ -303,6 +303,10 @@ class AStarPlannerNode(Node):
         if self.goal is not None:
             goal_cell = self.world_to_grid(self.goal[0], self.goal[1])
 
+        
+        inflation_radius_m = 0.10
+        inflation_cells = int(math.ceil(inflation_radius_m / self.resolution))
+
         for (x, y) in self.obstacles + self.objects + self.boxes:
             gx, gy = self.world_to_grid(x, y)
 
@@ -310,8 +314,24 @@ class AStarPlannerNode(Node):
                 print(f"Skipping blocker at goal cell: world=({x}, {y}) grid=({gx}, {gy})")
                 continue
 
-            if 0 <= gx < w and 0 <= gy < h:
-                grid[gy][gx] = 100
+            # if 0 <= gx < w and 0 <= gy < h:
+            #     grid[gy][gx] = 100
+            for dy in range(-inflation_cells, inflation_cells + 1):
+                for dx in range(-inflation_cells, inflation_cells + 1):
+                    nx = gx + dx
+                    ny = gy + dy
+
+                    if not (0 <= nx < w and 0 <= ny < h):
+                        continue
+
+                    # circular inflation
+                    if dx * dx + dy * dy > inflation_cells * inflation_cells:
+                        continue
+
+                    if goal_cell is not None and (nx, ny) == goal_cell:
+                        continue
+
+                    grid[ny][nx] = 100
 
 
         if goal_cell is not None:
