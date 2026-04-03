@@ -1,0 +1,9 @@
+source;share/robp_autocomplete/hook/pythonpath.ps1
+source;share/robp_autocomplete/hook/pythonpath.dsv
+source;share/robp_autocomplete/hook/pythonpath.sh
+source;share/robp_autocomplete/hook/ament_prefix_path.ps1
+source;share/robp_autocomplete/hook/ament_prefix_path.dsv
+source;share/robp_autocomplete/hook/ament_prefix_path.sh
+source;../../build/robp_autocomplete/share/robp_autocomplete/hook/pythonpath_develop.ps1
+source;../../build/robp_autocomplete/share/robp_autocomplete/hook/pythonpath_develop.dsv
+source;../../build/robp_autocomplete/share/robp_autocomplete/hook/pythonpath_develop.sh
