@@ -272,15 +272,13 @@ class Detection(Node):
             frame = header.frame_id
 
             # TODO: (Private Test) Print out the time difference between timestamp of pointcloud and latest TF
-            # 假设 self.tf_buffer 是你的 Buffer
             # try:
-            #     # time=Time() 不指定时间，表示使用 buffer 中最新的 transform
             #     latest_tf = self.tf_buffer.lookup_transform(
             #         'odom',                  # target frame
             #         'base_link', # source frame
             #         Time()                   # latest available
             #     )
-            #     latest_tf_time = latest_tf.header.stamp  # rclpy.time.Time 消息
+            #     latest_tf_time = latest_tf.header.stamp
             # except Exception as e:
             #     self.get_logger().warn(f"Cannot get latest TF: {e}")
             # self.get_logger().info(f"Time difference: {t_cloud.sec - latest_tf_time.sec}.{t_cloud.nanosec - latest_tf_time.nanosec}")
@@ -381,6 +379,11 @@ class Detection(Node):
                     dir_camera.vector.z = 0.0
                     dir_map = self.tf_buffer.transform(dir_camera, 'map')
                     map_yaw = np.arctan2(dir_map.vector.y, dir_map.vector.x)
+
+                    # whether box is within the workspace boundary
+                    if not is_point_in_polygon(point_map.point.x * 100, point_map.point.y * 100, self.boundary):
+                        self.get_logger().debug("box detected outside of workspace boundary, discarded")
+                        return
 
                     map_yaw_deg = np.degrees(map_yaw)
                     map_yaw_deg = map_yaw_deg % 180
