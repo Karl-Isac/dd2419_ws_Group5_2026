@@ -8,5 +8,5 @@ ros2 bag record -o rosbags/test /realsense/depth/color/points /tf /tf_static /cl
 
 play:
 pixi run ros2 run detection alter --ros-args -p use_sim_time:=true
-pixi run ros2 bag play rosbags/detection_bag --clock
+pixi run ros2 bag play rosbags/minimal_detection_bag --clock
 pixi run ros2 launch detection launch.py

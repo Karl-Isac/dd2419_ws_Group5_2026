@@ -181,6 +181,8 @@ class Detection(Node):
 
         self.counter = 0 # keep frames of every x frames
 
+        print(42)
+
     def publish_arrays(self, object_poses, object_timestamp, box_poses, box_timestamp):
         """publish object and box poses from map file to ROS topics."""
         # objects
@@ -249,14 +251,14 @@ class Detection(Node):
 
             # spatial filtering for candidate points (keep points in front of camera and within 0.8m, and at the ground)
             if y > 0.045 and y < 0.0865 and z > 0.05 and z < 0.9:
-            # if z > 0.05 and z < 1:
+            # if y > 0.03 and y < 0.0865:
                 # object detection candidate points 
                 if y > 0.05:
                     test_points_cube.append(gen[idx]) # for testing the point cloud range for box detection, can be removed later
                     candidates.append([x, y, z, r, g, b])
                 # box detection candidate points
                 if y < 0.055:
-                    if is_grey(h, s, v):
+                    if is_grey_HSL(r, g, b):
                         test_points_box.append(gen[idx]) # for testing the point cloud range for box detection, can be removed later
                         grey_points.append([z, -x])
         self.cloud_queue.append([Timestamp, header, fields, candidates, grey_points, test_points_box, test_points_cube])
@@ -285,14 +287,12 @@ class Detection(Node):
             # self.get_logger().info(f"Pointcloud Timestamp: {t_cloud.sec}.{t_cloud.nanosec}")
             # self.get_logger().info(f"Latest TF Timestamp: {latest_tf_time.sec}.{latest_tf_time.nanosec}")
 
-            # 判断 TF 是否已经准备好
             if self.tf_buffer.can_transform(
                 'map',
                 frame,
                 t_cloud,
-                timeout=rclpy.duration.Duration(seconds=0.01)
+                timeout=rclpy.duration.Duration(seconds=0.1)
             ):
-                # ✅ 可以 transform → 正式处理
                 self.process_point_cloud(self.cloud_queue.popleft())
             
             
@@ -316,8 +316,8 @@ class Detection(Node):
             pts_xyz = cand_array[:, :3]
 
             # DBSCAN 
-            eps = 0.025          # cluster radius, tuned based on the point cloud density and object size (0.025m = 2.5cm)
-            min_samples = 4     # minimum number of points, ensuring each cluster contains an object
+            eps = 0.03          # cluster radius, tuned based on the point cloud density and object size (0.025m = 2.5cm)
+            min_samples = 3     # minimum number of points, ensuring each cluster contains an object
             clustering = DBSCAN(eps=eps, min_samples=min_samples).fit(pts_xyz)
             labels = clustering.labels_
 
@@ -468,7 +468,7 @@ class Detection(Node):
             return
 
         for item in self.object_lists:
-            if np.abs(item[0] - object_map.pose.position.x * 100) < 5 and np.abs(item[1] - object_map.pose.position.y * 100) < 5:
+            if np.abs(item[0] - object_map.pose.position.x * 100) < 10 and np.abs(item[1] - object_map.pose.position.y * 100) < 10:
                 self.get_logger().debug(f"repeated object {self.object_lists.index(item)} detection, discarded")
                 break
         else:
@@ -502,7 +502,7 @@ class Detection(Node):
             self.static_broadcaster.sendTransform(tf)
 
             self.get_logger().info(f'Object {self.object_num}: {color} {object_map.pose.position.x} {object_map.pose.position.y} N/A')
-            print(f"z distance: {sum_z / counter:.3f} m")
+            # print(f"z distance: {sum_z / counter:.3f} m")
         
     def publish_2d_cloud(self, points_xz, header):
         h = std_msgs.msg.Header()
@@ -526,9 +526,10 @@ class Detection(Node):
         "yaw: rotation around z in radians "
         "axes: principal axes vectors (2x2) """ 
         
-        if len(points) < 10: 
+        if len(points) < 100: 
             return None, None, None 
         
+        self.get_logger().info(f"the length of points: {len(points)}")
         pts = np.array(points) 
         
         # --- Step 0: reduce outliers（IQR method） --- 
@@ -539,8 +540,8 @@ class Detection(Node):
         # mask = np.all((pts >= Q1 - 1.5 * IQR) & (pts <= Q3 + 1.5 * IQR), axis=1) 
         # pts = pts[mask] 
         
-        if len(pts) < 2: 
-            return None, None, None 
+        # if len(pts) < 2: 
+        #     return None, None, None 
         
         # --- Step 1: PCA --- 
         mean = np.mean(pts, axis=0) 
@@ -573,7 +574,7 @@ class Detection(Node):
 
             pts_np = pts.copy()
 
-            def fit_line_ransac(points, threshold=0.008, max_iter=200):
+            def fit_line_ransac(points, threshold=0.008, max_iter=400):
                 best_inliers = []
                 best_model = None
 
@@ -607,7 +608,14 @@ class Detection(Node):
                 n2, d2 = model2
                 A = np.vstack([n1, n2])
                 b = -np.array([d1, d2])
-                return np.linalg.solve(A, b)
+
+                try:
+                    x = np.linalg.solve(A, b)
+                except np.linalg.LinAlgError as e:
+                    if 'Singular' in str(e):
+                        # pseudo-inverse
+                        x = np.linalg.pinv(A) @ b
+                return x
 
             # first edge
             model1, inliers1 = fit_line_ransac(pts_np)
@@ -690,7 +698,7 @@ class Detection(Node):
             # yaw
             yaw = np.arctan2(main_dir[1], main_dir[0])
 
-            self.get_logger().info(
+            self.get_logger().debug(
                 f'Corner: {corner}, Center: {center_shifted}, yaw: {yaw:.3f}'
             )
 
@@ -776,8 +784,24 @@ def is_green(h,s,v):
 def is_wood(h,s,v):
     return True if 20 <= h <= 60 and 0.3 < s < 0.6 and 0.3 < v < 0.5 else False
 
-def is_grey(h,s,v):
-    return True if 0.06 < s < 0.09 and v > 0.22 and v < 0.28 else False
+def is_grey_HSL(r,g,b):
+    c_max = max(r, g, b)
+    c_min = min(r, g, b)
+    delta = c_max - c_min
+
+    if delta == 0:
+        h = 0.0
+    elif c_max == r:
+        h = 60.0 * (((g - b) / delta) % 6)
+    elif c_max == g:
+        h = 60.0 * (((b - r) / delta) + 2)
+    elif c_max == b:
+        h = 60.0 * (((r - g) / delta) + 4)
+
+    l = (c_max + c_min) / 2
+    s = 0.0 if delta == 0 else delta / (1-abs(2*l-1))
+
+    return True if h > 80 or h == 0 and s < 20 / 255 and l < 40 / 255 else False
 
 def rgb_to_hsv(r, g, b):
         c_max = max(r, g, b)

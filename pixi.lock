@@ -286,7 +286,7 @@ environments:
       - conda: https://prefix.dev/conda-forge/linux-64/openjpeg-2.5.4-h55fea9a_0.conda
       - conda: https://prefix.dev/conda-forge/linux-64/openjph-0.26.3-h8d634f6_0.conda
       - conda: https://prefix.dev/conda-forge/linux-64/openldap-2.6.10-hbde042b_1.conda
-      - conda: https://prefix.dev/conda-forge/linux-64/openssl-3.6.1-h35e630c_1.conda
+      - conda: https://prefix.dev/conda-forge/linux-64/openssl-3.6.2-h35e630c_0.conda
       - conda: https://prefix.dev/conda-forge/linux-64/orocos-kdl-1.5.3-hecca717_0.conda
       - conda: https://prefix.dev/conda-forge/noarch/packaging-26.0-pyhcf101f3_0.conda
       - conda: https://prefix.dev/conda-forge/linux-64/pango-1.56.4-hda50119_1.conda
@@ -4181,17 +4181,17 @@ packages:
   license_family: BSD
   size: 785570
   timestamp: 1771970256722
-- conda: https://prefix.dev/conda-forge/linux-64/openssl-3.6.1-h35e630c_1.conda
-  sha256: 44c877f8af015332a5d12f5ff0fb20ca32f896526a7d0cdb30c769df1144fb5c
-  md5: f61eb8cd60ff9057122a3d338b99c00f
+- conda: https://prefix.dev/conda-forge/linux-64/openssl-3.6.2-h35e630c_0.conda
+  sha256: c0ef482280e38c71a08ad6d71448194b719630345b0c9c60744a2010e8a8e0cb
+  md5: da1b85b6a87e141f5140bb9924cecab0
   depends:
   - __glibc >=2.17,<3.0.a0
   - ca-certificates
   - libgcc >=14
   license: Apache-2.0
   license_family: Apache
-  size: 3164551
-  timestamp: 1769555830639
+  size: 3167099
+  timestamp: 1775587756857
 - conda: https://prefix.dev/conda-forge/linux-64/orocos-kdl-1.5.3-hecca717_0.conda
   sha256: f1ac73e2a809a0e838e55afd521313a441d2d159621d2295a65700c7d519ead8
   md5: 9b780914fe0015a0d18631a4b32e5446
@@ -6999,7 +6999,7 @@ packages:
   - libgcc >=15
   - libgcc >=15
   - libstdcxx >=15
-  - openssl >=3.6.1,<4.0a0
+  - openssl >=3.6.2,<4.0a0
   - libusb >=1.0.29,<2.0a0
   - libudev1 >=257.13
   - libgl >=1.7.0,<2.0a0
