@@ -4,23 +4,18 @@ import rclpy
 from rclpy.node import Node
 
 from sensor_msgs.msg import Image
-from robp_interfaces.msg import ArmControl
-from std_msgs.msg import Bool, String
+from robp_interfaces.msg import ArmControl, DutyCycles
+from std_msgs.msg import String
 
-import sys          ## return to these
-import math
 import cv2
 import numpy as np
 from cv_bridge import CvBridge      # to convert between ros2 image and numpy array (for opencv)
 import time
 
-from std_msgs.msg import Float32  # debug
-
+# Self written functions
 from learning_tf2_py.arm_safe_republisher import jointmin,jointMAX
 from learning_tf2_py.inverse_kin import inverse_kinematics_to_joint_states
-from learning_tf2_py.pickup import saturate_difference,draw_cs_on_image,draw_target_on_image,approx_to_polygon,is_square
-
-
+from learning_tf2_py.pickup import saturate_difference,find_cube_in_image_msg, is_the_target_cube_colored
 
 
 class Arm_control(Node):
@@ -35,9 +30,15 @@ class Arm_control(Node):
             Image, '/arm/camera/image_debug2', 10)
         self._pub3 = self.create_publisher(
             Image, '/arm/camera/image_debug3', 10)
+        self._pub4 = self.create_publisher(
+            Image, '/arm/camera/image_debug3', 10)
+        self._pub5 = self.create_publisher(
+            Image, '/arm/camera/image_debug_gripper_crop', 10)
         
         self._pub_control = self.create_publisher(
             ArmControl, '/arm/safe_control', 1)
+        
+        self.wheel_pub = self.create_publisher(DutyCycles, '/phidgets/motor/duty_cycles', 1)
 
         # Subscribe to the arm camera topic and call callback function on each received image
         self.create_subscription(
@@ -60,10 +61,16 @@ class Arm_control(Node):
         self.wait_for_pickup_command = False
         self.wait_for_place_command = False
         self.visual_servoing_ON = False
-        
+        self.look_at_gripper_contents = False
         
         self.init_position = [10,120,50,150,100,120]
         self.joint0grip_value = 105
+
+        # Cube target within camera frame
+        image_half_width = 320
+        image_half_height = 240
+        self.width_target = image_half_width
+        self.height_target = image_half_height+200       # tunable, keep in mind that axis is flipped
 
         # When visual servoing send out a control action every .1 sec
         timer_period = 0.1
@@ -87,10 +94,8 @@ class Arm_control(Node):
             self.get_logger().warn("Warning: No command expected at this point")
 
     def run(self):
-        # TODO replace all pass-es with spin once or async wait or whatever was recommended during the bootcamp
         while True:
             # State 0 - wait for pickup command:
-            print("another print6")
             self.get_logger().info("Waiting for pick command")
             self.wait_for_pickup_command = True
             while(self.wait_for_pickup_command):
@@ -119,13 +124,27 @@ class Arm_control(Node):
             self.z = z # make arm stay on this z while visual servoing
             self.cube_position_available = False
             self.sideways_integral_term = 0
-            # Run visual servoing while the errors don't decrease
+            # Run visual servoing while the errors don't decrease, or a timeout doesnt trigger
+            self.was_timed_out = False
+            main_timeout = 10           # reset if visual servoing isnt complete in this time
+            self.main_timeout_timer = self.create_timer(main_timeout, self.visual_servo_timeout)
+            cant_see_cube_timeout = 2   # reset if cube cant be seen for this long while visual servoing
+            self.cant_see_cube_timer = self.create_timer(cant_see_cube_timeout, self.visual_servo_timeout)
             self.visual_servoing_ON = True
             while self.visual_servoing_ON:
                 rclpy.spin_once(self, timeout_sec=1)
+            self.move_forward(0)    # stop the wheels before continuing
+            # Destroy timeout timers
+            self.cant_see_cube_timer.destroy()      
+            self.main_timeout_timer.destroy()
+            if self.was_timed_out:     # If it was timed out, report back failure and go to the initial position
+                self.report_pick_fail()
+                self.get_logger().info("pick failed - timeout")
+                self.goto_position(self.init_position)
+                continue
             self.get_logger().info("State 3 done")
             # State 4 - feedback control OFF, goto lower z to pick up
-            z = 0.15
+            z = 0.14
             try:
                 joint2target, joint3target, joint4target = inverse_kinematics_to_joint_states(z=z,rho=self.rho)
             except:
@@ -137,14 +156,21 @@ class Arm_control(Node):
             position = self.joint0grip_value,self.joint1target,joint2target,joint3target,joint4target,self.joint5target
             self.goto_position(position)
             self.get_logger().info("State 5 done")
-            # State 6 - goto initial position but gripper closed, check whether pcikup was successful, report back
+            # State 6 - goto initial position but gripper closed, check whether pickup was successful, report back
             position = self.init_position.copy()
             position[0] = self.joint0grip_value
             self.goto_position(position)
-            # TODO check whether its actually successful
-            msg = String()
-            msg.data = "pick_success"
-            self.report_publisher.publish(msg)
+            self.look_at_gripper_contents = True
+            while self.look_at_gripper_contents:            # analyze a camera image in a callback
+                rclpy.spin_once(self, timeout_sec=1)
+            if self.cube_being_held:
+                self.report_pick_success()
+                self.get_logger().info("pick successful")
+            else:
+                self.report_pick_fail()
+                self.get_logger().info("pick failed")
+                self.goto_position(self.init_position)  # gripper release
+                continue
             self.get_logger().info("State 6 done")
             # State 7 - wait for place command
             self.get_logger().info("Waiting for place command")
@@ -168,8 +194,23 @@ class Arm_control(Node):
         msg.time = [1000]*6
         msg.position = position
         self._pub_control.publish(msg)
-        print("Going to position: {position}")
+        print(f"Going to position: {position}")
         time.sleep(1.5)
+
+    def report_pick_success(self):
+        msg = String()
+        msg.data = "pick_success"
+        self.report_publisher.publish(msg)
+
+    def report_pick_fail(self):
+        msg = String()
+        msg.data = "pick_fail"
+        self.report_publisher.publish(msg)
+
+    def visual_servo_timeout(self):
+        self.get_logger().warn("Visual servoing timed out (no cube seen or stuck for a long time)")
+        self.was_timed_out = True
+        self.visual_servoing_ON = False
 
     def timer_callback(self):
         # TODO put this entire thing into a separate function and maybe even file
@@ -178,9 +219,10 @@ class Arm_control(Node):
                 try:
                     # Control gains:
                     k_sideways = 0.01#0.05                  commented values work with 0.5 sec timer
-                    k_sideways_integral = 0.01#0.1
+                    k_sideways_integral = 0.005#0.1
                     k_rotation = 1
-                    k_extension = 0.001
+                    k_extension = 0.001         # either extension control or wheel control is used
+                    k_wheels = 0.0002
 
                     # Previous targets:
                     prev_joint1target = self.joint1target
@@ -199,9 +241,6 @@ class Arm_control(Node):
                         rotation_error = rotation_error - 90
                     extension_error = self.height_target-cy
                     # Termination condition:
-                    print(abs(sideways_error))
-                    print(abs(rotation_error))
-                    print(abs(extension_error))
                     if (abs(sideways_error)<30) and (abs(rotation_error)<25) and (abs(extension_error)<50):
                         self.visual_servoing_ON = False
                         return
@@ -222,11 +261,24 @@ class Arm_control(Node):
                     self.joint1target = 120 + k_rotation*rotation_error
 
                     # z-rho control (arm extend/contract + up-down, P)
-                    self.rho = 0.175 + k_extension*extension_error
-                    try:
-                        self.joint2target, self.joint3target, self.joint4target = inverse_kinematics_to_joint_states(z=self.z,rho=self.rho)
-                    except:
-                        self.get_logger().warn("Inverse kinematics failed for z={}, rho={}, target might be unreachable".format(self.z,self.rho))
+                    do_wheelcontrol = False
+                    if do_wheelcontrol:
+                        # Work in progress, do not use it rn
+                        # TODO:
+                        # make it use exisitng arm control for small errors
+                        # do short nudges with wheels, keep it on a cooldown in a separate callback or node i guess
+                        # move rho more forward to make backward wheel control make more sense?
+                        self.rho = 0.175
+                        if (abs(sideways_error)<30) and (abs(rotation_error)<25):   # use the wheels only if the arm is already well positioned sideways and gripper rotation-wise
+                            self.move_forward(k_wheels*extension_error)             # P control for wheels
+                        else:
+                            self.move_forward(0)
+                    else:
+                        self.rho = 0.175 + k_extension*extension_error
+                        try:
+                            self.joint2target, self.joint3target, self.joint4target = inverse_kinematics_to_joint_states(z=self.z,rho=self.rho)
+                        except:
+                            self.get_logger().warn("Inverse kinematics failed for z={}, rho={}, target might be unreachable".format(self.z,self.rho))
 
                     # Saturate each motor's speed
                     # Max motor speed: 60 deg / 0.22 sec (from github)
@@ -260,83 +312,47 @@ class Arm_control(Node):
         
         
     def image_callback(self, msg: Image):
-        # TODO put this entire thing into a separate function and maybe even file
-
+        # For each image received on /arm/camera/image_raw it updates the cube position and orientation variables
+        # Known issues: it can detect multiple cubes/cube-like objects in the same frame, and both get written to the same attribute
         if self.visual_servoing_ON:
-            # For each image received on /arm/camera/image_raw it updates the cube position and orientation variables
-            # Known issues: it can detect multiple cubes/cube-like objects in the same frame, and both get written to the same attribute
+            try:
+                self.cube_position_in_frame, self.cube_orientation_in_frame = find_cube_in_image_msg(msg, self._pub, self._pub2, self._pub3, self._pub4, self.width_target, self.height_target, publish_debug_images=True)
+                self.cube_position_available = True
+                self.cant_see_cube_timer.reset()    # keep reseting timeout timer while we see the cube
+            except Exception as ex:     # if crash is due to no cube detected then pass, otherwise reraise
+                if ex.args[0] != "Cube not found in frame":
+                    raise ex
+        elif self.look_at_gripper_contents:
+            self.cube_being_held = is_the_target_cube_colored(msg, self.width_target, self.height_target, self._pub5)
+            self.look_at_gripper_contents = False
 
-            publish_debug_images = True
+    def move_forward(self, speed):
+        # sign = 1 if speed >= 0 else -1
+        # # speed of 0.05 works well
+        # min_speed = 0.1        # tunable
+        # max_speed = 0.1
+        # if speed != 0:          # keep 0 speed = stopping an option
+        #     speed = sign*max(min_speed, min(abs(speed), max_speed))   # clamp/saturate while keeping sign
+        # speed = float(speed)
 
-            # Convert ros2 Image to numpy array
-            bridge = CvBridge()
-            raw_image = bridge.imgmsg_to_cv2(       
-                msg,
-                desired_encoding='passthrough'
-            )
+        if speed > 0:
+            msg = DutyCycles()
+            msg.duty_cycle_left = 0.1
+            msg.duty_cycle_right = 0.1
+            self.wheel_pub.publish(msg)
+            time.sleep(0.2)
+            msg.duty_cycle_left = 0.0
+            msg.duty_cycle_right = 0.0
+            self.wheel_pub.publish(msg)
 
-            # Image preprocess - grayscale, blur so texture wont get detected as edges, Canny edge detection
-            gray = cv2.cvtColor(raw_image, cv2.COLOR_YUV2GRAY_YUY2)
-            gray = cv2.GaussianBlur(gray, (5, 5), 1.5)#(5, 5), 1.5)
-            canny = cv2.Canny(gray, 50,150)#50, 150)
+        # self.get_logger().info(f"Wheel speed is: {speed}")
 
-            if publish_debug_images:
-                bgr_image = cv2.cvtColor(raw_image,cv2.COLOR_YUV2BGR_YUY2)
+        # msg = DutyCycles()
+        # msg.duty_cycle_left = speed
+        # msg.duty_cycle_right = speed
+        # self.wheel_pub.publish(msg)
+                      
 
-            # Define arm target in the image frame - its here due to debug reasons
-            image_shape = gray.shape
-            image_half_width = image_shape[1]/2
-            image_half_height = image_shape[0]/2
-            self.width_target = image_half_width
-            self.height_target = image_half_height+200       # tunable, keep in mind that axis is flipped
-            if publish_debug_images:
-                draw_target_on_image(bgr_image,self.width_target,self.height_target)
-
-            # Thicken edges so cube faces become distinctly separate
-            kernel = np.ones((5,5), np.uint8)
-            canny = cv2.dilate(canny, kernel)
-            canny = cv2.bitwise_not(canny)
-
-            contours, hierarchy = cv2.findContours(
-                canny, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
-            )
-            for i in range(len(contours)):
-                if hierarchy[0][i][2] == -1:            # look for only the innermost square, sometimes the cube shadow seems like an enveloping larger cube face
-                    poly = approx_to_polygon(contours[i])
-                    if is_square(poly):
-                        rect = cv2.minAreaRect(poly)  # returns ((cx, cy), (width, height), angle)
-                        centerpoint = rect[0]
-                        angle = rect[2]         # in degrees
-                        self.cube_position_in_frame = centerpoint
-                        self.cube_orientation_in_frame = angle
-                        self.cube_position_available = True
-                        if publish_debug_images:
-                            cv2.drawContours(bgr_image, contours, i, (255,0,0), 4)
-                            draw_cs_on_image(bgr_image,centerpoint,angle)
-
-            if publish_debug_images:
-                out_msg = bridge.cv2_to_imgmsg(         # convert the np array back to ros2 Image msg
-                    gray,
-                    encoding='mono8'
-                )
-                out_msg.header = msg.header
-                self._pub.publish(out_msg)    
-
-                out_msg = bridge.cv2_to_imgmsg(         # convert the np array back to ros2 Image msg
-                    canny,
-                    encoding='mono8'
-                )
-                out_msg.header = msg.header
-                self._pub3.publish(out_msg)   
-
-                out_msg2 = bridge.cv2_to_imgmsg(         # convert the np array back to ros2 Image msg
-                    bgr_image,
-                    encoding='bgr8'
-                )
-                out_msg2.header = msg.header
-                self._pub2.publish(out_msg2)          
-
-        
 
 def main():
     rclpy.init()

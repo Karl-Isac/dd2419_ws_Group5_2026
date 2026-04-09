@@ -31,7 +31,7 @@ class Odometry(Node):
 
         # Subscribe to encoder topic and call callback function on each recieved message
         self.create_subscription(
-            Encoders, '/motor/encoders', self.encoder_callback, 10)
+            Encoders, '/phidgets/motor/encoders', self.encoder_callback, 10)
 
         # 2D pose
         self._x = 0.0
@@ -53,25 +53,26 @@ class Odometry(Node):
         # The kinematic parameters for the differential configuration
         dt = 50 / 1000
         ticks_per_rev = 48 * 64
-        wheel_radius = 0.05  # TODO: Fill in
-        base = 0.3  # TODO: Fill in
+        wheel_radius = 0.04921  
+        base = 0.315  
 
         # Ticks since last message
         delta_ticks_left = msg.delta_encoder_left
         delta_ticks_right = msg.delta_encoder_right
-        dL = delta_encoder_left
-        dR = delta_encoder_right
+        dL = delta_ticks_left
+        dR = delta_ticks_right
 
         # TODO: Fill in
 
         K = 2*math.pi / ticks_per_rev
-        D = K*
+        D = K * wheel_radius / 2 * ( dR + dL)
+        dTheta = K * wheel_radius / base * (dR - dL)
 
-        self._x =   # TODO: Fill in
-        self._y =   # TODO: Fill in
-        self._yaw = self._yaw  # TODO: Fill in
+        self._x = self._x + D * math.cos(self._yaw)  # TODO: Fill in
+        self._y = self._y + D * math.sin(self._yaw) # TODO: Fill in
+        self._yaw = self._yaw + dTheta  # TODO: Fill in
         
-        stamp = None # TODO: Fill in
+        stamp = msg.header.stamp # TODO: Fill in
 
         self.broadcast_transform(stamp, self._x, self._y, self._yaw)
         self.publish_path(stamp, self._x, self._y, self._yaw)
