@@ -15,21 +15,21 @@ def generate_launch_description():
     arm_camera_launch_file = os.path.join(robp_launch_dir, 'launch', 'arm_camera_launch.yaml')
 
     return LaunchDescription([
-        ExecuteProcess(
-            cmd=['pixi', 'run', 'phidgets'],
-            output='screen'
-        ),
+#         ExecuteProcess(
+#             cmd=['pixi', 'run', 'phidgets'],
+#             output='screen'
+#         ),
         ExecuteProcess(
             cmd=['pixi', 'run', 'realsense'],
             output='screen'
         ),
 
-        Node(
-            package='learning_tf2_py',
-            executable='arm_safe_republisher',
-            name='arm_safe_republisher',
-            output='screen',
-        ),
+#         Node(
+#             package='learning_tf2_py',
+#             executable='arm_safe_republisher',
+#             name='arm_safe_republisher',
+#             output='screen',
+#          ),
         
         IncludeLaunchDescription(
             AnyLaunchDescriptionSource(arm_launch_file)
