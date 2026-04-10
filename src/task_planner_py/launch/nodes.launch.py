@@ -31,12 +31,12 @@ def generate_launch_description():
         output='screen'
     )
 
-    fix_pose = Node(
-        package='mapping',
-        executable='fix_pose',
-        name='fix_pose',
-        output='screen'
-    )
+#     fix_pose = Node(
+#         package='mapping',
+#         executable='fix_pose',
+#         name='fix_pose',
+#         output='screen'
+#     )
 
     fake_obstacles = Node(
         package='grumpy_navigation_py',
@@ -71,7 +71,7 @@ def generate_launch_description():
         arm_control,
         task_planner,
         odometry,
-        fix_pose,
+#         fix_pose,
         fake_obstacles,
         planner,
         controller,
