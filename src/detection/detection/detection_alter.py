@@ -96,8 +96,8 @@ class Detection(Node):
         self.known_box_num = 0
 
         # Using a deque as a buffer to store incoming point cloud messages for processing
-        self.cloud_queue = deque(maxlen=100)
-        self.timer = self.create_timer(0.2, self.process_queue)
+        self.cloud_queue = deque(maxlen=1000)
+        self.timer = self.create_timer(0.1, self.process_queue)
 
         # Reading map file
         with open(map_path, mode='r', encoding='utf-8') as file:
@@ -210,6 +210,7 @@ class Detection(Node):
         # Publish frequency of PointCloud: 6 FPS
         num = 3 # keep one frame every 3 frames
         self.counter += 1
+        self.get_logger().info(f"self.counter: {self.counter}")
         if self.counter % num != 0:
             return
         
@@ -291,6 +292,7 @@ class Detection(Node):
             # self.get_logger().info(f"Time difference: {t_cloud.sec - latest_tf_time.sec}.{t_cloud.nanosec - latest_tf_time.nanosec}")
             # self.get_logger().info(f"Pointcloud Timestamp: {t_cloud.sec}.{t_cloud.nanosec}")
             # self.get_logger().info(f"Latest TF Timestamp: {latest_tf_time.sec}.{latest_tf_time.nanosec}")
+            self.get_logger().info(f"num of queue:{len(self.cloud_queue)}")
 
             if self.tf_buffer.can_transform(
                 'map',
@@ -321,7 +323,7 @@ class Detection(Node):
             pts_xyz = cand_array[:, :3]
 
             # DBSCAN 
-            eps = 0.03          # cluster radius, tuned based on the point cloud density and object size (0.025m = 2.5cm)
+            eps = 0.025          # cluster radius, tuned based on the point cloud density and object size (0.025m = 2.5cm)
             min_samples = 3     # minimum number of points, ensuring each cluster contains an object
             clustering = DBSCAN(eps=eps, min_samples=min_samples).fit(pts_xyz)
             labels = clustering.labels_
@@ -352,7 +354,7 @@ class Detection(Node):
                 # vote for color classification based on pixel-wise HSV values
                 color_counts = {'Red': red_cnt, 'Blue': blue_cnt, 'Green': green_cnt, 'Wood': wood_cnt}
                 max_color = max(color_counts, key=color_counts.get)
-                if color_counts[max_color] / total > 0.1:
+                if color_counts[max_color] / total > 0.08:
                     # centroid
                     sum_x = np.sum(cluster_pts[:, 0])
                     sum_y = np.sum(cluster_pts[:, 1])
@@ -778,7 +780,7 @@ def main():
         rclpy.shutdown()
 
 def is_red(h,s,v):
-    return True if (h <= 20 or h >= 340) and s > 0.6 and v > 0.5 else False
+    return True if (h <= 25 or h >= 335) and s > 0.55 and v > 0.45 else False
 
 def is_blue(h,s,v):
     return True if (h >= 185 and h <= 200) and s > 0.6 and v > 0.4 else False
