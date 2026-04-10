@@ -4,7 +4,7 @@ pixi run phidgets
 pixi run ros2 run odometry odometry
 pixi run ros2 run detection alter
 pixi run ros2 run mapping keyboard
-ros2 bag record -o rosbags/test /realsense/depth/color/points /tf /tf_static /clock
+pixi run ros2 bag record -o rosbags/test /realsense/depth/color/points /tf /tf_static /clock
 
 play:
 pixi run ros2 run detection alter --ros-args -p use_sim_time:=true
