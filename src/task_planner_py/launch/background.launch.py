@@ -1,8 +1,18 @@
 from launch import LaunchDescription
-from launch.actions import ExecuteProcess 
+from launch.actions import IncludeLaunchDescription
+from launch.launch_description_sources import AnyLaunchDescriptionSource
 from launch_ros.actions import Node
+from ament_index_python.packages import get_package_share_directory
+import os
 
 def generate_launch_description():
+
+
+    robp_launch_dir = get_package_share_directory('robp_launch')
+
+    arm_launch_file = os.path.join(robp_launch_dir, 'launch', 'arm_launch.yaml')
+    arm_camera_launch_file = os.path.join(robp_launch_dir, 'launch', 'arm_camera_launch.yaml')
+
     return LaunchDescription([
         ExecuteProcess(
             cmd=['pixi', 'run', 'phidgets'],
@@ -20,11 +30,11 @@ def generate_launch_description():
             output='screen',
         ),
         
-#         IncludeLaunchDescription(
-#             AnyLaunchDescriptionSource(arm_launch_file)
-#         ),
-# 
-#         IncludeLaunchDescription(
-#             AnyLaunchDescriptionSource(arm_camera_launch_file)
-#         ),
+        IncludeLaunchDescription(
+            AnyLaunchDescriptionSource(arm_launch_file)
+        ),
+
+        IncludeLaunchDescription(
+            AnyLaunchDescriptionSource(arm_camera_launch_file)
+        ),
     ])
