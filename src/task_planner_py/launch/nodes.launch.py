@@ -54,7 +54,7 @@ def generate_launch_description():
 
     controller = Node(
         package='grumpy_navigation_py',
-        executable='controller',
+        eecutable='controller'
         name='controller',
         output='screen'
     )
