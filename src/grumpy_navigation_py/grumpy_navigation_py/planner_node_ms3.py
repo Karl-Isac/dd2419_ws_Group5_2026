@@ -304,7 +304,7 @@ class AStarPlannerNode(Node):
             goal_cell = self.world_to_grid(self.goal[0], self.goal[1])
 
         
-        inflation_radius_m = 0.10
+        inflation_radius_m = 0.40
         inflation_cells = int(math.ceil(inflation_radius_m / self.resolution))
 
         for (x, y) in self.obstacles + self.objects + self.boxes:
