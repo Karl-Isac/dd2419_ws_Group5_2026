@@ -4,7 +4,7 @@ import rclpy
 from rclpy.node import Node
 
 from sensor_msgs.msg import Image
-from robp_interfaces.msg import ArmControl, DutyCycles
+from robp_interfaces.msg import ArmControl
 from std_msgs.msg import String
 
 import cv2
@@ -37,8 +37,6 @@ class Arm_control(Node):
         
         self._pub_control = self.create_publisher(
             ArmControl, '/arm/safe_control', 1)
-        
-        self.wheel_pub = self.create_publisher(DutyCycles, '/phidgets/motor/duty_cycles', 1)
 
         # Subscribe to the arm camera topic and call callback function on each received image
         self.create_subscription(
@@ -91,9 +89,10 @@ class Arm_control(Node):
             else:
                 self.get_logger().warn("Invalid command, expecting: place")
         else:
-            self.get_logger().warn("Warning: No command expected at this point")
+            pass #self.get_logger().warn("Warning: No command expected at this point")  TODO put back
 
     def run(self):
+        # TODO replace all pass-es with spin once or async wait or whatever was recommended during the bootcamp
         while True:
             # State 0 - wait for pickup command:
             self.get_logger().info("Waiting for pick command")
@@ -133,7 +132,6 @@ class Arm_control(Node):
             self.visual_servoing_ON = True
             while self.visual_servoing_ON:
                 rclpy.spin_once(self, timeout_sec=1)
-            self.move_forward(0)    # stop the wheels before continuing
             # Destroy timeout timers
             self.cant_see_cube_timer.destroy()      
             self.main_timeout_timer.destroy()
@@ -221,8 +219,7 @@ class Arm_control(Node):
                     k_sideways = 0.01#0.05                  commented values work with 0.5 sec timer
                     k_sideways_integral = 0.005#0.1
                     k_rotation = 1
-                    k_extension = 0.001         # either extension control or wheel control is used
-                    k_wheels = 0.0002
+                    k_extension = 0.001
 
                     # Previous targets:
                     prev_joint1target = self.joint1target
@@ -261,24 +258,11 @@ class Arm_control(Node):
                     self.joint1target = 120 + k_rotation*rotation_error
 
                     # z-rho control (arm extend/contract + up-down, P)
-                    do_wheelcontrol = False
-                    if do_wheelcontrol:
-                        # Work in progress, do not use it rn
-                        # TODO:
-                        # make it use exisitng arm control for small errors
-                        # do short nudges with wheels, keep it on a cooldown in a separate callback or node i guess
-                        # move rho more forward to make backward wheel control make more sense?
-                        self.rho = 0.175
-                        if (abs(sideways_error)<30) and (abs(rotation_error)<25):   # use the wheels only if the arm is already well positioned sideways and gripper rotation-wise
-                            self.move_forward(k_wheels*extension_error)             # P control for wheels
-                        else:
-                            self.move_forward(0)
-                    else:
-                        self.rho = 0.175 + k_extension*extension_error
-                        try:
-                            self.joint2target, self.joint3target, self.joint4target = inverse_kinematics_to_joint_states(z=self.z,rho=self.rho)
-                        except:
-                            self.get_logger().warn("Inverse kinematics failed for z={}, rho={}, target might be unreachable".format(self.z,self.rho))
+                    self.rho = 0.175 + k_extension*extension_error
+                    try:
+                        self.joint2target, self.joint3target, self.joint4target = inverse_kinematics_to_joint_states(z=self.z,rho=self.rho)
+                    except:
+                        self.get_logger().warn("Inverse kinematics failed for z={}, rho={}, target might be unreachable".format(self.z,self.rho))
 
                     # Saturate each motor's speed
                     # Max motor speed: 60 deg / 0.22 sec (from github)
@@ -326,31 +310,6 @@ class Arm_control(Node):
             self.cube_being_held = is_the_target_cube_colored(msg, self.width_target, self.height_target, self._pub5)
             self.look_at_gripper_contents = False
 
-    def move_forward(self, speed):
-        # sign = 1 if speed >= 0 else -1
-        # # speed of 0.05 works well
-        # min_speed = 0.1        # tunable
-        # max_speed = 0.1
-        # if speed != 0:          # keep 0 speed = stopping an option
-        #     speed = sign*max(min_speed, min(abs(speed), max_speed))   # clamp/saturate while keeping sign
-        # speed = float(speed)
-
-        if speed > 0:
-            msg = DutyCycles()
-            msg.duty_cycle_left = 0.1
-            msg.duty_cycle_right = 0.1
-            self.wheel_pub.publish(msg)
-            time.sleep(0.2)
-            msg.duty_cycle_left = 0.0
-            msg.duty_cycle_right = 0.0
-            self.wheel_pub.publish(msg)
-
-        # self.get_logger().info(f"Wheel speed is: {speed}")
-
-        # msg = DutyCycles()
-        # msg.duty_cycle_left = speed
-        # msg.duty_cycle_right = speed
-        # self.wheel_pub.publish(msg)
                       
 
 

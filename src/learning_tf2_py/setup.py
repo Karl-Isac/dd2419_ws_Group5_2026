@@ -29,7 +29,6 @@ setup(
             'interpolation = learning_tf2_py.interpolation:main',
             'threading = learning_tf2_py.threading:main',
             'timestamp = learning_tf2_py.timestamp:main',
-            'keyboard = learning_tf2_py.keyboard_node:main',
             'pickup_hardcoded = learning_tf2_py.pickup_hardcoded:main',
             'pickup = learning_tf2_py.pickup:main',
             'random_nav = learning_tf2_py.random_nav:main',
@@ -37,7 +36,6 @@ setup(
             'jitter_test = learning_tf2_py.jitter_test:main',
             'arm_control = learning_tf2_py.arm_control:main',
             'arm_cube_detection_test = learning_tf2_py.arm_cube_detection_test:main',
-            'exploration_mapper = learning_tf2_py.exploration_mapper:main',
         ],
     },
 )

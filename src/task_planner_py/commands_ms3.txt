@@ -26,3 +26,7 @@ ros2 run grumpy_navigation_py fake_obstacles
 ros2 run detection detection
 
 
+NEW COMMANDS:
+
+
+

@@ -24,12 +24,12 @@ def generate_launch_description():
         output='screen'
     )
 
-    odometry = Node(
-        package='odometry',
-        executable='odometry',
-        name='odometry',
-        output='screen'
-    )
+#     odometry = Node(
+#         package='odometry',
+#         executable='odometry',
+#         name='odometry',
+#         output='screen'
+#     )
 
 #     fix_pose = Node(
 #         package='mapping',
@@ -54,7 +54,7 @@ def generate_launch_description():
 
     controller = Node(
         package='grumpy_navigation_py',
-        eecutable='controller'
+        executable='controller',
         name='controller',
         output='screen'
     )
@@ -67,13 +67,13 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
-        # arm_safe_republisher,
+        arm_safe_republisher,
         arm_control,
         task_planner,
-        odometry,
+        # odometry,
 #         fix_pose,
         fake_obstacles,
         planner,
-        controller,
+ controller,
         map_to_odom,
     ])

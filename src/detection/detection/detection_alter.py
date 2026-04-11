@@ -97,8 +97,8 @@ class Detection(Node):
         self.known_box_num = 0
 
         # Using a deque as a buffer to store incoming point cloud messages for processing
-        self.cloud_queue = deque(maxlen=100)
-        self.timer = self.create_timer(0.2, self.process_queue)
+        self.cloud_queue = deque(maxlen=1000)
+        self.timer = self.create_timer(0.1, self.process_queue)
 
         # Reading map file
         with open(map_path, mode='r', encoding='utf-8') as file:
@@ -211,6 +211,7 @@ class Detection(Node):
         # Publish frequency of PointCloud: 6 FPS
         num = 3 # keep one frame every 3 frames
         self.counter += 1
+        self.get_logger().info(f"self.counter: {self.counter}")
         if self.counter % num != 0:
             return
         
@@ -259,10 +260,15 @@ class Detection(Node):
                     candidates.append([x, y, z, r, g, b])
                 # box detection candidate points
                 if y < 0.055:
+                    
                     if is_grey_HSL(r, g, b):
                         test_points_box.append(gen[idx]) # for testing the point cloud range for box detection, can be removed later
                         grey_points.append([z, -x])
         self.cloud_queue.append([Timestamp, header, fields, candidates, grey_points, test_points_box, test_points_cube])
+
+        if test_points_box:
+            box_cloud = pc2.create_cloud(header, fields, test_points_box)
+            self.test_pub_box.publish(box_cloud)
         
     def process_queue(self):
         if not self.cloud_queue:
@@ -287,6 +293,7 @@ class Detection(Node):
             # self.get_logger().info(f"Time difference: {t_cloud.sec - latest_tf_time.sec}.{t_cloud.nanosec - latest_tf_time.nanosec}")
             # self.get_logger().info(f"Pointcloud Timestamp: {t_cloud.sec}.{t_cloud.nanosec}")
             # self.get_logger().info(f"Latest TF Timestamp: {latest_tf_time.sec}.{latest_tf_time.nanosec}")
+            self.get_logger().info(f"num of queue:{len(self.cloud_queue)}")
 
             if self.tf_buffer.can_transform(
                 'map',
@@ -303,9 +310,9 @@ class Detection(Node):
         [timestamp, header, fields, candidates, grey_points, test_points_box, test_points_cube] = data
 
         # TODO: (Private Test) publish the candidate points for visualization and debugging, can be removed later
-        if test_points_box:
-            box_cloud = pc2.create_cloud(header, fields, test_points_box)
-            self.test_pub_box.publish(box_cloud)
+        # if test_points_box:
+        #     box_cloud = pc2.create_cloud(header, fields, test_points_box)
+        #     self.test_pub_box.publish(box_cloud)
         if test_points_cube:
             cube_cloud = pc2.create_cloud(header, fields, test_points_cube)
             self.test_pub_cube.publish(cube_cloud)
@@ -317,7 +324,7 @@ class Detection(Node):
             pts_xyz = cand_array[:, :3]
 
             # DBSCAN 
-            eps = 0.03          # cluster radius, tuned based on the point cloud density and object size (0.025m = 2.5cm)
+            eps = 0.025          # cluster radius, tuned based on the point cloud density and object size (0.025m = 2.5cm)
             min_samples = 3     # minimum number of points, ensuring each cluster contains an object
             clustering = DBSCAN(eps=eps, min_samples=min_samples).fit(pts_xyz)
             labels = clustering.labels_
@@ -348,7 +355,7 @@ class Detection(Node):
                 # vote for color classification based on pixel-wise HSV values
                 color_counts = {'Red': red_cnt, 'Blue': blue_cnt, 'Green': green_cnt, 'Wood': wood_cnt}
                 max_color = max(color_counts, key=color_counts.get)
-                if color_counts[max_color] / total > 0.1:
+                if color_counts[max_color] / total > 0.08:
                     # centroid
                     sum_x = np.sum(cluster_pts[:, 0])
                     sum_y = np.sum(cluster_pts[:, 1])
@@ -382,7 +389,7 @@ class Detection(Node):
                     map_yaw = np.arctan2(dir_map.vector.y, dir_map.vector.x)
 
                     # whether box is within the workspace boundary
-                    if not is_point_in_polygon(point_map.point.x * 100, point_map.point.y * 100, self.boundary):
+                    if not is_point_in_polygon(point_map.point.x * 100, point_map.point.y * 100, self.boundary, True):
                         self.get_logger().debug("box detected outside of workspace boundary, discarded")
                         return
 
@@ -473,7 +480,7 @@ class Detection(Node):
                 self.get_logger().debug(f"repeated object {self.object_lists.index(item)} detection, discarded")
                 break
         else:
-            if not is_point_in_polygon(object_map.pose.position.x * 100, object_map.pose.position.y * 100, self.boundary):
+            if not is_point_in_polygon(object_map.pose.position.x * 100, object_map.pose.position.y * 100, self.boundary, False):
                  self.get_logger().debug("object detected outside of workspace boundary, discarded")
                  return
             
@@ -774,7 +781,7 @@ def main():
         rclpy.shutdown()
 
 def is_red(h,s,v):
-    return True if (h <= 20 or h >= 340) and s > 0.6 and v > 0.5 else False
+    return True if (h <= 25 or h >= 335) and s > 0.55 and v > 0.45 else False
 
 def is_blue(h,s,v):
     return True if (h >= 185 and h <= 200) and s > 0.6 and v > 0.4 else False
@@ -802,7 +809,7 @@ def is_grey_HSL(r,g,b):
     l = (c_max + c_min) / 2
     s = 0.0 if delta == 0 else delta / (1-abs(2*l-1))
 
-    return True if h > 80 or h == 0 and s < 20 / 255 and l < 40 / 255 else False
+    return True if h > 80 or h == 0 and s < 20 / 255 and l < 25 / 255 else False
 
 def rgb_to_hsv(r, g, b):
         c_max = max(r, g, b)
@@ -825,21 +832,80 @@ def rgb_to_hsv(r, g, b):
         return h, s, v
 
 # Checking if a point is a valid one, which means it is within the boundary of the workspace
-def is_point_in_polygon(x, y, polygon):
+def is_point_in_polygon(x, y, polygon, if_box = False):
+    if not if_box:
+        n = len(polygon)
+        inside = False
+
+        for i in range(n):
+            xi, yi = polygon[i]
+            xj, yj = polygon[(i + 1) % n]
+
+            intersect = ((yi > y) != (yj > y)) and \
+                        (x < xi + (y - yi) * (xj - xi) / (yj - yi))
+
+            if intersect:
+                inside = not inside
+
+        return inside
+    else:
+        new_polygon = shrink_polygon(polygon, 6) # Therotically 8 cm, considering position error of boxes
+        n = len(new_polygon)
+        inside = False
+
+        for i in range(n):
+            xi, yi = new_polygon[i]
+            xj, yj = new_polygon[(i + 1) % n]
+
+            intersect = ((yi > y) != (yj > y)) and \
+                        (x < xi + (y - yi) * (xj - xi) / (yj - yi))
+
+            if intersect:
+                inside = not inside
+
+        return inside
+
+def shrink_polygon(polygon, d):
+    """
+    polygon: Nx2 array (counter-clockwise)
+    d: shrink distance in cm
+    """
+    polygon = np.array(polygon, dtype=float)
     n = len(polygon)
-    inside = False
+    new_polygon = []
 
     for i in range(n):
-        xi, yi = polygon[i]
-        xj, yj = polygon[(i + 1) % n]
+        p_prev = polygon[i - 1]
+        p_curr = polygon[i]
+        p_next = polygon[(i + 1) % n]
 
-        intersect = ((yi > y) != (yj > y)) and \
-                    (x < xi + (y - yi) * (xj - xi) / (yj - yi))
+        # edge directions
+        e1 = p_curr - p_prev
+        e2 = p_next - p_curr
 
-        if intersect:
-            inside = not inside
+        # normals (pointing inward)
+        n1 = np.array([-e1[1], e1[0]])
+        n2 = np.array([-e2[1], e2[0]])
 
-    return inside
+        n1 = n1 / np.linalg.norm(n1)
+        n2 = n2 / np.linalg.norm(n2)
+
+        # shift lines
+        p1_shift = p_prev + n1 * d
+        p2_shift = p_curr + n2 * d
+
+        # line intersection
+        A = np.vstack([n1, n2])
+        b = np.array([np.dot(n1, p1_shift), np.dot(n2, p2_shift)])
+
+        try:
+            x = np.linalg.solve(A, b)
+        except np.linalg.LinAlgError:
+            x = np.linalg.pinv(A) @ b
+
+        new_polygon.append(x)
+
+    return np.array(new_polygon)
 
 if __name__ == '__main__':
     main()
