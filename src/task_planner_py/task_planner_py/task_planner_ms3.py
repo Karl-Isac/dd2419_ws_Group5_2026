@@ -9,7 +9,7 @@ from std_msgs.msg import Bool, String
 from nav_msgs.msg import Path
 from geometry_msgs.msg import PoseStamped, PoseArray, Point
 
-from grumpy_interfaces.msg import Goal, PathWithType
+from grumpy_interfaces.msg import GoalWithType, PathWithType
 
 import sys
 
@@ -85,7 +85,8 @@ class TaskPlannerNode(Node):
         self.path_to_goal = None
 
         # Publishers
-        self.goal_pub = self.create_publisher(PoseStamped, "/nav/goal", 10)
+        #self.goal_pub = self.create_publisher(PoseStamped, "/nav/goal", 10)
+        self.goal_pub = self.create_publisher(GoalWithType, "/nav/goal", 10)
         self.path_to_controller_pub = self.create_publisher(PathWithType, "/nav/path_to_controller", 10)
         self.path_to_controller_pub_viz = self.create_publisher(Path, "/nav/path_to_controller_viz", 10)
 
@@ -264,17 +265,44 @@ class TaskPlannerNode(Node):
     #     self.goal_pub.publish(goal)
     #     self.get_logger().info(f"Published {goal_type} goal ({x:.2f}, {y:.2f})")
 
-    def publish_pose_to_path_planner(self, x: float, y: float):
+#     def publish_pose_to_path_planner(self, x: float, y: float):
+#         p = PoseStamped()
+#         p.header.frame_id = self.world_frame
+#         p.header.stamp = self.get_clock().now().to_msg()
+#         p.pose.position.x = x
+#         p.pose.position.y = y
+#         p.pose.position.z = 0.0
+#         p.pose.orientation.w = 1.0
+# 
+#         self.goal_pub.publish(p)
+#         self.get_logger().info(f"Published PoseStamped to path planner: ({x:.2f}, {y:.2f})")
+
+    def publish_goal_to_path_planner(self, x: float, y: float, goal_type: str):
         p = PoseStamped()
         p.header.frame_id = self.world_frame
         p.header.stamp = self.get_clock().now().to_msg()
-        p.pose.position.x = x
-        p.pose.position.y = y
+        p.pose.position.x = float(x)
+        p.pose.position.y = float(y)
         p.pose.position.z = 0.0
         p.pose.orientation.w = 1.0
 
-        self.goal_pub.publish(p)
-        self.get_logger().info(f"Published PoseStamped to path planner: ({x:.2f}, {y:.2f})")
+        goal = GoalWithType()
+        goal.goal = p
+
+        if goal_type == "object":
+            goal.type = GoalWithType.OBJECT
+        elif goal_type == "box":
+            goal.type = GoalWithType.BOX
+        elif goal_type == "exploration_point":
+            goal.type = GoalWithType.EXPLORATION_POINT
+        else:
+            self.get_logger().error(f"Invalid goal_type: {goal_type}")
+            return
+
+        self.goal_pub.publish(goal)
+        self.get_logger().info(
+            f"Published {goal_type} goal to path planner: ({x:.2f}, {y:.2f})"
+        )
 
 
 
@@ -365,7 +393,8 @@ class TaskPlannerNode(Node):
                 # self.get_logger().info("GENERATE_EXPLORATION_PATH")
                 self.publish_pose_to_path_planner(
                     self.current_exploration_point.x,
-                    self.current_exploration_point.y
+                    self.current_exploration_point.y,
+                    goal_type="exploration_point"
                 )
                 self._published_this_state = True
                 self.generate_exploration_path_success = False
@@ -440,7 +469,8 @@ class TaskPlannerNode(Node):
             if not self._published_this_state:
                 # self.get_logger().info("GENERATE_PATH_TO_OBJECT")
                 #self.publish_goal_xy(self.ox, self.oy, goal_type="object") # TODO: probably dont need goal type here
-                self.publish_pose_to_path_planner(self.ox, self.oy)
+                # self.publish_pose_to_path_planner(self.ox, self.oy)
+                self.publish_goal_to_path_planner(self.ox, self.oy, goal_type="object")
                 self._published_this_state = True
                 self.generate_path_object_success = False
                 self.get_logger().info("GENERATE_PATH_TO_OBJECT: published object goal")
@@ -469,7 +499,8 @@ class TaskPlannerNode(Node):
             if not self._published_this_state:
                 # self.get_logger().info("GENERATE_PATH_TO_BOX")
                 # self.publish_goal_xy(self.bx, self.by) 
-                self.publish_pose_to_path_planner(self.bx, self.by)
+                #self.publish_pose_to_path_planner(self.bx, self.by)
+                self.publish_goal_to_path_planner(self.bx, self.by, goal_type="box")
                 self._published_this_state = True
                 self.generate_path_box_success = False
                 self.get_logger().info("GENERATE_PATH_TO_BOX: published object goal")

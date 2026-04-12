@@ -17,6 +17,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/ItemArray.msg"
   "msg/Goal.msg"
   "msg/PathWithType.msg"
+  "msg/GoalWithType.msg"
   DEPENDENCIES geometry_msgs nav_msgs
 )
 

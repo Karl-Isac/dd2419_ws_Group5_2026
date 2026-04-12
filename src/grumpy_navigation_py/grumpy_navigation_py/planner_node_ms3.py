@@ -5,6 +5,7 @@ from rclpy.node import Node
 
 from geometry_msgs.msg import PoseStamped, PoseArray
 from nav_msgs.msg import Path, OccupancyGrid
+from grumpy_interfaces.msg import GoalWithType
 
 import numpy as np
 
@@ -61,6 +62,8 @@ class AStarPlannerNode(Node):
         self.obstacles = []
         self.goal = None
 
+        self.previous_goal = None
+
         # ---- Workspace ----
         self.workspace_poly = None
         self.min_x = 0.0
@@ -73,7 +76,8 @@ class AStarPlannerNode(Node):
         self.create_subscription(PoseArray, "/detected_objects", self.on_objects, 10)
         self.create_subscription(PoseArray, "/detected_boxes", self.on_boxes, 10)
         self.create_subscription(PoseStamped, "/fake_obstacles", self.on_obstacle, 10)
-        self.create_subscription(PoseStamped, "/nav/goal", self.on_goal, 10)
+        # self.create_subscription(PoseStamped, "/nav/goal", self.on_goal, 10)
+        self.create_subscription(GoalWithType, "/nav/goal", self.on_goal, 10)
 
         self.path_pub = self.create_publisher(Path, "/nav/path_from_planner", 10)
         self.grid_pub = self.create_publisher(OccupancyGrid, "/nav/grid", 10)
@@ -146,11 +150,68 @@ class AStarPlannerNode(Node):
         self.obstacles.append((x, y))
         self.rebuild_grid()
 
+#     def on_goal(self, msg):
+#         self.goal = (msg.pose.position.x, msg.pose.position.y)
+# 
+#         grid = self.rebuild_grid()
+# 
+#         if grid is None:
+#             return
+# 
+#         robot = self.lookup_robot_xy()
+#         if robot is None:
+#             self.get_logger().warn("Could not get robot pose")
+#             return
+# 
+#         start = self.world_to_grid(robot[0], robot[1])
+#         
+#         # start = self.world_to_grid(self.start_x, self.start_y)
+# 
+# 
+# 
+# 
+# 
+#         goal = self.world_to_grid(self.goal[0], self.goal[1])
+# 
+#         print(f"world (x, y) = {self.goal[0]}, {self.goal[1]}")
+#         print(f"grid (x, y) = {goal[0]}, {goal[1]}")
+# 
+#         if not self.cell_in_bounds(start[0], start[1], grid):
+#             self.get_logger().warn("Start cell out of bounds")
+#             return
+# 
+#         if not self.cell_in_bounds(goal[0], goal[1], grid):
+#             self.get_logger().warn("Goal cell out of bounds")
+#             return
+# 
+#         if grid[start[1]][start[0]] != 0:
+#             self.get_logger().warn("Start cell is occupied")
+#             return
+# 
+#         if grid[goal[1]][goal[0]] != 0:
+#             self.get_logger().warn("Goal cell is occupied")
+#             return
+# 
+#         cells = self.run_astar(grid, start, goal)
+# 
+#         if not cells:
+#             self.get_logger().warn("A* returned no path")
+#             self.publish_empty_path()
+#             return
+# 
+#         self.publish_path(cells)
+
     def on_goal(self, msg):
-        self.goal = (msg.pose.position.x, msg.pose.position.y)
+        if self.goal is not None:
+            self.previous_goal = self.goal
+
+        goal_pose = msg.goal.pose
+        self.goal = (goal_pose.position.x, goal_pose.position.y)
+
+        if msg.type == GoalWithType.OBJECT:
+            self.remove_object_at_goal(self.goal)
 
         grid = self.rebuild_grid()
-
         if grid is None:
             return
 
@@ -160,17 +221,7 @@ class AStarPlannerNode(Node):
             return
 
         start = self.world_to_grid(robot[0], robot[1])
-        
-        # start = self.world_to_grid(self.start_x, self.start_y)
-
-
-
-
-
         goal = self.world_to_grid(self.goal[0], self.goal[1])
-
-        print(f"world (x, y) = {self.goal[0]}, {self.goal[1]}")
-        print(f"grid (x, y) = {goal[0]}, {goal[1]}")
 
         if not self.cell_in_bounds(start[0], start[1], grid):
             self.get_logger().warn("Start cell out of bounds")
@@ -196,6 +247,26 @@ class AStarPlannerNode(Node):
             return
 
         self.publish_path(cells)
+
+    def remove_object_at_goal(self, goal_xy, tolerance=0.15):
+        if not self.objects:
+            return
+
+        gx, gy = goal_xy
+        best_idx = None
+        best_dist_sq = float("inf")
+
+        for i, (x, y) in enumerate(self.objects):
+            dist_sq = (x - gx) ** 2 + (y - gy) ** 2
+            if dist_sq < best_dist_sq:
+                best_dist_sq = dist_sq
+                best_idx = i
+
+        if best_idx is not None and best_dist_sq <= tolerance * tolerance:
+            removed = self.objects.pop(best_idx)
+            self.get_logger().info(f"Removed object from memory at {removed}")
+        else:
+            self.get_logger().warn("No matching object found near goal to remove") 
 
     # ------- Lookup transform ------
 
@@ -279,6 +350,74 @@ class AStarPlannerNode(Node):
         w = len(grid[0])
         return 0 <= gx < w and 0 <= gy < h
 
+#     def rebuild_grid(self, start_cell=None):
+#         if self.workspace_poly is None:
+#             self.get_logger().warn("No workspace polygon loaded")
+#             return None
+# 
+#         w = int(math.ceil((self.max_x - self.min_x) / self.resolution))
+#         h = int(math.ceil((self.max_y - self.min_y) / self.resolution))
+# 
+#         self.grid_width = w
+#         self.grid_height = h
+# 
+#         grid = [[0 for _ in range(w)] for _ in range(h)]
+# 
+#         # outside workspace = occupied
+#         for gy in range(h):
+#             for gx in range(w):
+#                 x, y = self.grid_to_world(gx, gy)
+#                 if not self.inside_poly(x, y):
+#                     grid[gy][gx] = 100
+# 
+#         goal_cell = None
+#         if self.goal is not None:
+#             goal_cell = self.world_to_grid(self.goal[0], self.goal[1])
+# 
+#         
+#         inflation_radius_m = 0.30
+#         inflation_cells = int(math.ceil(inflation_radius_m / self.resolution))
+# 
+#         for (x, y) in self.obstacles + self.objects + self.boxes:
+#             gx, gy = self.world_to_grid(x, y)
+# 
+#             if goal_cell is not None and (gx, gy) == goal_cell:
+#                 print(f"Skipping blocker at goal cell: world=({x}, {y}) grid=({gx}, {gy})")
+#                 continue
+# 
+#             # if 0 <= gx < w and 0 <= gy < h:
+#             #     grid[gy][gx] = 100
+#             for dy in range(-inflation_cells, inflation_cells + 1):
+#                 for dx in range(-inflation_cells, inflation_cells + 1):
+#                     nx = gx + dx
+#                     ny = gy + dy
+# 
+#                     if not (0 <= nx < w and 0 <= ny < h):
+#                         continue
+# 
+#                     # circular inflation
+#                     if dx * dx + dy * dy > inflation_cells * inflation_cells:
+#                         continue
+# 
+#                     if goal_cell is not None and (nx, ny) == goal_cell:
+#                         continue
+# 
+#                     grid[ny][nx] = 100
+# 
+# 
+#         if goal_cell is not None:
+#             gx, gy = goal_cell
+#             if 0 <= gx < w and 0 <= gy < h:
+#                 grid[gy][gx] = 0
+# 
+#             print("goal_cell =", goal_cell, "value =", grid[goal_cell[1]][goal_cell[0]])
+# 
+#         self.publish_grid(grid, w, h)
+# 
+#         self.visualize_grid(grid)
+# 
+#         return grid
+
     def rebuild_grid(self):
         if self.workspace_poly is None:
             self.get_logger().warn("No workspace polygon loaded")
@@ -303,7 +442,10 @@ class AStarPlannerNode(Node):
         if self.goal is not None:
             goal_cell = self.world_to_grid(self.goal[0], self.goal[1])
 
-        
+        previous_goal_cell = None
+        if self.previous_goal is not None:
+            previous_goal_cell = self.world_to_grid(self.previous_goal[0], self.previous_goal[1])
+
         inflation_radius_m = 0.40
         inflation_cells = int(math.ceil(inflation_radius_m / self.resolution))
 
@@ -311,11 +453,11 @@ class AStarPlannerNode(Node):
             gx, gy = self.world_to_grid(x, y)
 
             if goal_cell is not None and (gx, gy) == goal_cell:
-                print(f"Skipping blocker at goal cell: world=({x}, {y}) grid=({gx}, {gy})")
                 continue
 
-            # if 0 <= gx < w and 0 <= gy < h:
-            #     grid[gy][gx] = 100
+            if previous_goal_cell is not None and (gx, gy) == previous_goal_cell:
+                continue
+
             for dy in range(-inflation_cells, inflation_cells + 1):
                 for dx in range(-inflation_cells, inflation_cells + 1):
                     nx = gx + dx
@@ -324,25 +466,44 @@ class AStarPlannerNode(Node):
                     if not (0 <= nx < w and 0 <= ny < h):
                         continue
 
-                    # circular inflation
                     if dx * dx + dy * dy > inflation_cells * inflation_cells:
                         continue
 
                     if goal_cell is not None and (nx, ny) == goal_cell:
                         continue
 
-                    grid[ny][nx] = 100
+                    if previous_goal_cell is not None and (nx, ny) == previous_goal_cell:
+                        continue
 
+                    grid[ny][nx] = 100
 
         if goal_cell is not None:
             gx, gy = goal_cell
             if 0 <= gx < w and 0 <= gy < h:
                 grid[gy][gx] = 0
 
-            print("goal_cell =", goal_cell, "value =", grid[goal_cell[1]][goal_cell[0]])
+        if previous_goal_cell is not None:
+            gx, gy = previous_goal_cell
+            if 0 <= gx < w and 0 <= gy < h:
+                grid[gy][gx] = 0
 
         self.publish_grid(grid, w, h)
+        self.visualize_grid(grid)
 
+        return grid
+
+        if goal_cell is not None:
+            gx, gy = goal_cell
+            if 0 <= gx < w and 0 <= gy < h:
+                grid[gy][gx] = 0
+
+        if start_cell is not None:
+            gx, gy = start_cell
+            if 0 <= gx < w and 0 <= gy < h:
+                print("removing start cell")
+                grid[gy][gx] = 0
+
+        self.publish_grid(grid, w, h)
         self.visualize_grid(grid)
 
         return grid
