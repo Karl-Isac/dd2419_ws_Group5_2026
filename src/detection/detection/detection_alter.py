@@ -59,7 +59,7 @@ class Detection(Node):
         self.create_subscription(
             PointCloud2, '/realsense/depth/color/points', self.cloud_callback, 10)
         
-        self.tf_buffer = Buffer()
+        self.tf_buffer = Buffer(cache_time=rclpy.duration.Duration(seconds=10))
         self.tf_listener = TransformListener(self.tf_buffer, self)
 
         # TF broadcasters
@@ -179,7 +179,7 @@ class Detection(Node):
 
         self.static_broadcaster.sendTransform(static_tf)
 
-        self.counter = 0 # keep frames of every x frames
+        self.counter = -2 # keep frames of every x frames, AND, discard first two frames
 
         print(42)
 
@@ -204,15 +204,18 @@ class Detection(Node):
         # self.get_logger().info(f'Published {len(object_poses)} objects and {len(box_poses)} boxes')
 
     def cloud_callback(self, msg: PointCloud2):
-        # Spacial and color filtering, reconstructing cloud as [Timestamp, header, fields, candidates, grey_points],
+        # Spatial and color filtering, reconstructing cloud as [Timestamp, header, fields, candidates, grey_points],
         # where candidates are points (x,y,z,r,g,b) for object detection and grey_points are points (z, -x) for box detection
         
         # Publish frequency of PointCloud: 6 FPS
-        num = 3 # keep one frame every 3 frames
+        num = 2  # keep one frame every 3 frames
         self.counter += 1
         self.get_logger().info(f"self.counter: {self.counter}")
-        if self.counter % num != 0:
+
+        if self.counter <= 0: # Discard first several frames, since timestamp is earlier than TF
             return
+        # if self.counter % num != 0:
+        #     return
         
         # Initialization
         candidates = []
@@ -222,49 +225,73 @@ class Detection(Node):
         fields = msg.fields
 
         test_points_box = []
-        test_points_cube = [] # for testing the point cloud range for cube detection, can be removed later
-
+        test_points_cube = []  # for testing the point cloud range for cube detection, can be removed later
 
         # read original pointcloud
         gen = pc2.read_points_numpy(msg, skip_nans=True)
         points = gen[:, :3]
-        colors = np.empty(points.shape, dtype=np.uint32)
-
-        # color conversion into RGB
+        
+        # color conversion into RGB (vectorized while preserving original logic)
+        colors_uint32 = np.empty(points.shape[0], dtype=np.uint32)
         for idx, x in enumerate(gen):
             c = x[3]
             s = struct.pack('>f', c)
             i = struct.unpack('>l', s)[0]
-            pack = ctypes.c_uint32(i).value
-            colors[idx, 0] = np.asarray((pack >> 16) & 255, dtype=np.uint8)
-            colors[idx, 1] = np.asarray((pack >> 8) & 255, dtype=np.uint8)
-            colors[idx, 2] = np.asarray(pack & 255, dtype=np.uint8)
+            colors_uint32[idx] = ctypes.c_uint32(i).value
+        
+        # Extract and normalize RGB components vectorized
+        r = np.asarray((colors_uint32 >> 16) & 255, dtype=np.uint8).astype(np.float32) / 255.0
+        g = np.asarray((colors_uint32 >> 8) & 255, dtype=np.uint8).astype(np.float32) / 255.0
+        b = np.asarray(colors_uint32 & 255, dtype=np.uint8).astype(np.float32) / 255.0
+        
+        # Extract coordinates
+        x = points[:, 0]
+        y = points[:, 1]
+        z = points[:, 2]
 
-        colors = colors.astype(np.float32) / 255
-
-        # iterate through points and apply spatial and color filtering§
-        for idx in range(points.shape[0]):
-            x, y, z = points[idx]
-            r = colors[idx, 0]
-            g = colors[idx, 1]
-            b = colors[idx, 2]
-            h, s, v = rgb_to_hsv(r, g, b)
-
-            # spatial filtering for candidate points (keep points in front of camera and within 0.8m, and at the ground)
-            if y > 0.045 and y < 0.0865 and z > 0.05 and z < 0.9:
-            # if y > 0.03 and y < 0.0865:
-                # object detection candidate points 
-                if y > 0.05:
-                    test_points_cube.append(gen[idx]) # for testing the point cloud range for box detection, can be removed later
-                    candidates.append([x, y, z, r, g, b])
-                # box detection candidate points
-                if y < 0.055:
-                    
-                    if is_grey_HSL(r, g, b):
-                        test_points_box.append(gen[idx]) # for testing the point cloud range for box detection, can be removed later
-                        grey_points.append([z, -x])
+        # iterate through points and apply spatial and color filtering (vectorized implementation below)
+        
+        # spatial filtering for candidate points (keep points in front of camera and within 0.8m, and at the ground)
+        spatial_mask = (y > 0.045) & (y < 0.0865) & (z > 0.05) & (z < 0.9)
+        
+        # object detection candidate points 
+        object_mask = spatial_mask & (y > 0.05)
+        # box detection candidate points
+        box_mask_spatial = spatial_mask & (y < 0.055)
+        
+        # Vectorized is_grey_HSL check (based on        # if self.counter % num != 0:
+        #     return RGB as in original code)
+        grey_mask = self._is_grey_hsl_vectorized_from_rgb(r, g, b)
+        box_mask = box_mask_spatial & grey_mask
+        
+        # Get indices of points that satisfy the masks
+        obj_indices = np.where(object_mask)[0]
+        box_indices = np.where(box_mask)[0]
+        
+        # Build candidates list: (x, y, z, r, g, b) format
+        if len(obj_indices) > 0:
+            candidates = np.column_stack([
+                x[obj_indices], y[obj_indices], z[obj_indices],
+                r[obj_indices], g[obj_indices], b[obj_indices]
+            ]).tolist()
+            test_points_cube = gen[obj_indices].tolist()  # for testing the point cloud range for box detection, can be removed later
+        else:
+            candidates = []
+            test_points_cube = []
+                # if self.counter % num != 0:
+        #     return
+        # Build grey_points list: (z, -x) format for box detection
+        if len(box_indices) > 0:
+            grey_points = np.column_stack([z[box_indices], -x[box_indices]]).tolist()
+            test_points_box = gen[box_indices].tolist()  # for testing the point cloud range for box detection, can be removed later
+        else:
+            grey_points = []
+            test_points_box = []
+        
+        # Queue the processed data
         self.cloud_queue.append([Timestamp, header, fields, candidates, grey_points, test_points_box, test_points_cube])
 
+        # Publish test point cloud (keep original behavior)
         if test_points_box:
             box_cloud = pc2.create_cloud(header, fields, test_points_box)
             self.test_pub_box.publish(box_cloud)
@@ -302,6 +329,21 @@ class Detection(Node):
             ):
                 self.process_point_cloud(self.cloud_queue.popleft())
             
+            # Test code, finding the earliest available timestamp of TF
+
+            # try:
+            #     self.tf_buffer.lookup_transform('map', 'base_link', Time(seconds=1000, nanoseconds=1000))
+            # except TransformException as e:
+            #     # 错误消息格式类似：
+            #     # "Lookup would require extrapolation into the past.  
+            #     #  Requested time 100.000000 but the earliest data is at time 105.000000"
+            #     import re
+            #     match = re.search(r"earliest data is at time (\d+\.\d+)", str(e))
+            #     if match:
+            #         earliest_sec = float(match.group(1))
+            #         earliest_time = Time(seconds=int(earliest_sec), nanoseconds=int((earliest_sec % 1) * 1e9))
+            #         self.get_logger().warn(f"the earliest time is {earliest_sec}.{earliest_time.nanoseconds}")
+            
             
 
     def process_point_cloud(self, data):
@@ -324,7 +366,7 @@ class Detection(Node):
 
             # DBSCAN 
             eps = 0.025          # cluster radius, tuned based on the point cloud density and object size (0.025m = 2.5cm)
-            min_samples = 3     # minimum number of points, ensuring each cluster contains an object
+            min_samples = 10     # minimum number of points, ensuring each cluster contains an object
             clustering = DBSCAN(eps=eps, min_samples=min_samples).fit(pts_xyz)
             labels = clustering.labels_
 
@@ -480,7 +522,8 @@ class Detection(Node):
                 break
         else:
             if not is_point_in_polygon(object_map.pose.position.x * 100, object_map.pose.position.y * 100, self.boundary, False):
-                 self.get_logger().debug("object detected outside of workspace boundary, discarded")
+                 self.get_logger().info("object detected outside of workspace boundary, discarded")
+                 self.get_logger().warn(f"position: {object_map.pose.position.x}, {object_map.pose.position.y}")
                  return
             
             self.object_lists.append([int(round(object_map.pose.position.x * 100)), int(round(object_map.pose.position.y * 100)), 0])
@@ -750,6 +793,46 @@ class Detection(Node):
             center_shifted = center + shift_vec 
 
             return center_shifted, yaw, used_axes
+        
+    def _is_grey_hsl_vectorized_from_rgb(self, r, g, b):
+        """
+        Vectorized implementation of the original is_grey_HSL(r,g,b) function.
+        Original logic:
+            c_max = max(r,g,b); c_min = min(r,g,b); delta = c_max - c_min
+            Compute Hue (h) — only condition h > 80 or h == 0 is used.
+            Compute Lightness l = (c_max + c_min)/2
+            Compute HSL Saturation: s = 0 if delta == 0 else delta/(1-abs(2*l-1))
+            Returns: (h > 80 or h == 0) and s < 20/255 and l < 25/255
+        """
+        c_max = np.maximum(np.maximum(r, g), b)
+        c_min = np.minimum(np.minimum(r, g), b)
+        delta = c_max - c_min
+        
+        # Compute Hue (0-360)
+        h = np.zeros_like(r)
+        # Only compute where delta != 0 to avoid division by zero
+        mask_r = (delta != 0) & (c_max == r)
+        h[mask_r] = 60.0 * (((g[mask_r] - b[mask_r]) / delta[mask_r]) % 6)
+        mask_g = (delta != 0) & (c_max == g)
+        h[mask_g] = 60.0 * (((b[mask_g] - r[mask_g]) / delta[mask_g]) + 2)
+        mask_b = (delta != 0) & (c_max == b)
+        h[mask_b] = 60.0 * (((r[mask_b] - g[mask_b]) / delta[mask_b]) + 4)
+        
+        # Compute HSL Lightness
+        l = (c_max + c_min) / 2.0
+        
+        # Compute HSL Saturation
+        s_hsl = np.zeros_like(r)
+        mask_delta = delta != 0
+        # s = delta / (1 - abs(2*l - 1))
+        denominator = 1.0 - np.abs(2.0 * l[mask_delta] - 1.0)
+        # Avoid division by zero
+        denominator = np.where(denominator == 0, 1e-10, denominator)
+        s_hsl[mask_delta] = delta[mask_delta] / denominator
+        
+        # Final grey condition
+        grey_cond = ((h > 80) | (h == 0)) & (s_hsl < 20.0/255.0) & (l < 25.0/255.0)
+        return grey_cond
     
     def write_csv(self):
         try:
@@ -809,6 +892,10 @@ def is_grey_HSL(r,g,b):
     s = 0.0 if delta == 0 else delta / (1-abs(2*l-1))
 
     return True if h > 80 or h == 0 and s < 20 / 255 and l < 25 / 255 else False
+
+#######################################################################
+# TODO: Should not be modified, Andrew referred this part.
+#######################################################################
 
 def rgb_to_hsv(r, g, b):
         c_max = max(r, g, b)
