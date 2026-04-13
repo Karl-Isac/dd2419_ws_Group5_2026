@@ -391,7 +391,11 @@ class TaskPlannerNode(Node):
         elif self.state == "GENERATE_EXPLORATION_PATH":
             if not self._published_this_state:
                 # self.get_logger().info("GENERATE_EXPLORATION_PATH")
-                self.publish_pose_to_path_planner(
+                # self.publish_pose_to_path_planner(
+                #     self.current_exploration_point.x,
+                #     self.current_exploration_point.y,
+                # )
+                self.publish_goal_to_path_planner(
                     self.current_exploration_point.x,
                     self.current_exploration_point.y,
                     goal_type="exploration_point"
