@@ -13,6 +13,10 @@ import math
 from tf2_ros import LookupException, ConnectivityException, ExtrapolationException
 from cv_bridge import CvBridge
 
+import os
+from ament_index_python.packages import get_package_share_directory
+
+
 
 class ExplorationMapper(Node):
     def __init__(self):
@@ -38,7 +42,15 @@ class ExplorationMapper(Node):
         
         # Setup map
         # Read workspace csv
-        csv_path = "workspace.csv"              # agree on a common location, atm its inside dd2419_ws_Group5_2026
+        # csv_path = "workspace.csv"              # agree on a common location, atm its inside dd2419_ws_Group5_2026
+
+
+        package_share = get_package_share_directory('learning_tf2_py')
+        csv_path = os.path.join(
+            package_share,
+            'config',
+            'workspace_1.csv'
+        )
         poly = read_workspace_as_polygon(csv_path)
 
         # Convert read polygon into a grid, where 0 means outside of ws, 1 means unexplored, 2 means explored (nothing is explored at init) 

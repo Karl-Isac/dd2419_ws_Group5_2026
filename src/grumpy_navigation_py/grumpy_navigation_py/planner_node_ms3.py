@@ -418,6 +418,96 @@ class AStarPlannerNode(Node):
 # 
 #         return grid
 
+    # def rebuild_grid(self):
+    #     if self.workspace_poly is None:
+    #         self.get_logger().warn("No workspace polygon loaded")
+    #         return None
+    #
+    #     w = int(math.ceil((self.max_x - self.min_x) / self.resolution))
+    #     h = int(math.ceil((self.max_y - self.min_y) / self.resolution))
+    #
+    #     self.grid_width = w
+    #     self.grid_height = h
+    #
+    #     grid = [[0 for _ in range(w)] for _ in range(h)]
+    #
+    #     # outside workspace = occupied
+    #     for gy in range(h):
+    #         for gx in range(w):
+    #             x, y = self.grid_to_world(gx, gy)
+    #             if not self.inside_poly(x, y):
+    #                 grid[gy][gx] = 100
+    #
+    #     goal_cell = None
+    #     if self.goal is not None:
+    #         goal_cell = self.world_to_grid(self.goal[0], self.goal[1])
+    #
+    #     previous_goal_cell = None
+    #     if self.previous_goal is not None:
+    #         previous_goal_cell = self.world_to_grid(self.previous_goal[0], self.previous_goal[1])
+    #
+    #     inflation_radius_m = 0.40
+    #     inflation_cells = int(math.ceil(inflation_radius_m / self.resolution))
+    #
+    #     for (x, y) in self.obstacles + self.objects + self.boxes:
+    #         gx, gy = self.world_to_grid(x, y)
+    #
+    #         if goal_cell is not None and (gx, gy) == goal_cell:
+    #             continue
+    #
+    #         if previous_goal_cell is not None and (gx, gy) == previous_goal_cell:
+    #             continue
+    #
+    #         for dy in range(-inflation_cells, inflation_cells + 1):
+    #             for dx in range(-inflation_cells, inflation_cells + 1):
+    #                 nx = gx + dx
+    #                 ny = gy + dy
+    #
+    #                 if not (0 <= nx < w and 0 <= ny < h):
+    #                     continue
+    #
+    #                 if dx * dx + dy * dy > inflation_cells * inflation_cells:
+    #                     continue
+    #
+    #                 if goal_cell is not None and (nx, ny) == goal_cell:
+    #                     continue
+    #
+    #                 if previous_goal_cell is not None and (nx, ny) == previous_goal_cell:
+    #                     continue
+    #
+    #                 grid[ny][nx] = 100
+    #
+    #     if goal_cell is not None:
+    #         gx, gy = goal_cell
+    #         if 0 <= gx < w and 0 <= gy < h:
+    #             grid[gy][gx] = 0
+    #
+    #     if previous_goal_cell is not None:
+    #         gx, gy = previous_goal_cell
+    #         if 0 <= gx < w and 0 <= gy < h:
+    #             grid[gy][gx] = 0
+    #
+    #     self.publish_grid(grid, w, h)
+    #     self.visualize_grid(grid)
+    #
+    #     return grid
+    #
+    #     if goal_cell is not None:
+    #         gx, gy = goal_cell
+    #         if 0 <= gx < w and 0 <= gy < h:
+    #             grid[gy][gx] = 0
+    #
+    #     if start_cell is not None:
+    #         gx, gy = start_cell
+    #         if 0 <= gx < w and 0 <= gy < h:
+    #             print("removing start cell")
+    #             grid[gy][gx] = 0
+    #
+    #     self.publish_grid(grid, w, h)
+    #     self.visualize_grid(grid)
+    #
+    #     return grid
+
     def rebuild_grid(self):
         if self.workspace_poly is None:
             self.get_logger().warn("No workspace polygon loaded")
@@ -444,38 +534,48 @@ class AStarPlannerNode(Node):
 
         previous_goal_cell = None
         if self.previous_goal is not None:
-            previous_goal_cell = self.world_to_grid(self.previous_goal[0], self.previous_goal[1])
+            previous_goal_cell = self.world_to_grid(
+                self.previous_goal[0], self.previous_goal[1]
+            )
 
-        inflation_radius_m = 0.40
-        inflation_cells = int(math.ceil(inflation_radius_m / self.resolution))
+        object_inflation_m = 0.15
+        box_inflation_m = 0.35
+        obstacle_inflation_m = 0.35
 
-        for (x, y) in self.obstacles + self.objects + self.boxes:
-            gx, gy = self.world_to_grid(x, y)
+        def inflate_positions(positions, inflation_radius_m):
+            inflation_cells = int(math.ceil(inflation_radius_m / self.resolution))
 
-            if goal_cell is not None and (gx, gy) == goal_cell:
-                continue
+            for (x, y) in positions:
+                gx, gy = self.world_to_grid(x, y)
 
-            if previous_goal_cell is not None and (gx, gy) == previous_goal_cell:
-                continue
+                if goal_cell is not None and (gx, gy) == goal_cell:
+                    continue
 
-            for dy in range(-inflation_cells, inflation_cells + 1):
-                for dx in range(-inflation_cells, inflation_cells + 1):
-                    nx = gx + dx
-                    ny = gy + dy
+                if previous_goal_cell is not None and (gx, gy) == previous_goal_cell:
+                    continue
 
-                    if not (0 <= nx < w and 0 <= ny < h):
-                        continue
+                for dy in range(-inflation_cells, inflation_cells + 1):
+                    for dx in range(-inflation_cells, inflation_cells + 1):
+                        nx = gx + dx
+                        ny = gy + dy
 
-                    if dx * dx + dy * dy > inflation_cells * inflation_cells:
-                        continue
+                        if not (0 <= nx < w and 0 <= ny < h):
+                            continue
 
-                    if goal_cell is not None and (nx, ny) == goal_cell:
-                        continue
+                        if dx * dx + dy * dy > inflation_cells * inflation_cells:
+                            continue
 
-                    if previous_goal_cell is not None and (nx, ny) == previous_goal_cell:
-                        continue
+                        if goal_cell is not None and (nx, ny) == goal_cell:
+                            continue
 
-                    grid[ny][nx] = 100
+                        if previous_goal_cell is not None and (nx, ny) == previous_goal_cell:
+                            continue
+
+                        grid[ny][nx] = 100
+
+        inflate_positions(self.objects, object_inflation_m)
+        inflate_positions(self.boxes, box_inflation_m)
+        inflate_positions(self.obstacles, obstacle_inflation_m)
 
         if goal_cell is not None:
             gx, gy = goal_cell
@@ -485,22 +585,6 @@ class AStarPlannerNode(Node):
         if previous_goal_cell is not None:
             gx, gy = previous_goal_cell
             if 0 <= gx < w and 0 <= gy < h:
-                grid[gy][gx] = 0
-
-        self.publish_grid(grid, w, h)
-        self.visualize_grid(grid)
-
-        return grid
-
-        if goal_cell is not None:
-            gx, gy = goal_cell
-            if 0 <= gx < w and 0 <= gy < h:
-                grid[gy][gx] = 0
-
-        if start_cell is not None:
-            gx, gy = start_cell
-            if 0 <= gx < w and 0 <= gy < h:
-                print("removing start cell")
                 grid[gy][gx] = 0
 
         self.publish_grid(grid, w, h)

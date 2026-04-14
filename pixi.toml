@@ -94,6 +94,7 @@ ros-jazzy-ament-lint-auto = ">=0.17.3,<0.18"
 ros-jazzy-ament-lint-common = ">=0.17.3,<0.18"
 ros-jazzy-geometry-msgs = ">=5.3.6,<6"
 scikit-learn = ">=1.8.0,<2"
+shapely = ">=2.1.2,<3"
 
 [target.linux-64.dependencies]
 # ROS

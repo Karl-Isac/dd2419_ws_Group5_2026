@@ -205,6 +205,12 @@ class TaskPlannerNode(Node):
         elif msg.data == "pick_fail":
             self.pick_done = False
             # self.current_object.status == "detected" # TODO: check if this is nessessary
+            
+            if self.current_object is not None:
+                self.current_object.status = "failed"
+
+                self.get_logger().warn(f"Arm failed to pickup obejct id={self.current_object.id} -> Marking as failed")
+
             self.current_object = None
             self.enter_state("SELECT_OBJECT")
 
@@ -356,7 +362,7 @@ class TaskPlannerNode(Node):
         # ICP:
         if self.state == "UPDATE_ICP":
 
-            self.get_logger().info("UPDATE_ICP")
+            # self.get_logger().info("UPDATE_ICP")
             if not self._published_this_state:
                 self.ICP_pub.publish(String(data="update"))
                 self._published_this_state = True
