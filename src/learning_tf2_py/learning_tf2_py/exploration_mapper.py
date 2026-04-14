@@ -16,6 +16,8 @@ from cv_bridge import CvBridge
 import os
 from ament_index_python.packages import get_package_share_directory
 
+from visualization_msgs.msg import Marker
+
 
 
 class ExplorationMapper(Node):
@@ -26,6 +28,9 @@ class ExplorationMapper(Node):
         self.pub = self.create_publisher(Point, "/exploration/return_unexplored_point", 10) # z value 0, if not that represents no more unexplored points left
         self.create_subscription(
             String, '/exploration/request_unexplored_point', self.get_unexplored_point_callback, 10) # content can be anything
+        
+        # marker publisher for viz
+        self.marker_pub = self.create_publisher(Marker, "/exploration/goal_marker", 10)
         
         # Publish exploration map as image for debugging
         self.publish_exploration_map = True
@@ -67,6 +72,33 @@ class ExplorationMapper(Node):
                 if poly.contains(shapelyPoint(x, y)):
                     self.grid[i, j] = 1
 
+    def publish_exploration_marker(self, x, y):
+        marker = Marker()
+        marker.header.frame_id = "map"
+        marker.header.stamp = self.get_clock().now().to_msg()
+
+        marker.ns = "exploration"
+        marker.id = 1
+        marker.type = Marker.SPHERE
+        marker.action = Marker.ADD
+
+        marker.pose.position.x = x
+        marker.pose.position.y = y
+        marker.pose.position.z = 0.0
+        marker.pose.orientation.w = 1.0
+
+        marker.scale.x = 0.1
+        marker.scale.y = 0.1
+        marker.scale.z = 0.1
+
+        # yellow = exploration (different from goal green)
+        marker.color.r = 1.0
+        marker.color.g = 1.0
+        marker.color.b = 0.0
+        marker.color.a = 1.0
+
+        self.marker_pub.publish(marker)
+
     def get_unexplored_point_callback(self,_):
         unexplored_indices = []
         for i, y in enumerate(self.grid_yvalues):
@@ -78,6 +110,10 @@ class ExplorationMapper(Node):
             x = self.grid_xvalues[j]
             y = self.grid_yvalues[i]
             z = 0
+
+            # publish marker for rviz
+            self.publish_exploration_marker(x, y)
+
         except:     # if any error z => 42 to tell global task planner of crash or everything explored
             x = 0
             y = 0
@@ -86,6 +122,8 @@ class ExplorationMapper(Node):
         msg.x = x
         msg.y = y
         msg.z = z
+
+
         self.pub.publish(msg)
 
     def timer_callback(self):

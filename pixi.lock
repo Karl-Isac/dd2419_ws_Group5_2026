@@ -13446,6 +13446,8 @@ packages:
   variants:
     target_platform: osx-arm64
   depends:
+  - ros2-distro-mutex >=0.13,<0.14
+  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - numpy
   - numpy >=1.23,<3
   - ros-jazzy-rclpy
@@ -13453,8 +13455,6 @@ packages:
   - ros-jazzy-rosbag2
   - ros-jazzy-sensor-msgs
   - ros-jazzy-sensor-msgs-py
-  - ros2-distro-mutex >=0.13,<0.14
-  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - libcxx >=22
   - python_abi 3.12.* *_cp312
   license: LicenseRef-MIT
@@ -13468,6 +13468,8 @@ packages:
     cxx_compiler: vs2022
     target_platform: win-64
   depends:
+  - ros2-distro-mutex >=0.13,<0.14
+  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - numpy
   - numpy >=1.23,<3
   - ros-jazzy-rclpy
@@ -13475,8 +13477,6 @@ packages:
   - ros-jazzy-rosbag2
   - ros-jazzy-sensor-msgs
   - ros-jazzy-sensor-msgs-py
-  - ros2-distro-mutex >=0.13,<0.14
-  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - vc >=14.3,<15
   - vc14_runtime >=14.44.35208
   - ucrt >=10.0.20348.0
@@ -13490,6 +13490,8 @@ packages:
   variants:
     target_platform: linux-64
   depends:
+  - ros2-distro-mutex >=0.13,<0.14
+  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - numpy
   - numpy >=1.23,<3
   - ros-jazzy-rclpy
@@ -13497,8 +13499,6 @@ packages:
   - ros-jazzy-rosbag2
   - ros-jazzy-sensor-msgs
   - ros-jazzy-sensor-msgs-py
-  - ros2-distro-mutex >=0.13,<0.14
-  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - libgcc >=15
   - libgcc >=15
   - libstdcxx >=15
@@ -15907,6 +15907,8 @@ packages:
   variants:
     target_platform: osx-arm64
   depends:
+  - ros2-distro-mutex >=0.13,<0.14
+  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - ros-jazzy-geometry-msgs
   - ros-jazzy-nav-msgs
   - numpy
@@ -15916,8 +15918,6 @@ packages:
   - ros-jazzy-rclpy
   - ros-jazzy-tf-transformations
   - ros-jazzy-tf2-ros
-  - ros2-distro-mutex >=0.13,<0.14
-  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - libcxx >=22
   - python_abi 3.12.* *_cp312
   license: LicenseRef-MIT
@@ -15931,6 +15931,8 @@ packages:
     cxx_compiler: vs2022
     target_platform: win-64
   depends:
+  - ros2-distro-mutex >=0.13,<0.14
+  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - ros-jazzy-geometry-msgs
   - ros-jazzy-nav-msgs
   - numpy
@@ -15940,8 +15942,6 @@ packages:
   - ros-jazzy-rclpy
   - ros-jazzy-tf-transformations
   - ros-jazzy-tf2-ros
-  - ros2-distro-mutex >=0.13,<0.14
-  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - vc >=14.3,<15
   - vc14_runtime >=14.44.35208
   - ucrt >=10.0.20348.0
@@ -15955,6 +15955,8 @@ packages:
   variants:
     target_platform: linux-64
   depends:
+  - ros2-distro-mutex >=0.13,<0.14
+  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - ros-jazzy-geometry-msgs
   - ros-jazzy-nav-msgs
   - numpy
@@ -15964,8 +15966,6 @@ packages:
   - ros-jazzy-rclpy
   - ros-jazzy-tf-transformations
   - ros-jazzy-tf2-ros
-  - ros2-distro-mutex >=0.13,<0.14
-  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - libgcc >=15
   - libgcc >=15
   - libstdcxx >=15

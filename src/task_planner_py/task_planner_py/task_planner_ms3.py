@@ -153,14 +153,32 @@ class TaskPlannerNode(Node):
         self.generate_exploration_pose_success = True
 
 
+    # def on_path_from_planner(self, msg: Path):
+    #     self.path_to_goal = msg
+    #     if self.state == "GENERATE_PATH_TO_OBJECT":
+    #         self.generate_path_object_success = True
+    #     elif self.state == "GENERATE_PATH_TO_BOX":
+    #         self.generate_path_box_success = True
+    #     elif self.state == "GENERATE_EXPLORATION_PATH":
+    #         self.generate_exploration_path_success = True
+
     def on_path_from_planner(self, msg: Path):
-        self.path_to_goal = msg
+
+        success = len(msg.poses) > 0
+
         if self.state == "GENERATE_PATH_TO_OBJECT":
-            self.generate_path_object_success = True
+            self.generate_path_object_success = success
+
         elif self.state == "GENERATE_PATH_TO_BOX":
-            self.generate_path_box_success = True
+            self.generate_path_box_success = success
+
         elif self.state == "GENERATE_EXPLORATION_PATH":
-            self.generate_exploration_path_success = True
+            self.generate_exploration_path_success = success
+
+        if success:
+            self.path_to_goal = msg
+        else:
+            self.get_logger().warn(f"Empty path received in state {self.state}")
 
     
     def distance_sq(self, x1: float, y1: float, x2: float, y2: float) -> float:
@@ -351,9 +369,20 @@ class TaskPlannerNode(Node):
             "GENERATE_EXPLORATION_PATH",
             "EXECUTE_EXPLORATION_PATH",
         )
+
+        # if (
+        #     self.state in exploration_states
+        #     and len(self.known_objects) > 0
+        #     and len(self.known_boxes) > 0
+        # ):
+        #     self.enter_state("SELECT_OBJECT")
+        #     return
+
+        available_objects = [obj for obj in self.known_objects if obj.status == "detected"]
+
         if (
             self.state in exploration_states
-            and len(self.known_objects) > 0
+            and len(available_objects) > 0
             and len(self.known_boxes) > 0
         ):
             self.enter_state("SELECT_OBJECT")

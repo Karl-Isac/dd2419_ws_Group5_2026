@@ -6,6 +6,7 @@ from rclpy.node import Node
 from geometry_msgs.msg import PoseStamped, PoseArray
 from nav_msgs.msg import Path, OccupancyGrid
 from grumpy_interfaces.msg import GoalWithType
+from visualization_msgs.msg import Marker
 
 import numpy as np
 
@@ -21,6 +22,7 @@ from rclpy.time import Time
 
 import tf2_ros
 from tf2_ros import Buffer, TransformListener
+
 
 
 
@@ -81,6 +83,8 @@ class AStarPlannerNode(Node):
 
         self.path_pub = self.create_publisher(Path, "/nav/path_from_planner", 10)
         self.grid_pub = self.create_publisher(OccupancyGrid, "/nav/grid", 10)
+
+        self.goal_marker_pub = self.create_publisher(Marker, "/nav/goal_marker", 10)
 
         self.get_logger().info("Planner ready")
 
@@ -201,12 +205,41 @@ class AStarPlannerNode(Node):
 # 
 #         self.publish_path(cells)
 
+    def publish_goal_marker(self, x, y):
+        marker = Marker()
+        marker.header.frame_id = self.world_frame
+        marker.header.stamp = self.get_clock().now().to_msg()
+
+        marker.ns = "goal"
+        marker.id = 0
+        marker.type = Marker.CUBE
+        marker.action = Marker.ADD
+
+        marker.pose.position.x = x
+        marker.pose.position.y = y
+        marker.pose.position.z = 0.0
+        marker.pose.orientation.w = 1.0
+
+        marker.scale.x = 0.2
+        marker.scale.y = 0.2
+        marker.scale.z = 0.2
+
+        marker.color.r = 0.0
+        marker.color.g = 1.0
+        marker.color.b = 0.0
+        marker.color.a = 1.0
+
+        self.goal_marker_pub.publish(marker)
+
     def on_goal(self, msg):
         if self.goal is not None:
             self.previous_goal = self.goal
 
         goal_pose = msg.goal.pose
         self.goal = (goal_pose.position.x, goal_pose.position.y)
+
+        # publish marker for vizualisation
+        self.publish_goal_marker(self.goal[0], self.goal[1])
 
         if msg.type == GoalWithType.OBJECT:
             self.remove_object_at_goal(self.goal)
