@@ -181,7 +181,7 @@ class Detection(Node):
 
         self.counter = -2 # keep frames of every x frames, AND, discard first two frames
 
-        print(42)
+        print(2)
 
     def publish_arrays(self, object_poses, object_timestamp, box_poses, box_timestamp):
         """publish object and box poses from map file to ROS topics."""
@@ -211,7 +211,8 @@ class Detection(Node):
         num = 2  # keep one frame every 3 frames
         self.counter += 1
 
-        # For testing how queue works
+        # For testing the freq of cloud_callback
+        # For now, it's almost 6Hz when no detection results
         # self.get_logger().info(f"self.counter: {self.counter}")
 
         if self.counter <= 0: # Discard first several frames, since timestamp is earlier than TF
@@ -269,6 +270,10 @@ class Detection(Node):
         # Get indices of points that satisfy the masks
         obj_indices = np.where(object_mask)[0]
         box_indices = np.where(box_mask)[0]
+
+        # if len(np.where(box_mask_spatial)[0]) > 0:
+            # test_points_box = gen[box_mask_spatial].tolist()  # for testing the point cloud range for box detection, can be removed later
+
         
         # Build candidates list: (x, y, z, r, g, b) format
         if len(obj_indices) > 0:
@@ -285,9 +290,6 @@ class Detection(Node):
         if len(box_indices) > 0:
             grey_points = np.column_stack([z[box_indices], -x[box_indices]]).tolist()
             test_points_box = gen[box_indices].tolist()  # for testing the point cloud range for box detection, can be removed later
-        else:
-            grey_points = []
-            test_points_box = []
         
         # Queue the processed data
         self.cloud_queue.append([Timestamp, header, fields, candidates, grey_points, test_points_box, test_points_cube])
@@ -570,7 +572,7 @@ class Detection(Node):
         if len(points) < 100: 
             return None, None, None 
         
-        self.get_logger().info(f"the length of points: {len(points)}")
+        # self.get_logger().info(f"the length of points: {len(points)}")
         pts = np.array(points) 
         
         # --- Step 0: reduce outliers（IQR method） --- 
@@ -578,10 +580,10 @@ class Detection(Node):
         # Q1 = np.percentile(pts, 25, axis=0) 
         # Q3 = np.percentile(pts, 75, axis=0) 
         # IQR = Q3 - Q1 
-        # mask = np.all((pts >= Q1 - 1.5 * IQR) & (pts <= Q3 + 1.5 * IQR), axis=1) 
+        # mask = np.all((pts >= Q1 - 2 * IQR) & (pts <= Q3 + 2 * IQR), axis=1) 
         # pts = pts[mask] 
         
-        # if len(pts) < 2: 
+        # if len(pts) < 80: 
         #     return None, None, None 
         
         # --- Step 1: PCA --- 
@@ -606,7 +608,7 @@ class Detection(Node):
         # Step 3: two edge vs single edge decision based on variance ratio
         
         ratio = S[1] / S[0] 
-        self.get_logger().debug(f'variance ratio: {ratio:.3f}') 
+        self.get_logger().info(f'variance ratio: {ratio:.3f}') 
 
         if ratio > 0.1:
             # =========================================================
@@ -615,7 +617,7 @@ class Detection(Node):
 
             pts_np = pts.copy()
 
-            def fit_line_ransac(points, threshold=0.008, max_iter=400):
+            def fit_line_ransac(points, threshold=0.005, max_iter=400):
                 best_inliers = []
                 best_model = None
 
@@ -822,7 +824,7 @@ class Detection(Node):
         s_hsl[mask_delta] = delta[mask_delta] / denominator
         
         # Final grey condition
-        grey_cond = ((h > 80) | (h == 0)) & (s_hsl < 20.0/255.0) & (l < 25.0/255.0)
+        grey_cond = ((h > 80) | (h == 0)) & (s_hsl < 0.2) & (l < 0.4)
         return grey_cond
     
     def _rgb_to_hsv_vectorized(self, r, g, b):
@@ -886,7 +888,7 @@ def main():
         rclpy.shutdown()
 
 #######################################################################
-# TODO: Should not be modified, Andrew referred this part.
+# TODO: Should not be modified, Andrew referred rgb_to_hsv() function.
 #######################################################################
 
 def rgb_to_hsv(r, g, b):

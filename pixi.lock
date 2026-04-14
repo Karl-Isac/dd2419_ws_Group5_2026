@@ -6156,6 +6156,8 @@ packages:
   variants:
     target_platform: linux-64
   depends:
+  - ros2-distro-mutex >=0.13,<0.14
+  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - numpy
   - numpy >=1.23,<3
   - ros-jazzy-rclpy
@@ -6163,8 +6165,6 @@ packages:
   - ros-jazzy-rosbag2
   - ros-jazzy-sensor-msgs
   - ros-jazzy-sensor-msgs-py
-  - ros2-distro-mutex >=0.13,<0.14
-  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - libgcc >=15
   - libgcc >=15
   - libstdcxx >=15
@@ -6907,6 +6907,8 @@ packages:
   variants:
     target_platform: linux-64
   depends:
+  - ros2-distro-mutex >=0.13,<0.14
+  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - ros-jazzy-example-interfaces
   - ros-jazzy-geometry-msgs
   - ros-jazzy-laser-geometry
@@ -6917,8 +6919,6 @@ packages:
   - ros-jazzy-tf2-sensor-msgs
   - numpy
   - numpy >=1.23,<3
-  - ros2-distro-mutex >=0.13,<0.14
-  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - libgcc >=15
   - libgcc >=15
   - libstdcxx >=15
@@ -7174,6 +7174,8 @@ packages:
   variants:
     target_platform: linux-64
   depends:
+  - ros2-distro-mutex >=0.13,<0.14
+  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - ros-jazzy-geometry-msgs
   - ros-jazzy-nav-msgs
   - numpy
@@ -7183,8 +7185,6 @@ packages:
   - ros-jazzy-rclpy
   - ros-jazzy-tf-transformations
   - ros-jazzy-tf2-ros
-  - ros2-distro-mutex >=0.13,<0.14
-  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - libgcc >=15
   - libgcc >=15
   - libstdcxx >=15
