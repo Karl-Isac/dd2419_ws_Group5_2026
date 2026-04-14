@@ -210,7 +210,9 @@ class Detection(Node):
         # Publish frequency of PointCloud: 6 FPS
         num = 2  # keep one frame every 3 frames
         self.counter += 1
-        self.get_logger().info(f"self.counter: {self.counter}")
+
+        # For testing how queue works
+        # self.get_logger().info(f"self.counter: {self.counter}")
 
         if self.counter <= 0: # Discard first several frames, since timestamp is earlier than TF
             return
@@ -273,13 +275,12 @@ class Detection(Node):
             candidates = np.column_stack([
                 x[obj_indices], y[obj_indices], z[obj_indices],
                 r[obj_indices], g[obj_indices], b[obj_indices]
-            ]).tolist()
+            ]).astype(np.float32)
             test_points_cube = gen[obj_indices].tolist()  # for testing the point cloud range for box detection, can be removed later
         else:
-            candidates = []
+            candidates = np.empty((0, 6), dtype=np.float32)
             test_points_cube = []
-                # if self.counter % num != 0:
-        #     return
+
         # Build grey_points list: (z, -x) format for box detection
         if len(box_indices) > 0:
             grey_points = np.column_stack([z[box_indices], -x[box_indices]]).tolist()
@@ -302,7 +303,6 @@ class Detection(Node):
 
         if self.cloud_queue:
             [t_cloud, header, fields, candidates, grey_points, test_points_box, test_points_cube] = self.cloud_queue[0]
-            # t_cloud, header, fields, candidates, grey_points, test_points_box, test_points_cube] = self.cloud_queue.popleft()
             
             frame = header.frame_id
 
@@ -319,7 +319,7 @@ class Detection(Node):
             # self.get_logger().info(f"Time difference: {t_cloud.sec - latest_tf_time.sec}.{t_cloud.nanosec - latest_tf_time.nanosec}")
             # self.get_logger().info(f"Pointcloud Timestamp: {t_cloud.sec}.{t_cloud.nanosec}")
             # self.get_logger().info(f"Latest TF Timestamp: {latest_tf_time.sec}.{latest_tf_time.nanosec}")
-            self.get_logger().info(f"num of queue:{len(self.cloud_queue)}")
+            # self.get_logger().info(f"num of queue:{len(self.cloud_queue)}")
 
             if self.tf_buffer.can_transform(
                 'map',
@@ -343,8 +343,6 @@ class Detection(Node):
             #         earliest_sec = float(match.group(1))
             #         earliest_time = Time(seconds=int(earliest_sec), nanoseconds=int((earliest_sec % 1) * 1e9))
             #         self.get_logger().warn(f"the earliest time is {earliest_sec}.{earliest_time.nanoseconds}")
-            
-            
 
     def process_point_cloud(self, data):
 
@@ -360,9 +358,8 @@ class Detection(Node):
         
 
         # DBSCAN for clustering object candidate points, and then color-based classification and centroid calculation for each cluster
-        if len(candidates) >= 8:
-            cand_array = np.array(candidates)
-            pts_xyz = cand_array[:, :3]
+        if candidates.shape[0] >= 8:
+            pts_xyz = candidates[:, :3]
 
             # DBSCAN 
             eps = 0.025          # cluster radius, tuned based on the point cloud density and object size (0.025m = 2.5cm)
@@ -373,36 +370,31 @@ class Detection(Node):
             unique_labels = set(labels) - {-1}  # ignore noise points
             for label in unique_labels:
                 cluster_mask = (labels == label)
-                cluster_pts = cand_array[cluster_mask]   # (x,y,z,r,g,b)
-                if len(cluster_pts) < min_samples:
+                cluster_pts = candidates[cluster_mask]   # (x,y,z,r,g,b)
+
+                if cluster_pts.shape[0] < min_samples:
                     continue
 
-                # calculate the count of each color in the cluster
-                red_cnt = blue_cnt = green_cnt = wood_cnt = 0
-                for pt in cluster_pts:
-                    x, y, z, r, g, b = pt
-                    h, s, v = rgb_to_hsv(r, g, b)
-                    if is_red(h, s, v):
-                        red_cnt += 1
-                    elif is_blue(h, s, v):
-                        blue_cnt += 1
-                    elif is_green(h, s, v):
-                        green_cnt += 1
-                    elif is_wood(h, s, v):
-                        # wood_cnt += 1
-                        wood_cnt += 0
+                # Vectorized color counting
+                r = cluster_pts[:, 3]
+                g = cluster_pts[:, 4]
+                b = cluster_pts[:, 5]
+                h, s, v = self._rgb_to_hsv_vectorized(r, g, b)
 
-                total = len(cluster_pts)
-                # vote for color classification based on pixel-wise HSV values
+                red_cnt   = np.sum(self._is_red_vectorized(h, s, v))
+                blue_cnt  = np.sum(self._is_blue_vectorized(h, s, v))
+                green_cnt = np.sum(self._is_green_vectorized(h, s, v))
+                wood_cnt  = 0   # or use vectorized wood detection if needed
+
+                total = cluster_pts.shape[0]
                 color_counts = {'Red': red_cnt, 'Blue': blue_cnt, 'Green': green_cnt, 'Wood': wood_cnt}
                 max_color = max(color_counts, key=color_counts.get)
                 if color_counts[max_color] / total > 0.08:
-                    # centroid
+                    # centroid (vectorized)
                     sum_x = np.sum(cluster_pts[:, 0])
                     sum_y = np.sum(cluster_pts[:, 1])
                     sum_z = np.sum(cluster_pts[:, 2])
-                    counter = len(cluster_pts)
-                    # publish the detected object with its color and centroid position
+                    counter = total
                     self.object_publish(header, timestamp, sum_x, sum_y, sum_z, counter, max_color)
 
         # box detection
@@ -522,8 +514,7 @@ class Detection(Node):
                 break
         else:
             if not is_point_in_polygon(object_map.pose.position.x * 100, object_map.pose.position.y * 100, self.boundary, False):
-                 self.get_logger().info("object detected outside of workspace boundary, discarded")
-                 self.get_logger().warn(f"position: {object_map.pose.position.x}, {object_map.pose.position.y}")
+                 self.get_logger().warn(f"object detected outside of workspace boundary, discarded, position: {object_map.pose.position.x}, {object_map.pose.position.y}")
                  return
             
             self.object_lists.append([int(round(object_map.pose.position.x * 100)), int(round(object_map.pose.position.y * 100)), 0])
@@ -834,6 +825,38 @@ class Detection(Node):
         grey_cond = ((h > 80) | (h == 0)) & (s_hsl < 20.0/255.0) & (l < 25.0/255.0)
         return grey_cond
     
+    def _rgb_to_hsv_vectorized(self, r, g, b):
+        """Vectorized RGB to HSV conversion."""
+        c_max = np.maximum(np.maximum(r, g), b)
+        c_min = np.minimum(np.minimum(r, g), b)
+        delta = c_max - c_min
+
+        h = np.zeros_like(r)
+        # Red is max
+        mask_r = (delta != 0) & (c_max == r)
+        h[mask_r] = 60.0 * (((g[mask_r] - b[mask_r]) / delta[mask_r]) % 6)
+        # Green is max
+        mask_g = (delta != 0) & (c_max == g)
+        h[mask_g] = 60.0 * (((b[mask_g] - r[mask_g]) / delta[mask_g]) + 2)
+        # Blue is max
+        mask_b = (delta != 0) & (c_max == b)
+        h[mask_b] = 60.0 * (((r[mask_b] - g[mask_b]) / delta[mask_b]) + 4)
+
+        s = np.zeros_like(r)
+        mask_cmax = c_max != 0
+        s[mask_cmax] = delta[mask_cmax] / c_max[mask_cmax]
+        v = c_max
+        return h, s, v
+
+    def _is_red_vectorized(self, h, s, v):
+        return ((h <= 25) | (h >= 335)) & (s > 0.55) & (v > 0.45)
+
+    def _is_blue_vectorized(self, h, s, v):
+        return (h >= 185) & (h <= 200) & (s > 0.6) & (v > 0.4)
+
+    def _is_green_vectorized(self, h, s, v):
+        return (h >= 140) & (h <= 185) & (s > 0.6) & (v > 0.25)
+    
     def write_csv(self):
         try:
             with open(self.output_map_path, mode='w', encoding='utf-8', newline='') as file:
@@ -861,37 +884,6 @@ def main():
         node.write_csv()
         node.destroy_node()
         rclpy.shutdown()
-
-def is_red(h,s,v):
-    return True if (h <= 25 or h >= 335) and s > 0.55 and v > 0.45 else False
-
-def is_blue(h,s,v):
-    return True if (h >= 185 and h <= 200) and s > 0.6 and v > 0.4 else False
-
-def is_green(h,s,v):
-    return True if 140 <= h <= 185 and s > 0.6 and v > 0.25 else False
-
-def is_wood(h,s,v):
-    return True if 20 <= h <= 60 and 0.3 < s < 0.6 and 0.3 < v < 0.5 else False
-
-def is_grey_HSL(r,g,b):
-    c_max = max(r, g, b)
-    c_min = min(r, g, b)
-    delta = c_max - c_min
-
-    if delta == 0:
-        h = 0.0
-    elif c_max == r:
-        h = 60.0 * (((g - b) / delta) % 6)
-    elif c_max == g:
-        h = 60.0 * (((b - r) / delta) + 2)
-    elif c_max == b:
-        h = 60.0 * (((r - g) / delta) + 4)
-
-    l = (c_max + c_min) / 2
-    s = 0.0 if delta == 0 else delta / (1-abs(2*l-1))
-
-    return True if h > 80 or h == 0 and s < 20 / 255 and l < 25 / 255 else False
 
 #######################################################################
 # TODO: Should not be modified, Andrew referred this part.
