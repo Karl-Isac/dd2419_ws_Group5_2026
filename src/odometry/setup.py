@@ -26,6 +26,8 @@ setup(
         'console_scripts': [
             'odometry = odometry.odometry:main',
             'odometry_dev_mag_3 = odometry.odometry_dev_mag_3:main',
+            'odometry_only_encoders = odometry.odometry_only_encoders:main',
+            'odometry_fixed = odometry.odometry_fixed:main',
         ],
     },
 )
