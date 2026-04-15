@@ -745,6 +745,18 @@ class Detection(Node):
                 f'Corner: {corner}, Center: {center_shifted}, yaw: {yaw:.3f}'
             )
 
+            # ============================
+            # validation gate (NEW)
+            # ============================
+            if not self.validate_box_dist_score(
+                pts_np,
+                center_shifted,
+                yaw,
+                box_length,
+                box_width
+            ):
+                return None, None, None
+
             return center_shifted, yaw, used_axes
 
         else: 
@@ -785,7 +797,112 @@ class Detection(Node):
 
             center_shifted = center + shift_vec 
 
+            # ============================
+            # validation gate (NEW)
+            # ============================
+            if not self.validate_box_dist_score(
+                pts_np,
+                center_shifted,
+                yaw,
+                box_length,
+                box_width
+            ):
+                return None, None, None
+
             return center_shifted, yaw, used_axes
+        
+    def validate_box_dist_score(
+        pts,
+        center,
+        yaw,
+        L,
+        W,
+        dist_thresh=0.015,
+        inlier_ratio_thresh=0.6,
+        inside_ratio_max=0.35
+    ):
+        # =========================================================
+        # 几何一致性验证（Geometric Consistency Validation）
+        # =========================================================
+        # 本函数通过三个互补的判据，对估计得到的 box 位姿（中心 + 朝向）
+        # 与观测点云之间的一致性进行综合评估，用于判定当前检测结果是否可靠。
+        #
+        # 1. inlier_ratio（局部几何一致性）：
+        #    表示点云中有多少比例的点贴近 box 的边界。
+        #    该指标反映局部边缘结构的拟合程度——如果 box 估计正确，
+        #    则大部分点应分布在矩形边缘附近；若 box 偏移或方向错误，
+        #    该比例会明显下降。
+        #
+        # 2. inside_ratio（全局几何一致性）：
+        #    表示落在 box 内部区域的点比例。
+        #    在当前场景中（地面物体边缘观测），点云主要来源于物体轮廓，
+        #    因此内部点应较少。若 inside_ratio 过高，通常说明 box 位置或尺寸
+        #    估计错误，导致其覆盖了大量不应包含的点云区域。
+        #
+        # 3. dist_mean / dist_std（拟合误差与稳定性）：
+        #    dist_mean 衡量点到最近边界的平均距离，用于评估整体拟合精度；
+        #    dist_std 衡量这些距离的离散程度，用于反映拟合的稳定性。
+        #    若平均误差较大或方差较高，通常意味着边界未对齐、噪声较大，
+        #    或模型仅在局部区域匹配（存在错误解）。
+        #
+        # 综合上述三个指标，可以同时从“局部贴合程度”、“整体几何合理性”
+        # 以及“拟合稳定性”三个维度判断 box 估计结果，从而有效过滤错误帧，
+        # 提高检测的鲁棒性。
+        # =========================================================
+        if len(pts) < 50:
+            return False
+
+        pts = np.asarray(pts)
+
+        # transform to box frame
+        c = np.cos(yaw)
+        s = np.sin(yaw)
+
+        R = np.array([
+            [c, s],
+            [-s, c]
+        ])
+
+        pts_local = (pts - center) @ R.T
+
+        dx = np.abs(pts_local[:, 0]) - L / 2
+        dy = np.abs(pts_local[:, 1]) - W / 2
+
+        dist = np.minimum(np.abs(dx), np.abs(dy))
+
+        # inlier_ratio:
+        # Measures the proportion of points that are close to the box boundaries.
+        # It reflects how well the observed point cloud aligns with the geometric edges
+        # of the hypothesized box model (local boundary consistency).
+
+        inliers = dist < dist_thresh
+        inlier_ratio = np.mean(inliers)
+
+        # inside_ratio:
+        # Measures the proportion of points lying inside the estimated box region.
+        # A low value is expected because ground plane observations usually capture
+        # only object boundaries rather than interior points.
+        # High values often indicate incorrect box placement or wrong pose estimation.
+
+        inside = (np.abs(pts_local[:, 0]) < L / 2) & (np.abs(pts_local[:, 1]) < W / 2)
+        inside_ratio = np.mean(inside)
+
+        # dist_mean / dist_std:
+        # dist_mean measures the average distance from points to the nearest box edge,
+        # indicating the overall fitting accuracy of the box hypothesis.
+        #
+        # dist_std measures the dispersion of these distances,
+        # reflecting the geometric stability of the fit.
+        # High variance often indicates noisy edges, incorrect model alignment,
+        # or inconsistent RANSAC results.
+
+        dist_mean = np.mean(dist[inliers]) if np.any(inliers) else 1.0
+
+        # final decision
+        if inlier_ratio > inlier_ratio_thresh and inside_ratio < inside_ratio_max and dist_mean < dist_thresh * 1.5:
+            return True
+
+        return False
         
     def _is_grey_hsl_vectorized_from_rgb(self, r, g, b):
         """
