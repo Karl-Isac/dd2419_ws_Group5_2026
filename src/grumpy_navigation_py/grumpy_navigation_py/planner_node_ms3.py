@@ -136,15 +136,15 @@ class AStarPlannerNode(Node):
     def on_objects(self, msg):
         for p in msg.poses:
             # REMOVE LATER
-            if len(self.objects) >= 2:
-                break
+            # if len(self.objects) >= 2:
+            #     break
             self.objects.append((p.position.x, p.position.y))
         self.rebuild_grid()
 
     def on_boxes(self, msg):
         for p in msg.poses:
-            if len(self.boxes) >=1:
-                break
+            # if len(self.boxes) >=1:
+            #     break
             self.boxes.append((p.position.x, p.position.y))
         self.rebuild_grid()
 
