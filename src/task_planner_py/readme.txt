@@ -20,7 +20,7 @@ ros2 run rviz2 rviz2 -d ~/dd2419_ws_Group5_2026/my_conf_2.rviz
 (You can also create your own rviz config if you want, or just add all the relevant topics in rviz)
 
 
-Then run commands in this order order is important:
+Then run commands in this order, order is important:
 
 ros2 launch task_planner_py background.launch.py
 ros2 launch task_planner_py nodes.launch.py
