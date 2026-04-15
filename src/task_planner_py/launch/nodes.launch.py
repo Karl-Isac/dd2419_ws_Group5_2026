@@ -24,26 +24,13 @@ def generate_launch_description():
         output='screen'
     )
 
-#     odometry = Node(
-#         package='odometry',
-#         executable='odometry',
-#         name='odometry',
-#         output='screen'
-#     )
+    odometry = Node(
+        package='odometry',
+        executable='odometry',
+        name='odometry',
+        output='screen'
+    )
 
-#     fix_pose = Node(
-#         package='mapping',
-#         executable='fix_pose',
-#         name='fix_pose',
-#         output='screen'
-#     )
-
-#     fake_obstacles = Node(
-#         package='grumpy_navigation_py',
-#         executable='fake_obstacles',
-#         name='fake_obstacles',
-#         output='screen'
-#     )
 
     planner = Node(
         package='grumpy_navigation_py',
@@ -70,9 +57,7 @@ def generate_launch_description():
         arm_safe_republisher,
         arm_control,
         task_planner,
-        #  odometry,
-#         fix_pose,
-        # fake_obstacles,
+        odometry,
         planner,
         controller,
         map_to_odom,
