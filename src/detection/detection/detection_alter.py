@@ -31,12 +31,9 @@ import struct
 
 np.random.seed(42)  # for reproducibility
 
-# Criteria of colors are at Line 677-690
-
 ######################################################################################################
 # TODO: discuss the unit of the communication (PoseArray): m
-# TODO: (Private Test) deal with timestamp of messages and TF transforms, make sure to use the correct timestamp for each detection and transformation
-# TODO: keep 1 of 3 pointcloud frames as a robust plan, can be reduced to 2 if efficiency is higher
+# TODO: One edge situation for box detection is neglected for now
 ######################################################################################################
 
 class Detection(Node):
@@ -262,8 +259,7 @@ class Detection(Node):
         # box detection candidate points
         box_mask_spatial = spatial_mask & (y < 0.055)
         
-        # Vectorized is_grey_HSL check (based on        # if self.counter % num != 0:
-        #     return RGB as in original code)
+        # Vectorized is_grey_HSL check 
         grey_mask = self._is_grey_hsl_vectorized_from_rgb(r, g, b)
         box_mask = box_mask_spatial & grey_mask
         
@@ -287,9 +283,13 @@ class Detection(Node):
             test_points_cube = []
 
         # Build grey_points list: (z, -x) format for box detection
+        # Build grey_points list: (z, -x) format for box detection
         if len(box_indices) > 0:
-            grey_points = np.column_stack([z[box_indices], -x[box_indices]]).tolist()
-            test_points_box = gen[box_indices].tolist()  # for testing the point cloud range for box detection, can be removed later
+            grey_points = np.column_stack([z[box_indices], -x[box_indices]]).astype(np.float32)
+            test_points_box = gen[box_indices].tolist()
+        else:
+            grey_points = np.empty((0, 2), dtype=np.float32)  
+            test_points_box = []
         
         # Queue the processed data
         self.cloud_queue.append([Timestamp, header, fields, candidates, grey_points, test_points_box, test_points_cube])
@@ -400,7 +400,7 @@ class Detection(Node):
                     self.object_publish(header, timestamp, sum_x, sum_y, sum_z, counter, max_color)
 
         # box detection
-        if grey_points:
+        if isinstance(grey_points, np.ndarray) and grey_points.shape[0] > 0:
             box_size = (0.24, 0.16)  # L, W
             center, yaw, axes = self.estimate_box_from_points(grey_points, box_size)
             if center is not None:
@@ -422,12 +422,6 @@ class Detection(Node):
                     dir_camera.vector.z = 0.0
                     dir_map = self.tf_buffer.transform(dir_camera, 'map')
                     map_yaw = np.arctan2(dir_map.vector.y, dir_map.vector.x)
-
-                    # whether box is within the workspace boundary
-                    if not is_point_in_polygon(point_map.point.x * 100, point_map.point.y * 100, self.boundary, True):
-                        self.get_logger().debug("box detected outside of workspace boundary, discarded")
-                        return
-
                     map_yaw_deg = np.degrees(map_yaw)
                     map_yaw_deg = map_yaw_deg % 180
                     angle_int = int(round(map_yaw_deg)) % 180
@@ -435,6 +429,11 @@ class Detection(Node):
                     x_str = int(round(point_map.point.x * 100))
                     y_str = int(round(point_map.point.y * 100))
 
+                    # whether box is within the workspace boundary
+                    if not is_point_in_polygon(point_map.point.x * 100, point_map.point.y * 100, self.boundary, True):
+                        self.get_logger().warn(f"box detected outside of workspace boundary, discarded, position: {point_map.point.x}, {point_map.point.y}, {angle_int}")
+                        return
+                    
                     # repetition check
                     for item in self.box_lists:
                         if np.abs(item[0] - x_str) < 20 and np.abs(item[1] - y_str) < 20:
@@ -573,336 +572,178 @@ class Detection(Node):
             return None, None, None 
         
         # self.get_logger().info(f"the length of points: {len(points)}")
-        pts = np.array(points) 
-        
-        # --- Step 0: reduce outliers（IQR method） --- 
-        
-        # Q1 = np.percentile(pts, 25, axis=0) 
-        # Q3 = np.percentile(pts, 75, axis=0) 
-        # IQR = Q3 - Q1 
-        # mask = np.all((pts >= Q1 - 2 * IQR) & (pts <= Q3 + 2 * IQR), axis=1) 
-        # pts = pts[mask] 
-        
-        # if len(pts) < 80: 
-        #     return None, None, None 
-        
+        pts = np.asarray(points, dtype=np.float32)
+
         # --- Step 1: PCA --- 
         mean = np.mean(pts, axis=0) 
         pts_centered = pts - mean 
-        U, S, Vt = np.linalg.svd(pts_centered, full_matrices=False) 
+        _, S, Vt = np.linalg.svd(pts_centered, full_matrices=False) 
         axes = Vt[:2] 
         
-        # --- Step 2: angle calculation --- 
-        dir1 = axes[0] 
-        dir2 = axes[1] 
-        dir1 /= np.linalg.norm(dir1) 
-        dir2 /= np.linalg.norm(dir2) 
-        dir1 = dir1 if dir1[1] >= 0 else -dir1 # y > 0
-        dir2 = dir2 if dir2[1] >= 0 else -dir2 # y > 0
-        
-        # angle with respect to x-axis
-        x_axis = np.array([1.0, 0.0]) 
-        angle_dir1_x = np.arccos(np.clip(np.dot(dir1, x_axis), -1.0, 1.0)) 
-        angle_dir2_x = np.arccos(np.clip(np.dot(dir2, x_axis), -1.0, 1.0)) 
-        
         # Step 3: two edge vs single edge decision based on variance ratio
-        
         ratio = S[1] / S[0] 
-        self.get_logger().info(f'variance ratio: {ratio:.3f}') 
+        self.get_logger().debug(f'variance ratio: {ratio:.3f}') 
 
         if ratio > 0.1:
             # =========================================================
-            # RANSAC - two edges
+            # RANSAC - two edges (Vectorized version)
             # =========================================================
 
             pts_np = pts.copy()
 
-            def fit_line_ransac(points, threshold=0.005, max_iter=400):
-                best_inliers = []
-                best_model = None
-
-                if len(points) < 2:
-                    return None, []
-
-                for _ in range(max_iter):
-                    i1, i2 = np.random.choice(len(points), 2, replace=False)
-                    p1, p2 = points[i1], points[i2]
-
-                    dir_vec = p2 - p1
-                    norm = np.linalg.norm(dir_vec)
-                    if norm < 1e-6:
-                        continue
-                    dir_vec /= norm
-
-                    normal = np.array([-dir_vec[1], dir_vec[0]])
-                    d = -np.dot(normal, p1)
-
-                    dist = np.abs(points @ normal + d)
-                    inliers = points[dist < threshold]
-
-                    if len(inliers) > len(best_inliers):
-                        best_inliers = inliers
-                        best_model = (normal, d)
-
-                return best_model, best_inliers
-
-            def intersect_lines(model1, model2):
-                n1, d1 = model1
-                n2, d2 = model2
-                A = np.vstack([n1, n2])
-                b = -np.array([d1, d2])
-
-                try:
-                    x = np.linalg.solve(A, b)
-                except np.linalg.LinAlgError as e:
-                    if 'Singular' in str(e):
-                        # pseudo-inverse
-                        x = np.linalg.pinv(A) @ b
-                return x
-
+            # -------------------------
             # first edge
-            model1, inliers1 = fit_line_ransac(pts_np)
+            # -------------------------
+            model1, mask1 = self._ransac_lines_vectorized(pts_np)
 
-            if model1 is None or len(inliers1) < 5:
+            if model1 is None or mask1.sum() < 10:
                 return None, None, None
 
-            mask = np.ones(len(pts_np), dtype=bool)
-            for p in inliers1:
-                idx = np.where((pts_np == p).all(axis=1))[0]
-                mask[idx] = False
+            remaining = pts_np[~mask1]
 
-            remaining = pts_np[mask]
-
+            # -------------------------
             # second edge
-            model2, inliers2 = fit_line_ransac(remaining)
+            # -------------------------
+            model2, mask2 = self._ransac_lines_vectorized(remaining)
 
-            if model2 is None or len(inliers2) < 5:
+            if model2 is None or mask2.sum() < 10:
                 return None, None, None
 
             # corner point
-            corner = intersect_lines(model1, model2)
+            n1, d1 = model1
+            n2, d2 = model2
+
+            A = np.vstack([n1, n2])
+            b = -np.array([d1, d2])
+            corner = np.linalg.pinv(A) @ b
 
             # =========================================================
-            # direction vectors and used axes
+            # direction vectors and used axes 
             # =========================================================
-            n1, _ = model1
-            n2, _ = model2
-
             dir1 = np.array([n1[1], -n1[0]])
             dir2 = np.array([n2[1], -n2[0]])
 
-            dir1 /= np.linalg.norm(dir1)
-            dir2 /= np.linalg.norm(dir2)
+            norm1 = np.linalg.norm(dir1)
+            norm2 = np.linalg.norm(dir2)
 
-            # keeps x > 0 in camera frame
-            if dir1[1] < 0:
+            if norm1 < 1e-6 or norm2 < 1e-6:
+                return None, None, None
+
+            dir1 /= norm1
+            dir2 /= norm2
+
+            pts_corner = pts_np - corner
+            proj1 = pts_corner @ dir1
+            proj2 = pts_corner @ dir2
+            if np.median(proj1) < 0:
                 dir1 = -dir1
-            if dir2[1] < 0:
+            if np.median(proj2) < 0:
                 dir2 = -dir2
 
             used_axes = np.vstack([dir1, dir2])
 
             # =========================================================
-            # length estimation along each direction
+            # Emunerate all possible center points and validates (vectorized)
             # =========================================================
-            proj1 = pts_np @ dir1
-            proj2 = pts_np @ dir2
+            L, W = box_size
 
-            length1 = proj1.max() - proj1.min()
-            length2 = proj2.max() - proj2.min()
+            dirs = np.stack([[dir1, dir2], [dir2, dir1]])  # (2,2,2)
+            signs = np.array([[1,1],[1,-1],[-1,1],[-1,-1]])
 
-            self.get_logger().debug(
-                f'RANSAC length1: {length1:.3f}, length2: {length2:.3f}'
-            )
+            centers = (
+                corner
+                + dirs[:,0][:,None,:] * signs[None,:,0:1] * (L/2)
+                + dirs[:,1][:,None,:] * signs[None,:,1:2] * (W/2)
+            ).reshape(-1,2)
 
-            # judge which direction corresponds to length vs width based on variance and box size ratio
-            if length1 > length2:
-                main_dir = dir1
-                side_dir = dir2
-                box_length = box_size[0]
-                box_width = box_size[1]
-            else:
-                main_dir = dir2
-                side_dir = dir1
-                box_length = box_size[0]
-                box_width = box_size[1]
+            yaws = np.arctan2(dirs[:,0][:,None,1], dirs[:,0][:,None,0]).repeat(4, axis=1).reshape(-1)
 
-            # =========================================================
-            # calculate center by shifting from corner along main_dir and side_dir
-            # =========================================================
-            # center_shifted = corner + main_dir * (box_length / 2)
-            # center_shifted = corner - main_dir * (box_length / 2) + side_dir * (box_width / 2) # shift from corner along both directions to get to the center, more robust for partial views
-    
-            center_shifted = corner
-            center_shifted = center_shifted + main_dir * (box_length / 2) if main_dir[0] > 0 else center_shifted - main_dir * (box_length / 2)
-            center_shifted = center_shifted + side_dir * (box_width / 2) if side_dir[0] > 0 else center_shifted - side_dir * (box_width / 2)
-            # print(f"main_dir is {main_dir}, side_dir is {side_dir}")
+            scores = self.compute_band_score_batch(pts_np, centers, yaws, L, W)
 
-            # yaw
-            yaw = np.arctan2(main_dir[1], main_dir[0])
+            best_idx = np.argmax(scores)
 
-            self.get_logger().debug(
-                f'Corner: {corner}, Center: {center_shifted}, yaw: {yaw:.3f}'
-            )
-
-            # ============================
-            # validation gate (NEW)
-            # ============================
-            if not self.validate_box_dist_score(
-                pts_np,
-                center_shifted,
-                yaw,
-                box_length,
-                box_width
-            ):
+            if scores[best_idx] < 0.8:
                 return None, None, None
+
+            center_shifted = centers[best_idx]
+            yaw = yaws[best_idx]
+
+            self.get_logger().debug(
+                f'Corner: {corner}, Center: {center_shifted}, yaw: {yaw:.3f}, score: {scores[best_idx]:.3f}'
+            )
 
             return center_shifted, yaw, used_axes
 
-        else: 
-            # =========================================================
-            # single edge case - use PCA axes, shift center along normal direction to get to box
-            # =========================================================
-            
-            used_axes = axes[:1] # only use the first principal axis if it's not a corner 
-            normal = axes[1] if np.dot(axes[1], x_axis) > 0 else -axes[1] 
-            projected = pts_centered @ used_axes.T 
-
-            self.get_logger().debug(f'dir1 与 x 轴夹角: {angle_dir1_x:.2f}rad, dir2 与 x 轴夹角: {angle_dir2_x:.2f}rad') 
-            min_proj = projected.min(axis=0) 
-            max_proj = projected.max(axis=0) 
-            center_proj = (min_proj + max_proj) / 2 
-            center = mean + center_proj @ used_axes # 
-            length_proj = projected[:,0].max() - projected[:,0].min()
-            width_proj = length_proj # set width same as length for single edge case, will be corrected by shifting and box size later
-
-            self.get_logger().debug(f'length_proj: {length_proj:.3f}, width_proj: {width_proj:.3f}') 
-
-            if length_proj >= width_proj: 
-                # length corresponds to first principal axis → keep order
-                box_length = box_size[0] 
-                box_width = box_size[1] 
-            else: 
-                # length corresponds to second principal axis → swap order
-                used_axes = used_axes[::-1] 
-                box_length = box_size[1] 
-                box_width = box_size[0] 
-            
-            if length_proj >= box_width: 
-                shift_vec = normal * (box_width / 2) # shift along normal direction to get to center
-                yaw = angle_dir1_x 
-            else: 
-                shift_vec = normal * (box_length / 2) # shift along normal direction to get to center
-                yaw = angle_dir1_x - np.pi/2 if angle_dir1_x < np.pi/2 - 0.01 else angle_dir1_x - np.pi/2 
-
-            center_shifted = center + shift_vec 
-
-            # ============================
-            # validation gate (NEW)
-            # ============================
-            if not self.validate_box_dist_score(
-                pts_np,
-                center_shifted,
-                yaw,
-                box_length,
-                box_width
-            ):
-                return None, None, None
-
-            return center_shifted, yaw, used_axes
+        else:
+            # One edge situation is neglected for now
+            return None, None, None
         
-    def validate_box_dist_score(
-        pts,
-        center,
-        yaw,
-        L,
-        W,
-        dist_thresh=0.015,
-        inlier_ratio_thresh=0.6,
-        inside_ratio_max=0.35
-    ):
-        # =========================================================
-        # 几何一致性验证（Geometric Consistency Validation）
-        # =========================================================
-        # 本函数通过三个互补的判据，对估计得到的 box 位姿（中心 + 朝向）
-        # 与观测点云之间的一致性进行综合评估，用于判定当前检测结果是否可靠。
-        #
-        # 1. inlier_ratio（局部几何一致性）：
-        #    表示点云中有多少比例的点贴近 box 的边界。
-        #    该指标反映局部边缘结构的拟合程度——如果 box 估计正确，
-        #    则大部分点应分布在矩形边缘附近；若 box 偏移或方向错误，
-        #    该比例会明显下降。
-        #
-        # 2. inside_ratio（全局几何一致性）：
-        #    表示落在 box 内部区域的点比例。
-        #    在当前场景中（地面物体边缘观测），点云主要来源于物体轮廓，
-        #    因此内部点应较少。若 inside_ratio 过高，通常说明 box 位置或尺寸
-        #    估计错误，导致其覆盖了大量不应包含的点云区域。
-        #
-        # 3. dist_mean / dist_std（拟合误差与稳定性）：
-        #    dist_mean 衡量点到最近边界的平均距离，用于评估整体拟合精度；
-        #    dist_std 衡量这些距离的离散程度，用于反映拟合的稳定性。
-        #    若平均误差较大或方差较高，通常意味着边界未对齐、噪声较大，
-        #    或模型仅在局部区域匹配（存在错误解）。
-        #
-        # 综合上述三个指标，可以同时从“局部贴合程度”、“整体几何合理性”
-        # 以及“拟合稳定性”三个维度判断 box 估计结果，从而有效过滤错误帧，
-        # 提高检测的鲁棒性。
-        # =========================================================
-        if len(pts) < 50:
-            return False
+    def _ransac_lines_vectorized(self, points, n_samples=256, threshold=0.005):
 
-        pts = np.asarray(pts)
+        if len(points) < 2:
+            return None, None
 
-        # transform to box frame
-        c = np.cos(yaw)
-        s = np.sin(yaw)
+        N = points.shape[0]
 
-        R = np.array([
-            [c, s],
-            [-s, c]
-        ])
+        idx = np.random.randint(0, N, (n_samples, 2))
+        p1 = points[idx[:, 0]]
+        p2 = points[idx[:, 1]]
 
-        pts_local = (pts - center) @ R.T
+        dirs = p2 - p1
+        norms = np.linalg.norm(dirs, axis=1, keepdims=True)
+        valid = norms[:, 0] > 1e-6
 
-        dx = np.abs(pts_local[:, 0]) - L / 2
-        dy = np.abs(pts_local[:, 1]) - W / 2
+        if np.sum(valid) < 5:
+            return None, None 
 
-        dist = np.minimum(np.abs(dx), np.abs(dy))
+        dirs[valid] /= norms[valid]
 
-        # inlier_ratio:
-        # Measures the proportion of points that are close to the box boundaries.
-        # It reflects how well the observed point cloud aligns with the geometric edges
-        # of the hypothesized box model (local boundary consistency).
+        normals = np.stack([-dirs[:, 1], dirs[:, 0]], axis=1)
+        d = -np.sum(normals * p1, axis=1)
 
-        inliers = dist < dist_thresh
-        inlier_ratio = np.mean(inliers)
+        dist = np.abs(points @ normals.T + d)
 
-        # inside_ratio:
-        # Measures the proportion of points lying inside the estimated box region.
-        # A low value is expected because ground plane observations usually capture
-        # only object boundaries rather than interior points.
-        # High values often indicate incorrect box placement or wrong pose estimation.
+        inliers = dist < threshold
+        scores = inliers.sum(axis=0)
 
-        inside = (np.abs(pts_local[:, 0]) < L / 2) & (np.abs(pts_local[:, 1]) < W / 2)
-        inside_ratio = np.mean(inside)
+        best = np.argmax(scores)
 
-        # dist_mean / dist_std:
-        # dist_mean measures the average distance from points to the nearest box edge,
-        # indicating the overall fitting accuracy of the box hypothesis.
-        #
-        # dist_std measures the dispersion of these distances,
-        # reflecting the geometric stability of the fit.
-        # High variance often indicates noisy edges, incorrect model alignment,
-        # or inconsistent RANSAC results.
+        return (normals[best], d[best]), inliers[:, best]
+        
+    def compute_band_score_batch(self, pts, centers, yaws, L, W, band_width=0.015):
 
-        dist_mean = np.mean(dist[inliers]) if np.any(inliers) else 1.0
+        if pts.shape[0] < 50:
+            return np.zeros(len(centers))
 
-        # final decision
-        if inlier_ratio > inlier_ratio_thresh and inside_ratio < inside_ratio_max and dist_mean < dist_thresh * 1.5:
-            return True
+        c = np.cos(yaws)
+        s = np.sin(yaws)
 
-        return False
+        # rotation matrices (K,2,2)
+        R = np.stack([
+            np.stack([c, s], axis=1),
+            np.stack([-s, c], axis=1)
+        ], axis=1)
+
+        # transform to local frame
+        pts_shifted = pts[None, :, :] - centers[:, None, :]
+        pts_local = np.einsum('kij,knj->kni', R, pts_shifted)
+
+        x = pts_local[:, :, 0]
+        y = pts_local[:, :, 1]
+
+        half_L = L / 2.0
+        half_W = W / 2.0
+        d = band_width
+
+        # four edge bands
+        right  = (x >= half_L - d) & (x <= half_L + d) & (y >= -half_W - d) & (y <= half_W + d)
+        left   = (x >= -half_L - d) & (x <= -half_L + d) & (y >= -half_W - d) & (y <= half_W + d)
+        top    = (y >= half_W - d) & (y <= half_W + d) & (x >= -half_L - d) & (x <= half_L + d)
+        bottom = (y >= -half_W - d) & (y <= -half_W + d) & (x >= -half_L - d) & (x <= half_L + d)
+
+        in_band = right | left | top | bottom
+
+        return np.nan_to_num(np.mean(in_band, axis=1))
         
     def _is_grey_hsl_vectorized_from_rgb(self, r, g, b):
         """
