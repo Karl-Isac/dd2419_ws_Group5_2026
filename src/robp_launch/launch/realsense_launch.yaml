@@ -90,7 +90,7 @@ launch:
         - name: "unite_imu_method"
           value: 0
         - name: "clip_distance"
-          value: -2
+          value: 1.0
         - name: "angular_velocity_cov"
           value: 0.01
         - name: "linear_accel_cov"
