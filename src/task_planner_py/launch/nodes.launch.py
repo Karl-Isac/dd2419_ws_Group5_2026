@@ -26,8 +26,8 @@ def generate_launch_description():
 
     odometry = Node(
         package='odometry',
-        executable='odometry',
-        name='odometry',
+        executable='odometry_fixed',
+        name='odometry_fixed',
         output='screen'
     )
 

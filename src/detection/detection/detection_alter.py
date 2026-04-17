@@ -31,12 +31,9 @@ import struct
 
 np.random.seed(42)  # for reproducibility
 
-# Criteria of colors are at Line 677-690
-
 ######################################################################################################
 # TODO: discuss the unit of the communication (PoseArray): m
-# TODO: (Private Test) deal with timestamp of messages and TF transforms, make sure to use the correct timestamp for each detection and transformation
-# TODO: keep 1 of 3 pointcloud frames as a robust plan, can be reduced to 2 if efficiency is higher
+# TODO: One edge situation for box detection is neglected for now
 ######################################################################################################
 
 class Detection(Node):
@@ -59,7 +56,7 @@ class Detection(Node):
         self.create_subscription(
             PointCloud2, '/realsense/depth/color/points', self.cloud_callback, 10)
         
-        self.tf_buffer = Buffer()
+        self.tf_buffer = Buffer(cache_time=rclpy.duration.Duration(seconds=10))
         self.tf_listener = TransformListener(self.tf_buffer, self)
 
         # TF broadcasters
@@ -72,7 +69,6 @@ class Detection(Node):
 
         # open and load map file and workspace (csv)
         package_path = get_package_share_directory('detection')
-        # map_path = os.path.join(package_path, 'config', 'blank.csv')
         map_path = os.path.join(package_path, 'config', 'map_1_1.csv')
         workspace_path = os.path.join(package_path, 'config', 'workspace_1.csv')
         self.metadata_rows = []
@@ -180,9 +176,9 @@ class Detection(Node):
 
         self.static_broadcaster.sendTransform(static_tf)
 
-        self.counter = 0 # keep frames of every x frames
+        self.counter = -2 # keep frames of every x frames, AND, discard first two frames
 
-        print(42)
+        print(2)
 
     def publish_arrays(self, object_poses, object_timestamp, box_poses, box_timestamp):
         """publish object and box poses from map file to ROS topics."""
@@ -205,15 +201,21 @@ class Detection(Node):
         # self.get_logger().info(f'Published {len(object_poses)} objects and {len(box_poses)} boxes')
 
     def cloud_callback(self, msg: PointCloud2):
-        # Spacial and color filtering, reconstructing cloud as [Timestamp, header, fields, candidates, grey_points],
+        # Spatial and color filtering, reconstructing cloud as [Timestamp, header, fields, candidates, grey_points],
         # where candidates are points (x,y,z,r,g,b) for object detection and grey_points are points (z, -x) for box detection
         
         # Publish frequency of PointCloud: 6 FPS
-        num = 3 # keep one frame every 3 frames
+        num = 2  # keep one frame every 3 frames
         self.counter += 1
-        self.get_logger().info(f"self.counter: {self.counter}")
-        if self.counter % num != 0:
+
+        # For testing the freq of cloud_callback
+        # For now, it's almost 6Hz when no detection results
+        # self.get_logger().info(f"self.counter: {self.counter}")
+
+        if self.counter <= 0: # Discard first several frames, since timestamp is earlier than TF
             return
+        # if self.counter % num != 0:
+        #     return
         
         # Initialization
         candidates = []
@@ -223,49 +225,76 @@ class Detection(Node):
         fields = msg.fields
 
         test_points_box = []
-        test_points_cube = [] # for testing the point cloud range for cube detection, can be removed later
-
+        test_points_cube = []  # for testing the point cloud range for cube detection, can be removed later
 
         # read original pointcloud
         gen = pc2.read_points_numpy(msg, skip_nans=True)
         points = gen[:, :3]
-        colors = np.empty(points.shape, dtype=np.uint32)
-
-        # color conversion into RGB
+        
+        # color conversion into RGB (vectorized while preserving original logic)
+        colors_uint32 = np.empty(points.shape[0], dtype=np.uint32)
         for idx, x in enumerate(gen):
             c = x[3]
             s = struct.pack('>f', c)
             i = struct.unpack('>l', s)[0]
-            pack = ctypes.c_uint32(i).value
-            colors[idx, 0] = np.asarray((pack >> 16) & 255, dtype=np.uint8)
-            colors[idx, 1] = np.asarray((pack >> 8) & 255, dtype=np.uint8)
-            colors[idx, 2] = np.asarray(pack & 255, dtype=np.uint8)
+            colors_uint32[idx] = ctypes.c_uint32(i).value
+        
+        # Extract and normalize RGB components vectorized
+        r = np.asarray((colors_uint32 >> 16) & 255, dtype=np.uint8).astype(np.float32) / 255.0
+        g = np.asarray((colors_uint32 >> 8) & 255, dtype=np.uint8).astype(np.float32) / 255.0
+        b = np.asarray(colors_uint32 & 255, dtype=np.uint8).astype(np.float32) / 255.0
+        
+        # Extract coordinates
+        x = points[:, 0]
+        y = points[:, 1]
+        z = points[:, 2]
 
-        colors = colors.astype(np.float32) / 255
+        # iterate through points and apply spatial and color filtering (vectorized implementation below)
+        
+        # spatial filtering for candidate points (keep points in front of camera and within 0.8m, and at the ground)
+        spatial_mask = (y > 0.045) & (y < 0.0865) & (z > 0.05) & (z < 0.9)
+        
+        # object detection candidate points 
+        object_mask = spatial_mask & (y > 0.05)
+        # box detection candidate points
+        box_mask_spatial = spatial_mask & (y < 0.055)
+        
+        # Vectorized is_grey_HSL check 
+        grey_mask = self._is_grey_hsl_vectorized_from_rgb(r, g, b)
+        box_mask = box_mask_spatial & grey_mask
+        
+        # Get indices of points that satisfy the masks
+        obj_indices = np.where(object_mask)[0]
+        box_indices = np.where(box_mask)[0]
 
-        # iterate through points and apply spatial and color filtering§
-        for idx in range(points.shape[0]):
-            x, y, z = points[idx]
-            r = colors[idx, 0]
-            g = colors[idx, 1]
-            b = colors[idx, 2]
-            h, s, v = rgb_to_hsv(r, g, b)
+        # if len(np.where(box_mask_spatial)[0]) > 0:
+            # test_points_box = gen[box_mask_spatial].tolist()  # for testing the point cloud range for box detection, can be removed later
 
-            # spatial filtering for candidate points (keep points in front of camera and within 0.8m, and at the ground)
-            if y > 0.045 and y < 0.0865 and z > 0.05 and z < 0.9:
-            # if y > 0.03 and y < 0.0865:
-                # object detection candidate points 
-                if y > 0.05:
-                    test_points_cube.append(gen[idx]) # for testing the point cloud range for box detection, can be removed later
-                    candidates.append([x, y, z, r, g, b])
-                # box detection candidate points
-                if y < 0.055:
-                    
-                    if is_grey_HSL(r, g, b):
-                        test_points_box.append(gen[idx]) # for testing the point cloud range for box detection, can be removed later
-                        grey_points.append([z, -x])
+        
+        # Build candidates list: (x, y, z, r, g, b) format
+        if len(obj_indices) > 0:
+            candidates = np.column_stack([
+                x[obj_indices], y[obj_indices], z[obj_indices],
+                r[obj_indices], g[obj_indices], b[obj_indices]
+            ]).astype(np.float32)
+            test_points_cube = gen[obj_indices].tolist()  # for testing the point cloud range for box detection, can be removed later
+        else:
+            candidates = np.empty((0, 6), dtype=np.float32)
+            test_points_cube = []
+
+        # Build grey_points list: (z, -x) format for box detection
+        # Build grey_points list: (z, -x) format for box detection
+        if len(box_indices) > 0:
+            grey_points = np.column_stack([z[box_indices], -x[box_indices]]).astype(np.float32)
+            test_points_box = gen[box_indices].tolist()
+        else:
+            grey_points = np.empty((0, 2), dtype=np.float32)  
+            test_points_box = []
+        
+        # Queue the processed data
         self.cloud_queue.append([Timestamp, header, fields, candidates, grey_points, test_points_box, test_points_cube])
 
+        # Publish test point cloud (keep original behavior)
         if test_points_box:
             box_cloud = pc2.create_cloud(header, fields, test_points_box)
             self.test_pub_box.publish(box_cloud)
@@ -276,7 +305,6 @@ class Detection(Node):
 
         if self.cloud_queue:
             [t_cloud, header, fields, candidates, grey_points, test_points_box, test_points_cube] = self.cloud_queue[0]
-            # t_cloud, header, fields, candidates, grey_points, test_points_box, test_points_cube] = self.cloud_queue.popleft()
             
             frame = header.frame_id
 
@@ -293,7 +321,7 @@ class Detection(Node):
             # self.get_logger().info(f"Time difference: {t_cloud.sec - latest_tf_time.sec}.{t_cloud.nanosec - latest_tf_time.nanosec}")
             # self.get_logger().info(f"Pointcloud Timestamp: {t_cloud.sec}.{t_cloud.nanosec}")
             # self.get_logger().info(f"Latest TF Timestamp: {latest_tf_time.sec}.{latest_tf_time.nanosec}")
-            self.get_logger().info(f"num of queue:{len(self.cloud_queue)}")
+            # self.get_logger().info(f"num of queue:{len(self.cloud_queue)}")
 
             if self.tf_buffer.can_transform(
                 'map',
@@ -303,7 +331,20 @@ class Detection(Node):
             ):
                 self.process_point_cloud(self.cloud_queue.popleft())
             
-            
+            # Test code, finding the earliest available timestamp of TF
+
+            # try:
+            #     self.tf_buffer.lookup_transform('map', 'base_link', Time(seconds=1000, nanoseconds=1000))
+            # except TransformException as e:
+            #     # 错误消息格式类似：
+            #     # "Lookup would require extrapolation into the past.  
+            #     #  Requested time 100.000000 but the earliest data is at time 105.000000"
+            #     import re
+            #     match = re.search(r"earliest data is at time (\d+\.\d+)", str(e))
+            #     if match:
+            #         earliest_sec = float(match.group(1))
+            #         earliest_time = Time(seconds=int(earliest_sec), nanoseconds=int((earliest_sec % 1) * 1e9))
+            #         self.get_logger().warn(f"the earliest time is {earliest_sec}.{earliest_time.nanoseconds}")
 
     def process_point_cloud(self, data):
 
@@ -319,53 +360,47 @@ class Detection(Node):
         
 
         # DBSCAN for clustering object candidate points, and then color-based classification and centroid calculation for each cluster
-        if len(candidates) >= 8:
-            cand_array = np.array(candidates)
-            pts_xyz = cand_array[:, :3]
+        if candidates.shape[0] >= 8:
+            pts_xyz = candidates[:, :3]
 
             # DBSCAN 
             eps = 0.025          # cluster radius, tuned based on the point cloud density and object size (0.025m = 2.5cm)
-            min_samples = 3     # minimum number of points, ensuring each cluster contains an object
+            min_samples = 10     # minimum number of points, ensuring each cluster contains an object
             clustering = DBSCAN(eps=eps, min_samples=min_samples).fit(pts_xyz)
             labels = clustering.labels_
 
             unique_labels = set(labels) - {-1}  # ignore noise points
             for label in unique_labels:
                 cluster_mask = (labels == label)
-                cluster_pts = cand_array[cluster_mask]   # (x,y,z,r,g,b)
-                if len(cluster_pts) < min_samples:
+                cluster_pts = candidates[cluster_mask]   # (x,y,z,r,g,b)
+
+                if cluster_pts.shape[0] < min_samples:
                     continue
 
-                # calculate the count of each color in the cluster
-                red_cnt = blue_cnt = green_cnt = wood_cnt = 0
-                for pt in cluster_pts:
-                    x, y, z, r, g, b = pt
-                    h, s, v = rgb_to_hsv(r, g, b)
-                    if is_red(h, s, v):
-                        red_cnt += 1
-                    elif is_blue(h, s, v):
-                        blue_cnt += 1
-                    elif is_green(h, s, v):
-                        green_cnt += 1
-                    elif is_wood(h, s, v):
-                        # wood_cnt += 1
-                        wood_cnt += 0
+                # Vectorized color counting
+                r = cluster_pts[:, 3]
+                g = cluster_pts[:, 4]
+                b = cluster_pts[:, 5]
+                h, s, v = self._rgb_to_hsv_vectorized(r, g, b)
 
-                total = len(cluster_pts)
-                # vote for color classification based on pixel-wise HSV values
+                red_cnt   = np.sum(self._is_red_vectorized(h, s, v))
+                blue_cnt  = np.sum(self._is_blue_vectorized(h, s, v))
+                green_cnt = np.sum(self._is_green_vectorized(h, s, v))
+                wood_cnt  = 0   # or use vectorized wood detection if needed
+
+                total = cluster_pts.shape[0]
                 color_counts = {'Red': red_cnt, 'Blue': blue_cnt, 'Green': green_cnt, 'Wood': wood_cnt}
                 max_color = max(color_counts, key=color_counts.get)
                 if color_counts[max_color] / total > 0.08:
-                    # centroid
+                    # centroid (vectorized)
                     sum_x = np.sum(cluster_pts[:, 0])
                     sum_y = np.sum(cluster_pts[:, 1])
                     sum_z = np.sum(cluster_pts[:, 2])
-                    counter = len(cluster_pts)
-                    # publish the detected object with its color and centroid position
+                    counter = total
                     self.object_publish(header, timestamp, sum_x, sum_y, sum_z, counter, max_color)
 
         # box detection
-        if grey_points:
+        if isinstance(grey_points, np.ndarray) and grey_points.shape[0] > 0:
             box_size = (0.24, 0.16)  # L, W
             center, yaw, axes = self.estimate_box_from_points(grey_points, box_size)
             if center is not None:
@@ -387,12 +422,6 @@ class Detection(Node):
                     dir_camera.vector.z = 0.0
                     dir_map = self.tf_buffer.transform(dir_camera, 'map')
                     map_yaw = np.arctan2(dir_map.vector.y, dir_map.vector.x)
-
-                    # whether box is within the workspace boundary
-                    if not is_point_in_polygon(point_map.point.x * 100, point_map.point.y * 100, self.boundary, True):
-                        self.get_logger().debug("box detected outside of workspace boundary, discarded")
-                        return
-
                     map_yaw_deg = np.degrees(map_yaw)
                     map_yaw_deg = map_yaw_deg % 180
                     angle_int = int(round(map_yaw_deg)) % 180
@@ -400,6 +429,11 @@ class Detection(Node):
                     x_str = int(round(point_map.point.x * 100))
                     y_str = int(round(point_map.point.y * 100))
 
+                    # whether box is within the workspace boundary
+                    if not is_point_in_polygon(point_map.point.x * 100, point_map.point.y * 100, self.boundary, True):
+                        self.get_logger().warn(f"box detected outside of workspace boundary, discarded, position: {point_map.point.x}, {point_map.point.y}, {angle_int}")
+                        return
+                    
                     # repetition check
                     for item in self.box_lists:
                         if np.abs(item[0] - x_str) < 20 and np.abs(item[1] - y_str) < 20:
@@ -481,7 +515,7 @@ class Detection(Node):
                 break
         else:
             if not is_point_in_polygon(object_map.pose.position.x * 100, object_map.pose.position.y * 100, self.boundary, False):
-                 self.get_logger().debug("object detected outside of workspace boundary, discarded")
+                 self.get_logger().warn(f"object detected outside of workspace boundary, discarded, position: {object_map.pose.position.x}, {object_map.pose.position.y}")
                  return
             
             self.object_lists.append([int(round(object_map.pose.position.x * 100)), int(round(object_map.pose.position.y * 100)), 0])
@@ -537,220 +571,251 @@ class Detection(Node):
         if len(points) < 100: 
             return None, None, None 
         
-        self.get_logger().info(f"the length of points: {len(points)}")
-        pts = np.array(points) 
-        
-        # --- Step 0: reduce outliers（IQR method） --- 
-        
-        # Q1 = np.percentile(pts, 25, axis=0) 
-        # Q3 = np.percentile(pts, 75, axis=0) 
-        # IQR = Q3 - Q1 
-        # mask = np.all((pts >= Q1 - 1.5 * IQR) & (pts <= Q3 + 1.5 * IQR), axis=1) 
-        # pts = pts[mask] 
-        
-        # if len(pts) < 2: 
-        #     return None, None, None 
-        
+        # self.get_logger().info(f"the length of points: {len(points)}")
+        pts = np.asarray(points, dtype=np.float32)
+
         # --- Step 1: PCA --- 
         mean = np.mean(pts, axis=0) 
         pts_centered = pts - mean 
-        U, S, Vt = np.linalg.svd(pts_centered, full_matrices=False) 
+        _, S, Vt = np.linalg.svd(pts_centered, full_matrices=False) 
         axes = Vt[:2] 
         
-        # --- Step 2: angle calculation --- 
-        dir1 = axes[0] 
-        dir2 = axes[1] 
-        dir1 /= np.linalg.norm(dir1) 
-        dir2 /= np.linalg.norm(dir2) 
-        dir1 = dir1 if dir1[1] >= 0 else -dir1 # y > 0
-        dir2 = dir2 if dir2[1] >= 0 else -dir2 # y > 0
-        
-        # angle with respect to x-axis
-        x_axis = np.array([1.0, 0.0]) 
-        angle_dir1_x = np.arccos(np.clip(np.dot(dir1, x_axis), -1.0, 1.0)) 
-        angle_dir2_x = np.arccos(np.clip(np.dot(dir2, x_axis), -1.0, 1.0)) 
-        
         # Step 3: two edge vs single edge decision based on variance ratio
-        
         ratio = S[1] / S[0] 
         self.get_logger().debug(f'variance ratio: {ratio:.3f}') 
 
         if ratio > 0.1:
             # =========================================================
-            # RANSAC - two edges
+            # RANSAC - two edges (Vectorized version)
             # =========================================================
 
             pts_np = pts.copy()
 
-            def fit_line_ransac(points, threshold=0.008, max_iter=400):
-                best_inliers = []
-                best_model = None
-
-                if len(points) < 2:
-                    return None, []
-
-                for _ in range(max_iter):
-                    i1, i2 = np.random.choice(len(points), 2, replace=False)
-                    p1, p2 = points[i1], points[i2]
-
-                    dir_vec = p2 - p1
-                    norm = np.linalg.norm(dir_vec)
-                    if norm < 1e-6:
-                        continue
-                    dir_vec /= norm
-
-                    normal = np.array([-dir_vec[1], dir_vec[0]])
-                    d = -np.dot(normal, p1)
-
-                    dist = np.abs(points @ normal + d)
-                    inliers = points[dist < threshold]
-
-                    if len(inliers) > len(best_inliers):
-                        best_inliers = inliers
-                        best_model = (normal, d)
-
-                return best_model, best_inliers
-
-            def intersect_lines(model1, model2):
-                n1, d1 = model1
-                n2, d2 = model2
-                A = np.vstack([n1, n2])
-                b = -np.array([d1, d2])
-
-                try:
-                    x = np.linalg.solve(A, b)
-                except np.linalg.LinAlgError as e:
-                    if 'Singular' in str(e):
-                        # pseudo-inverse
-                        x = np.linalg.pinv(A) @ b
-                return x
-
+            # -------------------------
             # first edge
-            model1, inliers1 = fit_line_ransac(pts_np)
+            # -------------------------
+            model1, mask1 = self._ransac_lines_vectorized(pts_np)
 
-            if model1 is None or len(inliers1) < 5:
+            if model1 is None or mask1.sum() < 10:
                 return None, None, None
 
-            mask = np.ones(len(pts_np), dtype=bool)
-            for p in inliers1:
-                idx = np.where((pts_np == p).all(axis=1))[0]
-                mask[idx] = False
+            remaining = pts_np[~mask1]
 
-            remaining = pts_np[mask]
-
+            # -------------------------
             # second edge
-            model2, inliers2 = fit_line_ransac(remaining)
+            # -------------------------
+            model2, mask2 = self._ransac_lines_vectorized(remaining)
 
-            if model2 is None or len(inliers2) < 5:
+            if model2 is None or mask2.sum() < 10:
                 return None, None, None
 
             # corner point
-            corner = intersect_lines(model1, model2)
+            n1, d1 = model1
+            n2, d2 = model2
+
+            A = np.vstack([n1, n2])
+            b = -np.array([d1, d2])
+            corner = np.linalg.pinv(A) @ b
 
             # =========================================================
-            # direction vectors and used axes
+            # direction vectors and used axes 
             # =========================================================
-            n1, _ = model1
-            n2, _ = model2
-
             dir1 = np.array([n1[1], -n1[0]])
             dir2 = np.array([n2[1], -n2[0]])
 
-            dir1 /= np.linalg.norm(dir1)
-            dir2 /= np.linalg.norm(dir2)
+            norm1 = np.linalg.norm(dir1)
+            norm2 = np.linalg.norm(dir2)
 
-            # keeps x > 0 in camera frame
-            if dir1[1] < 0:
+            if norm1 < 1e-6 or norm2 < 1e-6:
+                return None, None, None
+
+            dir1 /= norm1
+            dir2 /= norm2
+
+            pts_corner = pts_np - corner
+            proj1 = pts_corner @ dir1
+            proj2 = pts_corner @ dir2
+            if np.median(proj1) < 0:
                 dir1 = -dir1
-            if dir2[1] < 0:
+            if np.median(proj2) < 0:
                 dir2 = -dir2
 
             used_axes = np.vstack([dir1, dir2])
 
             # =========================================================
-            # length estimation along each direction
+            # Emunerate all possible center points and validates (vectorized)
             # =========================================================
-            proj1 = pts_np @ dir1
-            proj2 = pts_np @ dir2
+            L, W = box_size
 
-            length1 = proj1.max() - proj1.min()
-            length2 = proj2.max() - proj2.min()
+            dirs = np.stack([[dir1, dir2], [dir2, dir1]])  # (2,2,2)
+            signs = np.array([[1,1],[1,-1],[-1,1],[-1,-1]])
+
+            centers = (
+                corner
+                + dirs[:,0][:,None,:] * signs[None,:,0:1] * (L/2)
+                + dirs[:,1][:,None,:] * signs[None,:,1:2] * (W/2)
+            ).reshape(-1,2)
+
+            yaws = np.arctan2(dirs[:,0][:,None,1], dirs[:,0][:,None,0]).repeat(4, axis=1).reshape(-1)
+
+            scores = self.compute_band_score_batch(pts_np, centers, yaws, L, W)
+
+            best_idx = np.argmax(scores)
+
+            if scores[best_idx] < 0.8:
+                return None, None, None
+
+            center_shifted = centers[best_idx]
+            yaw = yaws[best_idx]
 
             self.get_logger().debug(
-                f'RANSAC length1: {length1:.3f}, length2: {length2:.3f}'
+                f'Corner: {corner}, Center: {center_shifted}, yaw: {yaw:.3f}, score: {scores[best_idx]:.3f}'
             )
 
-            # judge which direction corresponds to length vs width based on variance and box size ratio
-            if length1 > length2:
-                main_dir = dir1
-                side_dir = dir2
-                box_length = box_size[0]
-                box_width = box_size[1]
-            else:
-                main_dir = dir2
-                side_dir = dir1
-                box_length = box_size[0]
-                box_width = box_size[1]
+            return center_shifted, yaw, used_axes
 
-            # =========================================================
-            # calculate center by shifting from corner along main_dir and side_dir
-            # =========================================================
-            # center_shifted = corner + main_dir * (box_length / 2)
-            # center_shifted = corner - main_dir * (box_length / 2) + side_dir * (box_width / 2) # shift from corner along both directions to get to the center, more robust for partial views
+        else:
+            # One edge situation is neglected for now
+            return None, None, None
+        
+    def _ransac_lines_vectorized(self, points, n_samples=256, threshold=0.005):
+
+        if len(points) < 2:
+            return None, None
+
+        N = points.shape[0]
+
+        idx = np.random.randint(0, N, (n_samples, 2))
+        p1 = points[idx[:, 0]]
+        p2 = points[idx[:, 1]]
+
+        dirs = p2 - p1
+        norms = np.linalg.norm(dirs, axis=1, keepdims=True)
+        valid = norms[:, 0] > 1e-6
+
+        if np.sum(valid) < 5:
+            return None, None 
+
+        dirs[valid] /= norms[valid]
+
+        normals = np.stack([-dirs[:, 1], dirs[:, 0]], axis=1)
+        d = -np.sum(normals * p1, axis=1)
+
+        dist = np.abs(points @ normals.T + d)
+
+        inliers = dist < threshold
+        scores = inliers.sum(axis=0)
+
+        best = np.argmax(scores)
+
+        return (normals[best], d[best]), inliers[:, best]
+        
+    def compute_band_score_batch(self, pts, centers, yaws, L, W, band_width=0.015):
+
+        if pts.shape[0] < 50:
+            return np.zeros(len(centers))
+
+        c = np.cos(yaws)
+        s = np.sin(yaws)
+
+        # rotation matrices (K,2,2)
+        R = np.stack([
+            np.stack([c, s], axis=1),
+            np.stack([-s, c], axis=1)
+        ], axis=1)
+
+        # transform to local frame
+        pts_shifted = pts[None, :, :] - centers[:, None, :]
+        pts_local = np.einsum('kij,knj->kni', R, pts_shifted)
+
+        x = pts_local[:, :, 0]
+        y = pts_local[:, :, 1]
+
+        half_L = L / 2.0
+        half_W = W / 2.0
+        d = band_width
+
+        # four edge bands
+        right  = (x >= half_L - d) & (x <= half_L + d) & (y >= -half_W - d) & (y <= half_W + d)
+        left   = (x >= -half_L - d) & (x <= -half_L + d) & (y >= -half_W - d) & (y <= half_W + d)
+        top    = (y >= half_W - d) & (y <= half_W + d) & (x >= -half_L - d) & (x <= half_L + d)
+        bottom = (y >= -half_W - d) & (y <= -half_W + d) & (x >= -half_L - d) & (x <= half_L + d)
+
+        in_band = right | left | top | bottom
+
+        return np.nan_to_num(np.mean(in_band, axis=1))
+        
+    def _is_grey_hsl_vectorized_from_rgb(self, r, g, b):
+        """
+        Vectorized implementation of the original is_grey_HSL(r,g,b) function.
+        Original logic:
+            c_max = max(r,g,b); c_min = min(r,g,b); delta = c_max - c_min
+            Compute Hue (h) — only condition h > 80 or h == 0 is used.
+            Compute Lightness l = (c_max + c_min)/2
+            Compute HSL Saturation: s = 0 if delta == 0 else delta/(1-abs(2*l-1))
+            Returns: (h > 80 or h == 0) and s < 20/255 and l < 25/255
+        """
+        c_max = np.maximum(np.maximum(r, g), b)
+        c_min = np.minimum(np.minimum(r, g), b)
+        delta = c_max - c_min
+        
+        # Compute Hue (0-360)
+        h = np.zeros_like(r)
+        # Only compute where delta != 0 to avoid division by zero
+        mask_r = (delta != 0) & (c_max == r)
+        h[mask_r] = 60.0 * (((g[mask_r] - b[mask_r]) / delta[mask_r]) % 6)
+        mask_g = (delta != 0) & (c_max == g)
+        h[mask_g] = 60.0 * (((b[mask_g] - r[mask_g]) / delta[mask_g]) + 2)
+        mask_b = (delta != 0) & (c_max == b)
+        h[mask_b] = 60.0 * (((r[mask_b] - g[mask_b]) / delta[mask_b]) + 4)
+        
+        # Compute HSL Lightness
+        l = (c_max + c_min) / 2.0
+        
+        # Compute HSL Saturation
+        s_hsl = np.zeros_like(r)
+        mask_delta = delta != 0
+        # s = delta / (1 - abs(2*l - 1))
+        denominator = 1.0 - np.abs(2.0 * l[mask_delta] - 1.0)
+        # Avoid division by zero
+        denominator = np.where(denominator == 0, 1e-10, denominator)
+        s_hsl[mask_delta] = delta[mask_delta] / denominator
+        
+        # Final grey condition
+        grey_cond = ((h > 80) | (h == 0)) & (s_hsl < 0.2) & (l < 0.4)
+        return grey_cond
     
-            center_shifted = corner
-            center_shifted = center_shifted + main_dir * (box_length / 2) if main_dir[0] > 0 else center_shifted - main_dir * (box_length / 2)
-            center_shifted = center_shifted + side_dir * (box_width / 2) if side_dir[0] > 0 else center_shifted - side_dir * (box_width / 2)
-            # print(f"main_dir is {main_dir}, side_dir is {side_dir}")
+    def _rgb_to_hsv_vectorized(self, r, g, b):
+        """Vectorized RGB to HSV conversion."""
+        c_max = np.maximum(np.maximum(r, g), b)
+        c_min = np.minimum(np.minimum(r, g), b)
+        delta = c_max - c_min
 
-            # yaw
-            yaw = np.arctan2(main_dir[1], main_dir[0])
+        h = np.zeros_like(r)
+        # Red is max
+        mask_r = (delta != 0) & (c_max == r)
+        h[mask_r] = 60.0 * (((g[mask_r] - b[mask_r]) / delta[mask_r]) % 6)
+        # Green is max
+        mask_g = (delta != 0) & (c_max == g)
+        h[mask_g] = 60.0 * (((b[mask_g] - r[mask_g]) / delta[mask_g]) + 2)
+        # Blue is max
+        mask_b = (delta != 0) & (c_max == b)
+        h[mask_b] = 60.0 * (((r[mask_b] - g[mask_b]) / delta[mask_b]) + 4)
 
-            self.get_logger().debug(
-                f'Corner: {corner}, Center: {center_shifted}, yaw: {yaw:.3f}'
-            )
+        s = np.zeros_like(r)
+        mask_cmax = c_max != 0
+        s[mask_cmax] = delta[mask_cmax] / c_max[mask_cmax]
+        v = c_max
+        return h, s, v
 
-            return center_shifted, yaw, used_axes
+    def _is_red_vectorized(self, h, s, v):
+        return ((h <= 25) | (h >= 335)) & (s > 0.55) & (v > 0.45)
 
-        else: 
-            # =========================================================
-            # single edge case - use PCA axes, shift center along normal direction to get to box
-            # =========================================================
-            
-            used_axes = axes[:1] # only use the first principal axis if it's not a corner 
-            normal = axes[1] if np.dot(axes[1], x_axis) > 0 else -axes[1] 
-            projected = pts_centered @ used_axes.T 
+    def _is_blue_vectorized(self, h, s, v):
+        return (h >= 185) & (h <= 200) & (s > 0.6) & (v > 0.4)
 
-            self.get_logger().debug(f'dir1 与 x 轴夹角: {angle_dir1_x:.2f}rad, dir2 与 x 轴夹角: {angle_dir2_x:.2f}rad') 
-            min_proj = projected.min(axis=0) 
-            max_proj = projected.max(axis=0) 
-            center_proj = (min_proj + max_proj) / 2 
-            center = mean + center_proj @ used_axes # 
-            length_proj = projected[:,0].max() - projected[:,0].min()
-            width_proj = length_proj # set width same as length for single edge case, will be corrected by shifting and box size later
-
-            self.get_logger().debug(f'length_proj: {length_proj:.3f}, width_proj: {width_proj:.3f}') 
-
-            if length_proj >= width_proj: 
-                # length corresponds to first principal axis → keep order
-                box_length = box_size[0] 
-                box_width = box_size[1] 
-            else: 
-                # length corresponds to second principal axis → swap order
-                used_axes = used_axes[::-1] 
-                box_length = box_size[1] 
-                box_width = box_size[0] 
-            
-            if length_proj >= box_width: 
-                shift_vec = normal * (box_width / 2) # shift along normal direction to get to center
-                yaw = angle_dir1_x 
-            else: 
-                shift_vec = normal * (box_length / 2) # shift along normal direction to get to center
-                yaw = angle_dir1_x - np.pi/2 if angle_dir1_x < np.pi/2 - 0.01 else angle_dir1_x - np.pi/2 
-
-            center_shifted = center + shift_vec 
-
-            return center_shifted, yaw, used_axes
+    def _is_green_vectorized(self, h, s, v):
+        return (h >= 140) & (h <= 185) & (s > 0.6) & (v > 0.25)
     
     def write_csv(self):
         try:
@@ -780,36 +845,9 @@ def main():
         node.destroy_node()
         rclpy.shutdown()
 
-def is_red(h,s,v):
-    return True if (h <= 25 or h >= 335) and s > 0.55 and v > 0.45 else False
-
-def is_blue(h,s,v):
-    return True if (h >= 185 and h <= 200) and s > 0.6 and v > 0.4 else False
-
-def is_green(h,s,v):
-    return True if 140 <= h <= 185 and s > 0.6 and v > 0.25 else False
-
-def is_wood(h,s,v):
-    return True if 20 <= h <= 60 and 0.3 < s < 0.6 and 0.3 < v < 0.5 else False
-
-def is_grey_HSL(r,g,b):
-    c_max = max(r, g, b)
-    c_min = min(r, g, b)
-    delta = c_max - c_min
-
-    if delta == 0:
-        h = 0.0
-    elif c_max == r:
-        h = 60.0 * (((g - b) / delta) % 6)
-    elif c_max == g:
-        h = 60.0 * (((b - r) / delta) + 2)
-    elif c_max == b:
-        h = 60.0 * (((r - g) / delta) + 4)
-
-    l = (c_max + c_min) / 2
-    s = 0.0 if delta == 0 else delta / (1-abs(2*l-1))
-
-    return True if h > 80 or h == 0 and s < 20 / 255 and l < 25 / 255 else False
+#######################################################################
+# TODO: Should not be modified, Andrew referred rgb_to_hsv() function.
+#######################################################################
 
 def rgb_to_hsv(r, g, b):
         c_max = max(r, g, b)
