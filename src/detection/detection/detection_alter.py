@@ -123,11 +123,40 @@ class Detection(Node):
                     self.object_lists.append([x, y, angle_deg])
                     self.object_num += 1
                     self.known_obj_num += 1
+                    
+                    tf = TransformStamped()
+                    tf.header.stamp = self.get_clock().now().to_msg()
+                    tf.header.frame_id = 'map'
+                    tf.child_frame_id = f'object_{self.object_num}'
+                    tf.transform.translation.x = x / 100.0
+                    tf.transform.translation.y = y / 100.0
+                    tf.transform.translation.z = 0.0
+                    tf.transform.rotation.x = 0.0
+                    tf.transform.rotation.y = 0.0
+                    tf.transform.rotation.z = 0.0
+                    tf.transform.rotation.w = 1.0
+                    self.static_broadcaster.sendTransform(tf)
+
                 elif type_id == 'B':
                     self.box_poses.append(pose)
                     self.box_lists.append([x, y, angle_deg])
                     self.box_num += 1
                     self.known_box_num += 1
+
+                    tf_map_box = TransformStamped()
+                    tf_map_box.header.stamp = self.get_clock().now().to_msg()
+                    tf_map_box.header.frame_id = 'map'
+                    tf_map_box.child_frame_id = f'box_{self.box_num}'
+                    tf_map_box.transform.translation.x = x / 100.0
+                    tf_map_box.transform.translation.y = y / 100.0
+                    tf_map_box.transform.translation.z = 0
+                    q = quaternion_from_euler(0.0, 0.0, angle_deg * np.pi / 180)
+                    tf_map_box.transform.rotation.x = q[0]
+                    tf_map_box.transform.rotation.y = q[1]
+                    tf_map_box.transform.rotation.z = q[2]
+                    tf_map_box.transform.rotation.w = q[3]
+                    self.static_broadcaster.sendTransform(tf_map_box)
+
                 elif type_id == 'S':
                     starting = TransformStamped()
                     starting.header.stamp = self.get_clock().now().to_msg()
@@ -479,7 +508,7 @@ class Detection(Node):
         self.object.header.stamp = timestamp
         self.object.pose.position.x = sum_x / counter
         self.object.pose.position.y = sum_y / counter
-        self.object.pose.position.z = sum_z / counter
+        self.object.pose.position.z = 0.0
         self.object.pose.orientation.x = 0.0
         self.object.pose.orientation.y = 0.0
         self.object.pose.orientation.z = 0.0
@@ -536,7 +565,7 @@ class Detection(Node):
             tf.child_frame_id = f'object_{self.object_num}'
             tf.transform.translation.x = object_map.pose.position.x
             tf.transform.translation.y = object_map.pose.position.y
-            tf.transform.translation.z = object_map.pose.position.z
+            tf.transform.translation.z = 0.0
             tf.transform.rotation.x = 0.0
             tf.transform.rotation.y = 0.0
             tf.transform.rotation.z = 0.0
