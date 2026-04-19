@@ -69,7 +69,7 @@ class Detection(Node):
 
         # open and load map file and workspace (csv)
         package_path = get_package_share_directory('detection')
-        map_path = os.path.join(package_path, 'config', 'blank.csv')
+        map_path = os.path.join(package_path, 'config', 'map_1_1.csv')
         workspace_path = os.path.join(package_path, 'config', 'workspace_1.csv')
         self.metadata_rows = []
         self.boundary = [] # List of intersection of edges of workspace, in format of [[x1, y1], [x2, y2], ...] 
@@ -128,9 +128,9 @@ class Detection(Node):
                     tf.header.stamp = self.get_clock().now().to_msg()
                     tf.header.frame_id = 'map'
                     tf.child_frame_id = f'object_{self.object_num}'
-                    tf.transform.translation.x = x / 100.0
-                    tf.transform.translation.y = y / 100.0
-                    tf.transform.translation.z = 0.0
+                    tf.transform.translation.x = pose.position.x
+                    tf.transform.translation.y = pose.position.y
+                    tf.transform.translation.z = pose.position.z
                     tf.transform.rotation.x = 0.0
                     tf.transform.rotation.y = 0.0
                     tf.transform.rotation.z = 0.0
@@ -147,14 +147,13 @@ class Detection(Node):
                     tf_map_box.header.stamp = self.get_clock().now().to_msg()
                     tf_map_box.header.frame_id = 'map'
                     tf_map_box.child_frame_id = f'box_{self.box_num}'
-                    tf_map_box.transform.translation.x = x / 100.0
-                    tf_map_box.transform.translation.y = y / 100.0
-                    tf_map_box.transform.translation.z = 0
-                    q = quaternion_from_euler(0.0, 0.0, angle_deg * np.pi / 180)
-                    tf_map_box.transform.rotation.x = q[0]
-                    tf_map_box.transform.rotation.y = q[1]
-                    tf_map_box.transform.rotation.z = q[2]
-                    tf_map_box.transform.rotation.w = q[3]
+                    tf_map_box.transform.translation.x = pose.position.x
+                    tf_map_box.transform.translation.y = pose.position.y
+                    tf_map_box.transform.translation.z = 0.0
+                    tf_map_box.transform.rotation.x = pose.orientation.x
+                    tf_map_box.transform.rotation.y = pose.orientation.y
+                    tf_map_box.transform.rotation.z = pose.orientation.z
+                    tf_map_box.transform.rotation.w = pose.orientation.w
                     self.static_broadcaster.sendTransform(tf_map_box)
 
                 elif type_id == 'S':
@@ -165,11 +164,10 @@ class Detection(Node):
                     starting.transform.translation.x = x / 100.0  # convert cm to m
                     starting.transform.translation.y = y / 100.0  # convert cm to m
                     starting.transform.translation.z = 0
-                    q = quaternion_from_euler(0, 0, angle_rad)
-                    starting.transform.rotation.x = q[0]
-                    starting.transform.rotation.y = q[1]
-                    starting.transform.rotation.z = q[2]
-                    starting.transform.rotation.w = q[3]
+                    starting.transform.rotation.x = pose.orientation.x
+                    starting.transform.rotation.y = pose.orientation.y
+                    starting.transform.rotation.z = pose.orientation.z
+                    starting.transform.rotation.w = pose.orientation.w
 
                     self.static_broadcaster.sendTransform(starting)
 
@@ -183,7 +181,7 @@ class Detection(Node):
         # Reading workspace file to get boundary
         with open(workspace_path, mode='r', encoding='utf-8') as file:
             reader = csv.reader(file)
-            # skip the first line (header)
+            # skip the first 115line (header)
             header = next(reader)
             for row in reader:
                 x = int(row[0])
@@ -207,7 +205,7 @@ class Detection(Node):
 
         self.counter = -2 # keep frames of every x frames, AND, discard first two frames
 
-        print(2)
+        print(42)
 
     def publish_arrays(self, object_poses, object_timestamp, box_poses, box_timestamp):
         """publish object and box poses from map file to ROS topics."""
