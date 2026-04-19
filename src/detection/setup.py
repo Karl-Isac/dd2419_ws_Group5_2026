@@ -29,7 +29,8 @@ setup(
     entry_points={
         'console_scripts': [
             'detection = detection.detection:main',
-            'alter = detection.detection_alter:main'
+            'alter = detection.detection_alter:main',
+            'record = detection.record:main'
         ],
     },
 )

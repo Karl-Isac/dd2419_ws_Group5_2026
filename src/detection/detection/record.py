@@ -135,7 +135,6 @@ class Detection(Node):
                     tf.transform.rotation.y = 0.0
                     tf.transform.rotation.z = 0.0
                     tf.transform.rotation.w = 1.0
-                    self.static_broadcaster.sendTransform(tf)
 
                 elif type_id == 'B':
                     self.box_poses.append(pose)
@@ -480,7 +479,7 @@ class Detection(Node):
                         tf_map_box.transform.rotation.y = q[1]
                         tf_map_box.transform.rotation.z = q[2]
                         tf_map_box.transform.rotation.w = q[3]
-                        self.static_broadcaster.sendTransform(tf_map_box)
+
                         self.get_logger().info(f'Box {self.box_num}: {x_str} {y_str} {angle_int}')
 
                         self.box_lists.append([x_str, y_str, angle_int])
@@ -568,7 +567,7 @@ class Detection(Node):
             tf.transform.rotation.y = 0.0
             tf.transform.rotation.z = 0.0
             tf.transform.rotation.w = 1.0
-            self.static_broadcaster.sendTransform(tf)
+
 
             self.get_logger().info(f'Object {self.object_num}: {color} {object_map.pose.position.x} {object_map.pose.position.y} N/A')
             # print(f"z distance: {sum_z / counter:.3f} m")
