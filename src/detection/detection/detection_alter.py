@@ -17,7 +17,7 @@ from tf2_ros.buffer import Buffer
 from tf2_ros.static_transform_broadcaster import StaticTransformBroadcaster
 from tf_transformations import quaternion_from_euler, euler_from_quaternion
 from geometry_msgs.msg import TransformStamped, Point, Vector3Stamped, PoseArray, Pose
-from visualization_msgs.msg import Marker
+from visualization_msgs.msg import Marker, MarkerArray
 
 from sensor_msgs.msg import PointCloud2
 import sensor_msgs_py.point_cloud2 as pc2
@@ -66,6 +66,11 @@ class Detection(Node):
         # initialize topic publisher
         self.objects_pub = self.create_publisher(PoseArray, '/detected_objects', 10)
         self.boxes_pub = self.create_publisher(PoseArray, '/detected_boxes', 10)
+
+        # === RANSAC VISUALIZATION START ===
+        # Publisher for visualizing RANSAC lines, inliers, corner, and center
+        self.ransac_viz_pub = self.create_publisher(MarkerArray, '/ransac_visualization', 10)
+        # === RANSAC VISUALIZATION END ===
 
         # open and load map file and workspace (csv)
         package_path = get_package_share_directory('detection')
@@ -243,7 +248,7 @@ class Detection(Node):
             return
         # if self.counter % num != 0:
         #     return
-        
+
         # Initialization
         candidates = []
         grey_points = []
@@ -418,7 +423,7 @@ class Detection(Node):
                 total = cluster_pts.shape[0]
                 color_counts = {'Red': red_cnt, 'Blue': blue_cnt, 'Green': green_cnt, 'Wood': wood_cnt}
                 max_color = max(color_counts, key=color_counts.get)
-                if color_counts[max_color] / total > 0.08:
+                if color_counts[max_color] / total > 0.35:
                     # centroid (vectorized)
                     sum_x = np.sum(cluster_pts[:, 0])
                     sum_y = np.sum(cluster_pts[:, 1])
@@ -506,7 +511,7 @@ class Detection(Node):
         self.object.header.stamp = timestamp
         self.object.pose.position.x = sum_x / counter
         self.object.pose.position.y = sum_y / counter
-        self.object.pose.position.z = 0.0
+        self.object.pose.position.z = sum_z / counter
         self.object.pose.orientation.x = 0.0
         self.object.pose.orientation.y = 0.0
         self.object.pose.orientation.z = 0.0
@@ -535,16 +540,17 @@ class Detection(Node):
                     f'{self.object.header.frame_id} to map: {ex}'
             )
             return
+        
+        if not is_point_in_polygon(object_map.pose.position.x * 100, object_map.pose.position.y * 100, self.boundary, False):
+            self.get_logger().warn(f"object detected outside of workspace boundary, discarded, position: {object_map.pose.position.x}, {object_map.pose.position.y}")
+            return
 
         for item in self.object_lists:
             if np.abs(item[0] - object_map.pose.position.x * 100) < 10 and np.abs(item[1] - object_map.pose.position.y * 100) < 10:
                 self.get_logger().debug(f"repeated object {self.object_lists.index(item)} detection, discarded")
                 break
         else:
-            if not is_point_in_polygon(object_map.pose.position.x * 100, object_map.pose.position.y * 100, self.boundary, False):
-                 self.get_logger().warn(f"object detected outside of workspace boundary, discarded, position: {object_map.pose.position.x}, {object_map.pose.position.y}")
-                 return
-            
+                       
             self.object_lists.append([int(round(object_map.pose.position.x * 100)), int(round(object_map.pose.position.y * 100)), 0])
             new_object_msg = Pose()
             new_object_msg.position.x = object_map.pose.position.x
@@ -609,7 +615,6 @@ class Detection(Node):
         
         # Step 3: two edge vs single edge decision based on variance ratio
         ratio = S[1] / S[0] 
-        self.get_logger().debug(f'variance ratio: {ratio:.3f}') 
 
         if ratio > 0.1:
             # =========================================================
@@ -621,20 +626,59 @@ class Detection(Node):
             # -------------------------
             # first edge
             # -------------------------
+            # Visulize Initialization
+            lines_viz = []
+            timestamp_viz = self.get_clock().now().to_msg()
+
             model1, mask1 = self._ransac_lines_vectorized(pts_np)
-
             if model1 is None or mask1.sum() < 10:
+                # self.get_logger().warn("Line1 RANSAC failed: insufficient inliers")
+                # lines_viz.append({'status':'failed'})
+                # # publish pointcloud
+                # self.publish_ransac_lines(pts_np, lines_viz, timestamp_viz)
                 return None, None, None
-
-            remaining = pts_np[~mask1]
+            else:
+                # RANSAC successful
+                n1, d1 = model1
+                dir1 = np.array([n1[1], -n1[0]])
+                norm1 = np.linalg.norm(dir1)
+                if norm1 > 1e-6: dir1 /= norm1
+                centroid = np.mean(pts_np, axis=0)
+                denom = np.dot(n1, dir1)
+                if abs(denom) > 1e-6:
+                    t = -(np.dot(n1, centroid) + d1) / denom
+                    pt_on_line = centroid + t * dir1
+                else:
+                    pt_on_line = np.array([0.0, 0.0])  # fallback
+                # lines_viz.append({'status':'success', 'dir':dir1, 'point':pt_on_line, 'color':(1.0,0.0,0.0)})
 
             # -------------------------
             # second edge
             # -------------------------
+            remaining = pts_np[~mask1]
             model2, mask2 = self._ransac_lines_vectorized(remaining)
-
-            if model2 is None or mask2.sum() < 10:
+            if model2 is None or mask2.sum() < 8:
+                # self.get_logger().warn("Line2 RANSAC failed: insufficient inliers")
+                # lines_viz.append({'status':'failed'})
+                # # Publish First Line
+                # self.publish_ransac_lines(pts_np, lines_viz, timestamp_viz)
                 return None, None, None
+            else:
+                n2, d2 = model2
+                dir2 = np.array([n2[1], -n2[0]])
+                norm2 = np.linalg.norm(dir2)
+                if norm2 > 1e-6: dir2 /= norm2
+                centroid2 = np.mean(remaining, axis=0)
+                denom2 = np.dot(n2, dir2)
+                if abs(denom2) > 1e-6:
+                    t2 = -(np.dot(n2, centroid2) + d2) / denom2
+                    pt_on_line2 = centroid2 + t2 * dir2
+                else:
+                    pt_on_line2 = np.array([0.0, 0.0])
+                # lines_viz.append({'status':'success', 'dir':dir2, 'point':pt_on_line2, 'color':(0.0,1.0,1.0)})
+
+            # Visulization on RANSAC
+            # self.publish_ransac_lines(pts_np, lines_viz, timestamp_viz)
 
             # corner point
             n1, d1 = model1
@@ -689,6 +733,8 @@ class Detection(Node):
 
             best_idx = np.argmax(scores)
 
+            self.get_logger().debug(f"score: {scores[best_idx]}")
+
             if scores[best_idx] < 0.8:
                 return None, None, None
 
@@ -705,7 +751,68 @@ class Detection(Node):
             # One edge situation is neglected for now
             return None, None, None
         
-    def _ransac_lines_vectorized(self, points, n_samples=256, threshold=0.005):
+    # === RANSAC VISUALIZATION (Simplified) ===
+    def publish_ransac_lines(self, pts, lines, timestamp):
+        """
+        Publish only the fitted RANSAC lines.
+        pts: Nx2 array of all points (for background)
+        lines: list of dict, each with:
+            - 'dir': direction vector (2,)
+            - 'point': a point on the line (2,)
+            - 'color': (r,g,b) tuple
+            - 'status': 'success' or 'failed'
+        """
+        marker_array = MarkerArray()
+        
+        # Helper
+        def to_point(p):
+            return Point(x=float(p[0]), y=float(p[1]), z=0.0)
+        
+        # Background points (grey)
+        bg_marker = Marker()
+        bg_marker.header.frame_id = "realsense_camera_link"
+        bg_marker.header.stamp = timestamp
+        bg_marker.ns = "ransac_points"
+        bg_marker.id = 0
+        bg_marker.type = Marker.POINTS
+        bg_marker.action = Marker.ADD
+        bg_marker.scale.x = 0.005
+        bg_marker.scale.y = 0.005
+        bg_marker.color.a = 0.5
+        bg_marker.color.r = 0.7
+        bg_marker.color.g = 0.7
+        bg_marker.color.b = 0.7
+        for p in pts:
+            bg_marker.points.append(to_point(p))
+        marker_array.markers.append(bg_marker)
+        
+        # Draw each successful line
+        line_id = 1
+        for line in lines:
+            if line['status'] != 'success':
+                continue
+            dir_vec = line['dir']
+            point_on_line = line['point']
+            # Extend line in both directions
+            line_len = 0.5  # meters
+            p_start = point_on_line - dir_vec * line_len
+            p_end   = point_on_line + dir_vec * line_len
+            
+            line_marker = Marker()
+            line_marker.header = bg_marker.header
+            line_marker.ns = "ransac_lines"
+            line_marker.id = line_id
+            line_marker.type = Marker.LINE_STRIP
+            line_marker.scale.x = 0.01
+            line_marker.color.a = 1.0
+            line_marker.color.r, line_marker.color.g, line_marker.color.b = line['color']
+            line_marker.points = [to_point(p_start), to_point(p_end)]
+            marker_array.markers.append(line_marker)
+            line_id += 1
+        
+        self.ransac_viz_pub.publish(marker_array)
+        
+    def _ransac_lines_vectorized(self, points, n_samples=256, threshold=0.012):
 
         if len(points) < 2:
             return None, None
