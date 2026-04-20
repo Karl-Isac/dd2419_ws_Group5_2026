@@ -73,6 +73,8 @@ class TaskPlannerNode(Node):
 
         self.generate_path_box_success = False
         self.execute_path_box_success = False
+        
+        self.generate_exploration_path_failed = False
 
         # Planner state
         # self.state = "SELECT_OBJECT"
@@ -174,6 +176,7 @@ class TaskPlannerNode(Node):
 
         elif self.state == "GENERATE_EXPLORATION_PATH":
             self.generate_exploration_path_success = success
+            self.generate_exploration_path_failed = not success
 
         if success:
             self.path_to_goal = msg
@@ -422,25 +425,42 @@ class TaskPlannerNode(Node):
             if self.generate_exploration_pose_success:
                 self.enter_state("GENERATE_EXPLORATION_PATH")
 
+        # elif self.state == "GENERATE_EXPLORATION_PATH":
+        #     if not self._published_this_state:
+        #         # self.get_logger().info("GENERATE_EXPLORATION_PATH")
+        #         # self.publish_pose_to_path_planner(
+        #         #     self.current_exploration_point.x,
+        #         #     self.current_exploration_point.y,
+        #         # )
+        #         self.publish_goal_to_path_planner(
+        #             self.current_exploration_point.x,
+        #             self.current_exploration_point.y,
+        #             goal_type="exploration_point"
+        #         )
+        #         self._published_this_state = True
+        #         self.generate_exploration_path_success = False
 
         elif self.state == "GENERATE_EXPLORATION_PATH":
             if not self._published_this_state:
-                # self.get_logger().info("GENERATE_EXPLORATION_PATH")
-                # self.publish_pose_to_path_planner(
-                #     self.current_exploration_point.x,
-                #     self.current_exploration_point.y,
-                # )
                 self.publish_goal_to_path_planner(
                     self.current_exploration_point.x,
                     self.current_exploration_point.y,
                     goal_type="exploration_point"
                 )
+
                 self._published_this_state = True
                 self.generate_exploration_path_success = False
+                self.generate_exploration_path_failed = False
 
             if self.generate_exploration_path_success:
-                # self.enter_state("EXECUTE_EXPLORATION_PATH")
                 self.start_update_icp("EXECUTE_EXPLORATION_PATH")
+                return
+
+            if self.generate_exploration_path_failed:
+                self.get_logger().warn("Exploration point was not reachable, requesting a new one")
+                self.current_exploration_point = None
+                self.enter_state("GENERATE_EXPLORATION_POSE")
+                return
 
 
         elif self.state == "EXECUTE_EXPLORATION_PATH":

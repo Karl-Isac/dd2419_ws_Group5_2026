@@ -110,6 +110,42 @@ class AStarPlannerNode(Node):
             self.get_logger().error(f"Workspace load failed: {e}")
             self.workspace_poly = None
 
+    def point_to_segment_distance(self, px, py, ax, ay, bx, by):
+        abx = bx - ax
+        aby = by - ay
+        apx = px - ax
+        apy = py - ay
+
+        ab_len_sq = abx * abx + aby * aby
+        if ab_len_sq == 0.0:
+            return math.sqrt((px - ax) ** 2 + (py - ay) ** 2)
+
+        t = (apx * abx + apy * aby) / ab_len_sq
+        t = max(0.0, min(1.0, t))
+
+        closest_x = ax + t * abx
+        closest_y = ay + t * aby
+
+        dx = px - closest_x
+        dy = py - closest_y
+        return math.sqrt(dx * dx + dy * dy)
+
+    def distance_to_polygon_edges(self, x, y):
+        if self.workspace_poly is None or len(self.workspace_poly) < 2:
+            return float("inf")
+
+        best = float("inf")
+        poly = self.workspace_poly
+
+        for i in range(len(poly)):
+            ax, ay = poly[i]
+            bx, by = poly[(i + 1) % len(poly)]
+            d = self.point_to_segment_distance(x, y, ax, ay, bx, by)
+            if d < best:
+                best = d
+
+        return best
+
     def inside_poly(self, x, y):
         if self.workspace_poly is None:
             return True
@@ -555,11 +591,25 @@ class AStarPlannerNode(Node):
         grid = [[0 for _ in range(w)] for _ in range(h)]
 
         # outside workspace = occupied
+
+        # for gy in range(h):
+        #     for gx in range(w):
+        #         x, y = self.grid_to_world(gx, gy)
+        #         if not self.inside_poly(x, y):
+        #             grid[gy][gx] = 100
+
+        workspace_inflation_m = 0.15
+
         for gy in range(h):
             for gx in range(w):
                 x, y = self.grid_to_world(gx, gy)
-                if not self.inside_poly(x, y):
+
+                outside = not self.inside_poly(x, y)
+                too_close_to_wall = self.distance_to_polygon_edges(x, y) < workspace_inflation_m
+
+                if outside or too_close_to_wall:
                     grid[gy][gx] = 100
+
 
         goal_cell = None
         if self.goal is not None:
