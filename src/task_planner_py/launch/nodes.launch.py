@@ -24,12 +24,12 @@ def generate_launch_description():
         output='screen'
     )
 
-    odometry = Node(
-        package='odometry',
-        executable='odometry_fixed',
-        name='odometry_fixed',
-        output='screen'
-    )
+    # odometry = Node(
+    #     package='odometry',
+    #     executable='odometry_fixed',
+    #     name='odometry_fixed',
+    #     output='screen'
+    # )
 
 
     planner = Node(
@@ -57,7 +57,7 @@ def generate_launch_description():
         arm_safe_republisher,
         arm_control,
         task_planner,
-        odometry,
+        # odometry,
         planner,
         controller,
         map_to_odom,

@@ -12693,11 +12693,11 @@ packages:
   variants:
     target_platform: osx-arm64
   depends:
+  - ros2-distro-mutex >=0.13,<0.14
+  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - ros-jazzy-cv-bridge
   - eigen
   - ros-jazzy-vision-opencv
-  - ros2-distro-mutex >=0.13,<0.14
-  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - libcxx >=22
   - python_abi 3.12.* *_cp312
   - numpy >=1.23,<3
@@ -12712,11 +12712,11 @@ packages:
     cxx_compiler: vs2022
     target_platform: win-64
   depends:
+  - ros2-distro-mutex >=0.13,<0.14
+  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - ros-jazzy-cv-bridge
   - eigen
   - ros-jazzy-vision-opencv
-  - ros2-distro-mutex >=0.13,<0.14
-  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - vc >=14.3,<15
   - vc14_runtime >=14.44.35208
   - ucrt >=10.0.20348.0
@@ -12731,11 +12731,11 @@ packages:
   variants:
     target_platform: linux-64
   depends:
+  - ros2-distro-mutex >=0.13,<0.14
+  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - ros-jazzy-cv-bridge
   - eigen
   - ros-jazzy-vision-opencv
-  - ros2-distro-mutex >=0.13,<0.14
-  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - libgcc >=15
   - libgcc >=15
   - libstdcxx >=15
@@ -12750,13 +12750,13 @@ packages:
   variants:
     target_platform: osx-arm64
   depends:
+  - ros2-distro-mutex >=0.13,<0.14
+  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - ros-jazzy-rosidl-default-runtime
   - ros-jazzy-geometry-msgs
   - numpy
   - numpy >=1.23,<3
   - ros-jazzy-std-msgs
-  - ros2-distro-mutex >=0.13,<0.14
-  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - libcxx >=22
   - python_abi 3.12.* *_cp312
   license: LicenseRef-MIT
@@ -12770,13 +12770,13 @@ packages:
     cxx_compiler: vs2022
     target_platform: win-64
   depends:
+  - ros2-distro-mutex >=0.13,<0.14
+  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - ros-jazzy-rosidl-default-runtime
   - ros-jazzy-geometry-msgs
   - numpy
   - numpy >=1.23,<3
   - ros-jazzy-std-msgs
-  - ros2-distro-mutex >=0.13,<0.14
-  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - vc >=14.3,<15
   - vc14_runtime >=14.44.35208
   - ucrt >=10.0.20348.0
@@ -12790,13 +12790,13 @@ packages:
   variants:
     target_platform: linux-64
   depends:
+  - ros2-distro-mutex >=0.13,<0.14
+  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - ros-jazzy-rosidl-default-runtime
   - ros-jazzy-geometry-msgs
   - numpy
   - numpy >=1.23,<3
   - ros-jazzy-std-msgs
-  - ros2-distro-mutex >=0.13,<0.14
-  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - libgcc >=15
   - libgcc >=15
   - libstdcxx >=15
@@ -12810,6 +12810,8 @@ packages:
   variants:
     target_platform: osx-arm64
   depends:
+  - ros2-distro-mutex >=0.13,<0.14
+  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - ros-jazzy-aruco
   - ros-jazzy-aruco-msgs
   - ros-jazzy-cv-bridge
@@ -12821,8 +12823,6 @@ packages:
   - ros-jazzy-tf2-geometry-msgs
   - ros-jazzy-sensor-msgs
   - ros-jazzy-visualization-msgs
-  - ros2-distro-mutex >=0.13,<0.14
-  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - libcxx >=22
   - python_abi 3.12.* *_cp312
   - numpy >=1.23,<3
@@ -12842,6 +12842,8 @@ packages:
     cxx_compiler: vs2022
     target_platform: win-64
   depends:
+  - ros2-distro-mutex >=0.13,<0.14
+  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - ros-jazzy-aruco
   - ros-jazzy-aruco-msgs
   - ros-jazzy-cv-bridge
@@ -12853,8 +12855,6 @@ packages:
   - ros-jazzy-tf2-geometry-msgs
   - ros-jazzy-sensor-msgs
   - ros-jazzy-visualization-msgs
-  - ros2-distro-mutex >=0.13,<0.14
-  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - vc >=14.3,<15
   - vc14_runtime >=14.44.35208
   - ucrt >=10.0.20348.0
@@ -12874,6 +12874,8 @@ packages:
   variants:
     target_platform: linux-64
   depends:
+  - ros2-distro-mutex >=0.13,<0.14
+  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - ros-jazzy-aruco
   - ros-jazzy-aruco-msgs
   - ros-jazzy-cv-bridge
@@ -12885,8 +12887,6 @@ packages:
   - ros-jazzy-tf2-geometry-msgs
   - ros-jazzy-sensor-msgs
   - ros-jazzy-visualization-msgs
-  - ros2-distro-mutex >=0.13,<0.14
-  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - libgcc >=15
   - libgcc >=15
   - libstdcxx >=15
@@ -13553,13 +13553,13 @@ packages:
   variants:
     target_platform: osx-arm64
   depends:
+  - ros2-distro-mutex >=0.13,<0.14
+  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - ros-jazzy-aruco-msgs
   - ros-jazzy-geometry-msgs
   - ros-jazzy-rclpy
   - ros-jazzy-tf2-geometry-msgs
   - ros-jazzy-tf2-ros
-  - ros2-distro-mutex >=0.13,<0.14
-  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - libcxx >=22
   - python_abi 3.12.* *_cp312
   - numpy >=1.23,<3
@@ -13574,13 +13574,13 @@ packages:
     cxx_compiler: vs2022
     target_platform: win-64
   depends:
+  - ros2-distro-mutex >=0.13,<0.14
+  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - ros-jazzy-aruco-msgs
   - ros-jazzy-geometry-msgs
   - ros-jazzy-rclpy
   - ros-jazzy-tf2-geometry-msgs
   - ros-jazzy-tf2-ros
-  - ros2-distro-mutex >=0.13,<0.14
-  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - vc >=14.3,<15
   - vc14_runtime >=14.44.35208
   - ucrt >=10.0.20348.0
@@ -13595,13 +13595,13 @@ packages:
   variants:
     target_platform: linux-64
   depends:
+  - ros2-distro-mutex >=0.13,<0.14
+  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - ros-jazzy-aruco-msgs
   - ros-jazzy-geometry-msgs
   - ros-jazzy-rclpy
   - ros-jazzy-tf2-geometry-msgs
   - ros-jazzy-tf2-ros
-  - ros2-distro-mutex >=0.13,<0.14
-  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - libgcc >=15
   - libgcc >=15
   - libstdcxx >=15
@@ -15425,11 +15425,11 @@ packages:
   variants:
     target_platform: linux-64
   depends:
+  - ros2-distro-mutex >=0.13,<0.14
+  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - libusb
   - libusb >=1.0.29,<2.0a0
   - libudev
-  - ros2-distro-mutex >=0.13,<0.14
-  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - libgcc >=15
   - libgcc >=15
   - libstdcxx >=15
@@ -15445,24 +15445,27 @@ packages:
   variants:
     target_platform: linux-64
   depends:
+  - ros2-distro-mutex >=0.13,<0.14
+  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - libglu
   - libglu >=9.0.3,<9.1.0a0
   - xorg-libx11
   - xorg-libx11 >=1.8.13,<2.0a0
   - xorg-xorgproto
+  - libgl-devel
+  - libopengl-devel
+  - xorg-libxext
+  - xorg-libxext >=1.3.7,<2.0a0
   - glfw 3.*
   - glfw >=3.4,<4.0a0
-  - ros2-distro-mutex >=0.13,<0.14
-  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - libgcc >=15
   - libgcc >=15
   - libstdcxx >=15
-  - openssl >=3.6.2,<4.0a0
   - libusb >=1.0.29,<2.0a0
   - libudev1 >=257.13
+  - openssl >=3.6.2,<4.0a0
   - libgl >=1.7.0,<2.0a0
   - libopengl >=1.7.0,<2.0a0
-  - xorg-libxext >=1.3.7,<2.0a0
   - python_abi 3.12.* *_cp312
   - numpy >=1.23,<3
   license: LicenseRef-Apache-2.0
@@ -16096,9 +16099,9 @@ packages:
   variants:
     target_platform: linux-64
   depends:
-  - ros-jazzy-libphidget22
   - ros2-distro-mutex >=0.13,<0.14
   - ros2-distro-mutex >=0.13.0,<0.14.0a0
+  - ros-jazzy-libphidget22
   - libgcc >=15
   - libgcc >=15
   - libstdcxx >=15
@@ -16116,10 +16119,10 @@ packages:
   variants:
     target_platform: linux-64
   depends:
-  - ros-jazzy-rosidl-default-runtime
-  - ros-jazzy-std-msgs
   - ros2-distro-mutex >=0.13,<0.14
   - ros2-distro-mutex >=0.13.0,<0.14.0a0
+  - ros-jazzy-rosidl-default-runtime
+  - ros-jazzy-std-msgs
   - libgcc >=15
   - libgcc >=15
   - libstdcxx >=15
@@ -17660,6 +17663,8 @@ packages:
   variants:
     target_platform: linux-64
   depends:
+  - ros2-distro-mutex >=0.13,<0.14
+  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - ros-jazzy-librealsense2
   - ros-jazzy-realsense2-camera-msgs
   - ros-jazzy-launch-ros
@@ -17679,13 +17684,11 @@ packages:
   - ros-jazzy-tf2
   - ros-jazzy-tf2-ros
   - ros-jazzy-diagnostic-updater
-  - ros2-distro-mutex >=0.13,<0.14
-  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - libgcc >=15
   - libgcc >=15
   - libstdcxx >=15
-  - python_abi 3.12.* *_cp312
   - numpy >=1.23,<3
+  - python_abi 3.12.* *_cp312
   license: LicenseRef-Apache-2.0
   sources:
     ros-jazzy-librealsense2:
@@ -17700,12 +17703,12 @@ packages:
   variants:
     target_platform: linux-64
   depends:
+  - ros2-distro-mutex >=0.13,<0.14
+  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - ros-jazzy-rosidl-default-runtime
   - ros-jazzy-builtin-interfaces
   - ros-jazzy-std-msgs
   - ros-jazzy-sensor-msgs
-  - ros2-distro-mutex >=0.13,<0.14
-  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - libgcc >=15
   - libgcc >=15
   - libstdcxx >=15
@@ -18732,11 +18735,11 @@ packages:
   variants:
     target_platform: linux-64
   depends:
+  - ros2-distro-mutex >=0.13,<0.14
+  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - ros-jazzy-robp-interfaces
   - ros-jazzy-rclpy
   - ros-jazzy-std-msgs
-  - ros2-distro-mutex >=0.13,<0.14
-  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - libgcc >=15
   - libgcc >=15
   - libstdcxx >=15
@@ -18802,6 +18805,8 @@ packages:
   variants:
     target_platform: osx-arm64
   depends:
+  - ros2-distro-mutex >=0.13,<0.14
+  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - ros-jazzy-aruco-ros
   - ros-jazzy-builtin-interfaces
   - ros-jazzy-realsense2-description
@@ -18809,8 +18814,6 @@ packages:
   - ros-jazzy-ros2launch
   - ros-jazzy-rviz2
   - ros-jazzy-tf2-ros
-  - ros2-distro-mutex >=0.13,<0.14
-  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - libcxx >=22
   - python_abi 3.12.* *_cp312
   - numpy >=1.23,<3
@@ -18825,6 +18828,8 @@ packages:
     cxx_compiler: vs2022
     target_platform: win-64
   depends:
+  - ros2-distro-mutex >=0.13,<0.14
+  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - ros-jazzy-aruco-ros
   - ros-jazzy-builtin-interfaces
   - ros-jazzy-realsense2-description
@@ -18832,8 +18837,6 @@ packages:
   - ros-jazzy-ros2launch
   - ros-jazzy-rviz2
   - ros-jazzy-tf2-ros
-  - ros2-distro-mutex >=0.13,<0.14
-  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - vc >=14.3,<15
   - vc14_runtime >=14.44.35208
   - ucrt >=10.0.20348.0
@@ -18848,6 +18851,8 @@ packages:
   variants:
     target_platform: linux-64
   depends:
+  - ros2-distro-mutex >=0.13,<0.14
+  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - ros-jazzy-aruco-ros
   - ros-jazzy-builtin-interfaces
   - ros-jazzy-realsense2-description
@@ -18855,8 +18860,6 @@ packages:
   - ros-jazzy-ros2launch
   - ros-jazzy-rviz2
   - ros-jazzy-tf2-ros
-  - ros2-distro-mutex >=0.13,<0.14
-  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - libgcc >=15
   - libgcc >=15
   - libstdcxx >=15
@@ -18871,12 +18874,12 @@ packages:
   variants:
     target_platform: osx-arm64
   depends:
+  - ros2-distro-mutex >=0.13,<0.14
+  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - ros-jazzy-rosidl-default-runtime
   - ros-jazzy-std-msgs
   - numpy
   - numpy >=1.23,<3
-  - ros2-distro-mutex >=0.13,<0.14
-  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - libcxx >=22
   - python_abi 3.12.* *_cp312
   license: LicenseRef-MIT
@@ -18890,12 +18893,12 @@ packages:
     cxx_compiler: vs2022
     target_platform: win-64
   depends:
+  - ros2-distro-mutex >=0.13,<0.14
+  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - ros-jazzy-rosidl-default-runtime
   - ros-jazzy-std-msgs
   - numpy
   - numpy >=1.23,<3
-  - ros2-distro-mutex >=0.13,<0.14
-  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - vc >=14.3,<15
   - vc14_runtime >=14.44.35208
   - ucrt >=10.0.20348.0
@@ -18909,12 +18912,12 @@ packages:
   variants:
     target_platform: linux-64
   depends:
+  - ros2-distro-mutex >=0.13,<0.14
+  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - ros-jazzy-rosidl-default-runtime
   - ros-jazzy-std-msgs
   - numpy
   - numpy >=1.23,<3
-  - ros2-distro-mutex >=0.13,<0.14
-  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - libgcc >=15
   - libgcc >=15
   - libstdcxx >=15
@@ -18991,6 +18994,8 @@ packages:
   variants:
     target_platform: linux-64
   depends:
+  - ros2-distro-mutex >=0.13,<0.14
+  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - ros-jazzy-phidgets-api
   - ros-jazzy-phidgets-msgs
   - ros-jazzy-robp-interfaces
@@ -19000,8 +19005,6 @@ packages:
   - ros-jazzy-std-srvs
   - ros-jazzy-tf2
   - ros-jazzy-tf2-geometry-msgs
-  - ros2-distro-mutex >=0.13,<0.14
-  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - libgcc >=15
   - libgcc >=15
   - libstdcxx >=15
@@ -22857,12 +22860,12 @@ packages:
   variants:
     target_platform: linux-64
   depends:
+  - ros2-distro-mutex >=0.13,<0.14
+  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - ros-jazzy-rclcpp
   - ros-jazzy-sensor-msgs
   - ros-jazzy-std-srvs
   - ros-jazzy-rclcpp-components
-  - ros2-distro-mutex >=0.13,<0.14
-  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - libgcc >=15
   - libgcc >=15
   - libstdcxx >=15

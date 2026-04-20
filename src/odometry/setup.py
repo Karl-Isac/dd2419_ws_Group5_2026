@@ -28,6 +28,8 @@ setup(
             'odometry_dev_mag_3 = odometry.odometry_dev_mag_3:main',
             'odometry_only_encoders = odometry.odometry_only_encoders:main',
             'odometry_fixed = odometry.odometry_fixed:main',
+            'odometry_fixed_no_imu = odometry.odometry_fixed_no_imu:main',
+            'odometry_dev_mag_3_fixed = odometry.odometry_dev_mag_3_fixed:main',
         ],
     },
 )

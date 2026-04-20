@@ -40,6 +40,7 @@ setup(
             'arm_control = learning_tf2_py.arm_control:main',
             'arm_cube_detection_test = learning_tf2_py.arm_cube_detection_test:main',
             'exploration_mapper = learning_tf2_py.exploration_mapper:main',
+            'exploration_mapper_new = learning_tf2_py.exploration_mapper_new:main',
         ],
     },
 )
