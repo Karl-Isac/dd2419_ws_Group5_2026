@@ -24,6 +24,7 @@ realsense = { cmd = "ros2 launch robp_launch realsense_launch.yaml" }
 keyboard = { cmd = "ros2 run learning_tf2_py keyboard" }
 rviz = { cmd = "ros2 run rviz2 rviz2"}
 arm_init = { cmd = "bash -c 'source install/setup.bash && ros2 launch learning_tf2_py arm_init.xml'"}
+# grumpy_init = {cmd = "bash -c ''"}
 
 # launch = "ros2 launch task_planner_py final_test.launch.py"
 launch = {cmd = "ros2 launch task_planner_py final_test.launch.py"}
@@ -86,6 +87,11 @@ ros-jazzy-detection = { path = "src/detection" }
 
 # Other
 argcomplete = ">=3.6.3,<4"
+ros-jazzy-rosidl-default-generators = ">=1.6.0,<2"
+ros-jazzy-ament-lint-auto = ">=0.17.3,<0.18"
+ros-jazzy-ament-lint-common = ">=0.17.3,<0.18"
+ros-jazzy-geometry-msgs = ">=5.3.6,<6"
+scikit-learn = ">=1.8.0,<2"
 shapely = ">=2.1.2,<3"
 
 [target.linux-64.dependencies]

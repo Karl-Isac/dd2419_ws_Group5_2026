@@ -13,11 +13,13 @@ setup(
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
         (os.path.join('share', package_name, 'launch'), glob('launch/*.launch.py')),
+        (os.path.join('share', package_name, 'config'), glob('config/*')),
+
     ],
     install_requires=['setuptools'],
     zip_safe=True,
     maintainer='ost',
-    maintainer_email='magnus99ericson@gmail.com',
+    maintainer_email='',
     description='TODO: Package description',
     license='TODO: License declaration',
     extras_require={
@@ -31,9 +33,13 @@ setup(
             # 'controller = grumpy_navigation_py.controller_node:main',
 
             # 'planner = grumpy_navigation_py.simple_planner_node:main',
-            'planner = grumpy_navigation_py.simple_planner_node_2:main',
+            # 'planner = grumpy_navigation_py.simple_planner_node_2:main',
+            'planner = grumpy_navigation_py.planner_node_ms3:main',
 
-            'controller = grumpy_navigation_py.path_controller_node:main',
+            # 'controller = grumpy_navigation_py.path_controller_node:main',
+            'controller = grumpy_navigation_py.controller_node_ms3:main',
+
+            'fake_obstacles = grumpy_navigation_py.fake_obsctacle_node:main',
 
         ],
     },

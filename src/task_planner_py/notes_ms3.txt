@@ -2,12 +2,18 @@ Task planner:
 
     - Remove tracking of objects in task planner, handle it in detection
     - only 1 topic sent to path planner
-    - Add 
+    - Add explore state
+        - if at least one object and box is detected, cancel exploration and start select object state
 
     How to chose object and box to got to:
         - Read not picked up objects from map file 
         - Figure out where robot is now
         - Choose object/box that is closest (bird path) to the robot
+
+    - current object id, to see what we are handling
+
+    - 
+
 
 Detection:
 
@@ -17,28 +23,57 @@ Detection:
             * Boxes: pose
 
 
+Obsticle detection:
+    - use lidar
+
+
 Navigation:
 
     Path node:
 
         - Path planner:
             - A-star (A*)
-            - Occupancy grid isntead
+            - Occupancy grid instead
 
         - Change to one topic instead of 2 to decide if we are in pick or place stage
         - Use map file with boundary to check if path is 
         - Use and map file with obsticles
+
+        - Inflated cost map maybe
         
 
+Arm:
+
+    - Arm return failure, what to do then:
+        - remove list in task_planner and detection node
 
 
 
 Exploration node:
 
     topis:
-        - explore_start/
-        - explore_done/
+        - pub: explore/start/
+        - sub: explore/done/  
     
+    detection might be turned off when turning
+
+
+    Logic:
+        - maintain a grid over the known boundary
+
+        - unknown at start
+
+        - from current robot pose + camera FOV:
+            - raycast visible cells
+            - mark them seen
+
+        - score a few candidate movement directions by how much unknown area they would likely reveal
+
+        - move toward the best one
+
+        - if blocked, turn toward freer side (or drive)
+            
+
 
 
 

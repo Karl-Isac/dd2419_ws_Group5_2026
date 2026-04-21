@@ -42,8 +42,8 @@ class Detection(Node):
             PointCloud2, '/realsense/depth/color/ds_points', 10)
         
         # TODO: (Private Test) Test the belief range of point cloud of realsense, initialization
-        self.test_pub = self.create_publisher(
-            PointCloud2, '/test_points', 10
+        self.test_pub_box = self.create_publisher(
+            PointCloud2, '/test_points_box', 10
         )
 
         # Subscribe to point cloud topic and call callback function on each received message
@@ -116,6 +116,23 @@ class Detection(Node):
                     self.box_lists.append([x, y, angle_deg])
                     self.box_num += 1
                     self.known_box_num += 1
+                elif type_id == 'S':
+                    starting = TransformStamped()
+                    starting.header.stamp = self.get_clock().now().to_msg()
+                    starting.header.frame_id = 'map'
+                    starting.child_frame_id = 'odom'
+                    starting.transform.translation.x = x
+                    starting.transform.translation.y = y
+                    starting.transform.translation.z = 0
+                    q = quaternion_from_euler(0, 0, angle_rad)
+                    starting.transform.rotation.x = q[0]
+                    starting.transform.rotation.y = q[1]
+                    starting.transform.rotation.z = q[2]
+                    starting.transform.rotation.w = q[3]
+
+                    self.static_broadcaster.sendTransform(starting)
+
+                    self.metadata_rows.append(row)
                 else:
                     self.metadata_rows.append(row)
 
@@ -171,7 +188,7 @@ class Detection(Node):
         """
 
         # TODO: (Private Test) 新增：用于收集所有满足条件的点，并在最后一次性发布成一个新的点云，方便调试和可视化
-        test_points = []
+        test_points_box = []
 
         # Convert ROS -> NumPy
 
@@ -256,30 +273,30 @@ class Detection(Node):
 
                 if y > 0.045 and y < 0.055:
                     # TODO: (Private Test) 新增：满足条件的点直接append原始gen[idx]，保留所有字段
-                    test_points.append(gen[idx])
+                    test_points_box.append(gen[idx])
                     if is_grey(h,s,v):
                         grey_points.append([z ,-x])
 
         # red 
         if red_counter > 10:
-            self.object_detection(msg, red_sum_x, red_sum_y, red_sum_z, red_counter, 'Red')
+            self.object_publish(msg, red_sum_x, red_sum_y, red_sum_z, red_counter, 'Red')
 
         # blue
         if blue_counter > 10:
-            self.object_detection(msg, blue_sum_x, blue_sum_y, blue_sum_z, blue_counter, 'Blue')
+            self.object_publish(msg, blue_sum_x, blue_sum_y, blue_sum_z, blue_counter, 'Blue')
         
         # green
         if green_counter > 10:
-            self.object_detection(msg, green_sum_x, green_sum_y, green_sum_z, green_counter, 'Green')
+            self.object_publish(msg, green_sum_x, green_sum_y, green_sum_z, green_counter, 'Green')
 
         # wood
         if wood_counter > 10:
-            self.object_detection(msg, wood_sum_x, wood_sum_y, wood_sum_z, wood_counter, 'Wood')
+            self.object_publish(msg, wood_sum_x, wood_sum_y, wood_sum_z, wood_counter, 'Wood')
                     
         # TODO: (Private Test) 新增：将所有满足条件的点组成一个点云并一次性发布，保留原始字段（含颜色）
-        if test_points:
-            cloud = pc2.create_cloud(msg.header, msg.fields, test_points)
-            self.test_pub.publish(cloud)
+        if test_points_box:
+            cloud = pc2.create_cloud(msg.header, msg.fields, test_points_box)
+            self.test_pub_box.publish(cloud)
 
         self.publish_2d_cloud(grey_points, msg.header)
 
@@ -355,7 +372,7 @@ class Detection(Node):
             except TransformException as ex:
                 self.get_logger().error(f'Transform failed: {ex}')
     
-    def object_detection(self, msg, sum_x, sum_y, sum_z, counter, color):
+    def object_publish(self, msg, sum_x, sum_y, sum_z, counter, color):
         # object_num is the number of detected objects, regardless of color, used for TF frame naming
         self.get_logger().debug(f'{color} object detected.')
         self.object = tf2_geometry_msgs.PoseStamped()
