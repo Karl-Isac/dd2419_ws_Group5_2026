@@ -916,7 +916,7 @@ class Detection(Node):
         s_hsl[mask_delta] = delta[mask_delta] / denominator
         
         # Final grey condition
-        grey_cond = ((h > 80) | (h == 0)) & (s_hsl < 0.2) & (l < 0.4)
+        grey_cond = ((h > 20) | (h == 0)) & (s_hsl < 0.2) & (l < 0.3)
         return grey_cond
     
     def _rgb_to_hsv_vectorized(self, r, g, b):
@@ -943,13 +943,13 @@ class Detection(Node):
         return h, s, v
 
     def _is_red_vectorized(self, h, s, v):
-        return ((h <= 25) | (h >= 335)) & (s > 0.55) & (v > 0.45)
+        return ((h <= 25) | (h >= 335)) & (s > 0.4) & (v > 0.2)
 
     def _is_blue_vectorized(self, h, s, v):
-        return (h >= 185) & (h <= 200) & (s > 0.6) & (v > 0.4)
+        return (h >= 185) & (h <= 220) & (s > 0.4) & (v > 0.2)
 
     def _is_green_vectorized(self, h, s, v):
-        return (h >= 140) & (h <= 185) & (s > 0.6) & (v > 0.25)
+        return (h >= 140) & (h <= 185) & (s > 0.4) & (v > 0.2)
     
     def write_csv(self):
         try:
