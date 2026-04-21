@@ -34,7 +34,7 @@ class PathControllerNode(Node):
         self.declare_parameter("rate_hz", 20.0)
 
         # Stop distances
-        self.declare_parameter("object_stop_distance", 0.18)
+        self.declare_parameter("object_stop_distance", 0.185)
         self.declare_parameter("box_stop_distance", 0.25)
         self.declare_parameter("exploration_stop_distance", 0.10)
 

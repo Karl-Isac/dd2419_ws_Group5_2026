@@ -415,7 +415,7 @@ class TaskPlannerNode(Node):
 
         elif self.state == "GENERATE_EXPLORATION_POSE":
             if not self._published_this_state:
-                # self.get_logger().info("GENERATE_EXPLORATION_POSE")
+                self.get_logger().info("inside GENERATE_EXPLORATION_POSE")
                 self.exploration_pub.publish(String(data="Generate path"))
                 self._published_this_state = True
                 self.generate_exploration_pose_success = False

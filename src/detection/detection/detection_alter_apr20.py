@@ -74,8 +74,8 @@ class Detection(Node):
 
         # open and load map file and workspace (csv)
         package_path = get_package_share_directory('detection')
-        # map_path = os.path.join(package_path, 'config', 'blank.csv')
-        map_path = os.path.join(package_path, 'config', 'map_1_1.csv')
+        map_path = os.path.join(package_path, 'config', 'blank.csv')
+        # map_path = os.path.join(package_path, 'config', 'map_1_1.csv')
         workspace_path = os.path.join(package_path, 'config', 'workspace_1.csv')
         self.metadata_rows = []
         self.boundary = [] # List of intersection of edges of workspace, in format of [[x1, y1], [x2, y2], ...] 
@@ -314,6 +314,7 @@ class Detection(Node):
         else:
             candidates = np.empty((0, 6), dtype=np.float32)
             test_points_cube = []
+            self.get_logger().warn("no points for object detection")
 
         # Build grey_points list: (z, -x) format for box detection
         # Build grey_points list: (z, -x) format for box detection
@@ -388,7 +389,9 @@ class Detection(Node):
         #     box_cloud = pc2.create_cloud(header, fields, test_points_box)
         #     self.test_pub_box.publish(box_cloud)
         if test_points_cube:
+            
             cube_cloud = pc2.create_cloud(header, fields, test_points_cube)
+            # print("publishing cude point cloud")
             self.test_pub_cube.publish(cube_cloud)
         
 
@@ -917,7 +920,7 @@ class Detection(Node):
         s_hsl[mask_delta] = delta[mask_delta] / denominator
         
         # Final grey condition
-        grey_cond = ((h > 80) | (h == 0)) & (s_hsl < 0.2) & (l < 0.4)
+        grey_cond = ((h > 20) | (h == 0)) & (s_hsl < 0.2) & (l < 0.3)
         return grey_cond
     
     def _rgb_to_hsv_vectorized(self, r, g, b):
@@ -944,13 +947,13 @@ class Detection(Node):
         return h, s, v
 
     def _is_red_vectorized(self, h, s, v):
-        return ((h <= 25) | (h >= 335)) & (s > 0.55) & (v > 0.45)
+        return ((h <= 25) | (h >= 335)) & (s > 0.4) & (v > 0.2)
 
     def _is_blue_vectorized(self, h, s, v):
-        return (h >= 185) & (h <= 200) & (s > 0.6) & (v > 0.4)
+        return (h >= 185) & (h <= 220) & (s > 0.4) & (v > 0.2)
 
     def _is_green_vectorized(self, h, s, v):
-        return (h >= 140) & (h <= 185) & (s > 0.6) & (v > 0.25)
+        return (h >= 140) & (h <= 185) & (s > 0.4) & (v > 0.2)
     
     def write_csv(self):
         try:
