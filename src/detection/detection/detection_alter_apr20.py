@@ -74,8 +74,9 @@ class Detection(Node):
 
         # open and load map file and workspace (csv)
         package_path = get_package_share_directory('detection')
-        map_path = os.path.join(package_path, 'config', 'blank.csv')
+        # map_path = os.path.join(package_path, 'config', 'blank.csv')
         # map_path = os.path.join(package_path, 'config', 'map_1_1.csv')
+        map_path = os.path.join(package_path, 'config', 'map_1_3.csv')
         workspace_path = os.path.join(package_path, 'config', 'workspace_1.csv')
         self.metadata_rows = []
         self.boundary = [] # List of intersection of edges of workspace, in format of [[x1, y1], [x2, y2], ...] 

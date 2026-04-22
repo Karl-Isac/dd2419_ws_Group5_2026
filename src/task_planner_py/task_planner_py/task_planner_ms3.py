@@ -196,6 +196,7 @@ class TaskPlannerNode(Node):
         for p in msg.poses:
             x = float(p.position.x)
             y = float(p.position.y)
+            
 
             tracked_obj = TrackedObject(self.next_object_id, x, y)
             self.next_object_id += 1

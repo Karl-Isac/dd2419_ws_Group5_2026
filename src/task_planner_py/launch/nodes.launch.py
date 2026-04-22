@@ -46,12 +46,12 @@ def generate_launch_description():
         output='screen'
     )
 
-    map_to_odom = Node(
-        package='tf2_ros',
-        executable='static_transform_publisher',
-        name='map_to_odom',
-        arguments=['0.49', '0.5', '0', '0', '0', '0', 'map', 'odom']
-    )
+    # map_to_odom = Node(
+    #     package='tf2_ros',
+    #     executable='static_transform_publisher',
+    #     name='map_to_odom',
+    #     arguments=['0.49', '0.5', '0', '0', '0', '0', 'map', 'odom']
+    # )
 
     return LaunchDescription([
         arm_safe_republisher,
@@ -60,5 +60,5 @@ def generate_launch_description():
         odometry,
         planner,
         controller,
-        map_to_odom,
+        # map_to_odom,
     ])
