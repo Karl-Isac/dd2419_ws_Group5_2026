@@ -253,6 +253,11 @@ class Arm_control(Node):
         self.nudge_cooldown_timer.destroy()
 
 
+
+    # Continue code cleanup from here
+    ###########################################################################################################################
+
+
     def timer_callback(self):
         # Visual servoing implemented here
         # TODO put this entire thing into a separate function and maybe even file if thats reasonable
