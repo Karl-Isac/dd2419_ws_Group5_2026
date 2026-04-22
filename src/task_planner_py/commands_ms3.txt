@@ -1,0 +1,32 @@
+
+pixi run colcon build --packages-select grumpy_navigation_py detection learning_tf2_py task_planner_py odometry grumpy_interfaces mapping --symlink-install
+
+source install/setup.bash
+
+pixi run ros2 launch task_planner_py ms3_test.launch.py
+
+pixi run detection detection
+
+pixi run phidgets
+
+pixi run realsense
+
+pixi run arm_init (except rviz and rqt)
+
+pixi run ros2 run learning_tf2_py arm_control
+
+ros2 run task_planner_py task_planner
+
+ros2 run odometry odometry
+
+ros2 run mapping fix_pose
+
+ros2 run grumpy_navigation_py fake_obstacles
+
+ros2 run detection detection
+
+
+NEW COMMANDS:
+
+
+

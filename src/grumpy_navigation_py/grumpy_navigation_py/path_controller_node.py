@@ -58,6 +58,7 @@ class PathControllerNode(Node):
         self.cmd_pub = self.create_publisher(DutyCycles, "/phidgets/motor/duty_cycles", 10)
         self.reached_pub = self.create_publisher(Bool, "/nav/reached", 10)
 
+        
         self.path_sub = self.create_subscription(Path, "/nav/path", self.on_path, 10)
         self.phase_sub = self.create_subscription(String, "/nav/phase", self.on_phase, 10)
 

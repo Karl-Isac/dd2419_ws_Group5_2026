@@ -28,7 +28,9 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'detection = detection.detection:main'
+            'detection = detection.detection:main',
+            'alter = detection.detection_alter:main',
+            'alter_apr20 = detection.detection_alter_apr20:main',
         ],
     },
 )

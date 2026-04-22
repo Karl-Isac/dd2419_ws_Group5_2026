@@ -13,6 +13,7 @@ from cv_bridge import CvBridge      # to convert between ros2 image and numpy ar
 import time
 
 # Self written functions
+# Self written functions
 from learning_tf2_py.arm_safe_republisher import jointmin,jointMAX
 from learning_tf2_py.inverse_kin import inverse_kinematics_to_joint_states
 from learning_tf2_py.pickup import saturate_difference,find_cube_in_image_msg, is_the_target_cube_colored
@@ -30,6 +31,10 @@ class Arm_control(Node):
             Image, '/arm/camera/image_debug2', 10)
         self._pub3 = self.create_publisher(
             Image, '/arm/camera/image_debug3', 10)
+        self._pub4 = self.create_publisher(
+            Image, '/arm/camera/image_debug3', 10)
+        self._pub5 = self.create_publisher(
+            Image, '/arm/camera/image_debug_gripper_crop', 10)
         self._pub4 = self.create_publisher(
             Image, '/arm/camera/image_debug3', 10)
         self._pub5 = self.create_publisher(
@@ -62,9 +67,16 @@ class Arm_control(Node):
         self.wait_for_place_command = False
         self.visual_servoing_ON = False
         self.look_at_gripper_contents = False
+        self.look_at_gripper_contents = False
         
         self.init_position = [10,120,50,150,100,120]
         self.joint0grip_value = 105
+
+        # Cube target within camera frame
+        image_half_width = 320
+        image_half_height = 240
+        self.width_target = image_half_width
+        self.height_target = image_half_height+200       # tunable, keep in mind that axis is flipped
 
         # Cube target within camera frame
         image_half_width = 320
@@ -91,7 +103,7 @@ class Arm_control(Node):
             else:
                 self.get_logger().warn("Invalid command, expecting: place")
         else:
-            self.get_logger().warn("Warning: No command expected at this point")
+            pass #self.get_logger().warn("Warning: No command expected at this point")  TODO put back
 
     def run(self):
         while True:
@@ -130,6 +142,12 @@ class Arm_control(Node):
             self.main_timeout_timer = self.create_timer(main_timeout, self.visual_servo_timeout)
             cant_see_cube_timeout = 2   # reset if cube cant be seen for this long while visual servoing
             self.cant_see_cube_timer = self.create_timer(cant_see_cube_timeout, self.visual_servo_timeout)
+            # Run visual servoing while the errors don't decrease, or a timeout doesnt trigger
+            self.was_timed_out = False
+            main_timeout = 10           # reset if visual servoing isnt complete in this time
+            self.main_timeout_timer = self.create_timer(main_timeout, self.visual_servo_timeout)
+            cant_see_cube_timeout = 2   # reset if cube cant be seen for this long while visual servoing
+            self.cant_see_cube_timer = self.create_timer(cant_see_cube_timeout, self.visual_servo_timeout)
             self.visual_servoing_ON = True
             while self.visual_servoing_ON:
                 rclpy.spin_once(self, timeout_sec=1)
@@ -145,6 +163,7 @@ class Arm_control(Node):
             self.get_logger().info("State 3 done")
             # State 4 - feedback control OFF, goto lower z to pick up
             z = 0.14
+            z = 0.14
             try:
                 joint2target, joint3target, joint4target = inverse_kinematics_to_joint_states(z=z,rho=self.rho)
             except:
@@ -157,9 +176,21 @@ class Arm_control(Node):
             self.goto_position(position)
             self.get_logger().info("State 5 done")
             # State 6 - goto initial position but gripper closed, check whether pickup was successful, report back
+            # State 6 - goto initial position but gripper closed, check whether pickup was successful, report back
             position = self.init_position.copy()
             position[0] = self.joint0grip_value
             self.goto_position(position)
+            self.look_at_gripper_contents = True
+            while self.look_at_gripper_contents:            # analyze a camera image in a callback
+                rclpy.spin_once(self, timeout_sec=1)
+            if self.cube_being_held:
+                self.report_pick_success()
+                self.get_logger().info("pick successful")
+            else:
+                self.report_pick_fail()
+                self.get_logger().info("pick failed")
+                self.goto_position(self.init_position)  # gripper release
+                continue
             self.look_at_gripper_contents = True
             while self.look_at_gripper_contents:            # analyze a camera image in a callback
                 rclpy.spin_once(self, timeout_sec=1)
@@ -195,7 +226,23 @@ class Arm_control(Node):
         msg.position = position
         self._pub_control.publish(msg)
         print(f"Going to position: {position}")
+        print(f"Going to position: {position}")
         time.sleep(1.5)
+
+    def report_pick_success(self):
+        msg = String()
+        msg.data = "pick_success"
+        self.report_publisher.publish(msg)
+
+    def report_pick_fail(self):
+        msg = String()
+        msg.data = "pick_fail"
+        self.report_publisher.publish(msg)
+
+    def visual_servo_timeout(self):
+        self.get_logger().warn("Visual servoing timed out (no cube seen or stuck for a long time)")
+        self.was_timed_out = True
+        self.visual_servoing_ON = False
 
     def report_pick_success(self):
         msg = String()
@@ -219,6 +266,7 @@ class Arm_control(Node):
                 try:
                     # Control gains:
                     k_sideways = 0.01#0.05                  commented values work with 0.5 sec timer
+                    k_sideways_integral = 0.005#0.1
                     k_sideways_integral = 0.005#0.1
                     k_rotation = 1
                     k_extension = 0.001         # either extension control or wheel control is used
@@ -312,6 +360,8 @@ class Arm_control(Node):
         
         
     def image_callback(self, msg: Image):
+        # For each image received on /arm/camera/image_raw it updates the cube position and orientation variables
+        # Known issues: it can detect multiple cubes/cube-like objects in the same frame, and both get written to the same attribute
         # For each image received on /arm/camera/image_raw it updates the cube position and orientation variables
         # Known issues: it can detect multiple cubes/cube-like objects in the same frame, and both get written to the same attribute
         if self.visual_servoing_ON:

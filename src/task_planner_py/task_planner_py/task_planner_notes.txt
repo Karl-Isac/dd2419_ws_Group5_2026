@@ -1,0 +1,6 @@
+
+
+task planner sends Goal message. Now fix planner to recive that it handles those objects. 
+
+
+
