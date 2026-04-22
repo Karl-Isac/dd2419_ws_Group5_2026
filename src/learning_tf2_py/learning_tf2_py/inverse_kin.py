@@ -29,12 +29,17 @@ def forward_kinematics(alpha,beta):
     rho = -l4*cos(alpha)+l3*cos(alpha-beta)
     return z,rho
 
+def saturate_z_rho(z,rho):
+    # Arm limits during visual servoing are defined here
+    z = max(0.14, min(z, 0.175))
+    rho = max(0.175, min(rho, 0.185))
+    return z,rho
+
 def inverse_kinematics(z,rho):
     # Calculate joint angles (diff from hardware coord system) corresponding to an arm height and extension
 
     # Saturate z, rho values, moving outside this area might be unsafe
-    z = max(0.14, min(z, 0.175))
-    rho = max(0.175, min(rho, 0.185))
+    z, rho = saturate_z_rho(z,rho)
 
     # Inverse kinematics calculation
     inverse_beta = arccos((l3**2+l4**2-(z-l5+l2)**2-rho**2)/(2*l3*l4))
