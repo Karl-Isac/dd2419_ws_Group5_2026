@@ -262,13 +262,13 @@ class Arm_control(Node):
         # Visual servoing implemented here
         # TODO put this entire thing into a separate function and maybe even file if thats reasonable
         if self.visual_servoing_ON:
-            if self.cube_position_available:    
+            if self.cube_position_available:
                 try:
                     # Control gains:
-                    k_sideways = 0.01#0.05                  commented values work with 0.5 sec timer
-                    k_sideways_integral = 0.005#0.1
+                    k_sideways = 0.01
+                    k_sideways_integral = 0.005
                     k_rotation = 1
-                    k_extension = 0.001         # either extension control or wheel control is used
+                    k_extension = 0.001      
 
                     # Previous targets:
                     prev_joint1target = self.joint1target
@@ -282,12 +282,13 @@ class Arm_control(Node):
                     self.cube_position_available = False
                     # Calculate errors:
                     sideways_error = self.width_target-cx
-                    rotation_target = rotation % 90
+                    rotation_target = rotation % 90     # rotation target used for rotation control
                     if rotation_target > 45:
                         rotation_target = rotation_target - 90
-                    rotation_error = self.joint1target - 120 - rotation_target # just an estimated value
+                    rotation_error = self.joint1target - 120 - rotation_target      # rotation error used as termination condition
                     extension_error = self.height_target-cy
-                    self.get_logger().info(f"Errors (side,rot,ext): {int(sideways_error)}, {int(rotation_error)}, {int(extension_error)}")
+                    #self.get_logger().info(f"Errors (sidew,rot,ext): {sideways_error:3.0f}, {rotation_error:3.0f}, {extension_error:3.0f}")
+                    # TODO you might want to finetune the termination and nudge forward condition error values, changes were def made to rotation error implementation
                     # Termination condition:
                     if (abs(sideways_error)<30) and (abs(rotation_error)<25) and (abs(extension_error)<50) and not self.wheels_on:
                         self.visual_servoing_ON = False
@@ -308,18 +309,12 @@ class Arm_control(Node):
                     # Rotation control (P)
                     self.joint1target = 120 + k_rotation*rotation_target
 
-                    # z-rho control (arm extend/contract + up-down, P)
-
-                    # Work in progress, do not use it rn
-                    # TODO:
-                    # make it use exisitng arm control for small errors
-                    # do short nudges with wheels, keep it on a cooldown in a separate callback or node i guess
-                    # move rho more forward to make backward wheel control make more sense?
-                    
+                    # Wheel control (in discrete bursts)
                     if (abs(sideways_error)<30) and (abs(rotation_error)<25):   # use the wheels only if the arm is already well positioned sideways and gripper rotation-wise
-                        print("Error good enough for nudge")
                         if self.arm_reach_saturated():
                             self.nudge_wheels(extension_error)      # command has an internal cooldown, nudges by a fix amount
+
+                    # z-rho control (arm extend/contract + up-down, P)                  
                     self.rho = 0.175 + k_extension*extension_error
                     try:
                         self.joint2target, self.joint3target, self.joint4target = inverse_kinematics_to_joint_states(z=self.z,rho=self.rho)
@@ -339,6 +334,7 @@ class Arm_control(Node):
                     self.joint4target = saturate_difference(self.joint4target,prev_joint4target,limit/10)
                     self.joint5target = saturate_difference(self.joint5target,prev_joint5target,limit)
 
+                    # Publish the arm command
                     msg = ArmControl()
                     msg.header.stamp = self.get_clock().now().to_msg()
                     msg.time = [100]*6  # move all joints in 100 ms (timer period), safe bcuz of saturation just above
@@ -356,10 +352,7 @@ class Arm_control(Node):
                     raise
         
         
-        
     def image_callback(self, msg: Image):
-        # For each image received on /arm/camera/image_raw it updates the cube position and orientation variables
-        # Known issues: it can detect multiple cubes/cube-like objects in the same frame, and both get written to the same attribute
         # For each image received on /arm/camera/image_raw it updates the cube position and orientation variables
         # Known issues: it can detect multiple cubes/cube-like objects in the same frame, and both get written to the same attribute
         if self.visual_servoing_ON:
@@ -370,11 +363,9 @@ class Arm_control(Node):
             except Exception as ex:     # if crash is due to no cube detected then pass, otherwise reraise
                 if ex.args[0] != "Cube not found in frame":
                     raise ex
-        elif self.look_at_gripper_contents:
+        elif self.look_at_gripper_contents:     # Visually check whether it actually picked the cube up
             self.cube_being_held = is_the_target_cube_colored(msg, self.width_target, self.height_target, self._pub5)
             self.look_at_gripper_contents = False
-
-                      
 
 
 def main():

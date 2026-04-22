@@ -110,8 +110,8 @@ def is_the_target_cube_colored(msg, width_target, height_target, publisher):
     publisher.publish(out_msg)
     
     h,s,v = rgb_to_hsv(r, g, b)
-    print("HSV of picked up thing:")
-    print(h,s,v)
+    #print("HSV of picked up thing:")
+    #print(h,s,v)
     if is_red(h,s,v): 
         print("Red cube grabbed")
         return True
