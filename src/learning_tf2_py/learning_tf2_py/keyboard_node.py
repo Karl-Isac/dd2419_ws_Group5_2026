@@ -32,11 +32,11 @@ class KeyboardTeleop(Node):
                 msg.duty_cycle_left = -0.3
                 msg.duty_cycle_right = -0.3
             elif key == 'a':
-                msg.duty_cycle_left = -0.1
-                msg.duty_cycle_right = 0.1
+                msg.duty_cycle_left = -0.18
+                msg.duty_cycle_right = 0.18
             elif key == 'd':
-                msg.duty_cycle_left = 0.1
-                msg.duty_cycle_right = -0.1
+                msg.duty_cycle_left = 0.18
+                msg.duty_cycle_right = -0.18
             elif key == 'c' or key == '\x03':
                 msg.duty_cycle_left = 0.0
                 msg.duty_cycle_right = 0.0
