@@ -12100,6 +12100,8 @@ packages:
   variants:
     target_platform: osx-arm64
   depends:
+  - ros2-distro-mutex >=0.13,<0.14
+  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - ros-jazzy-geometry-msgs
   - ros-jazzy-nav-msgs
   - numpy
@@ -12109,8 +12111,6 @@ packages:
   - ros-jazzy-rclpy
   - ros-jazzy-tf-transformations
   - ros-jazzy-tf2-ros
-  - ros2-distro-mutex >=0.13,<0.14
-  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - libcxx >=22
   - python_abi 3.12.* *_cp312
   license: LicenseRef-MIT
@@ -12122,6 +12122,8 @@ packages:
   variants:
     target_platform: linux-64
   depends:
+  - ros2-distro-mutex >=0.13,<0.14
+  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - ros-jazzy-geometry-msgs
   - ros-jazzy-nav-msgs
   - numpy
@@ -12131,8 +12133,6 @@ packages:
   - ros-jazzy-rclpy
   - ros-jazzy-tf-transformations
   - ros-jazzy-tf2-ros
-  - ros2-distro-mutex >=0.13,<0.14
-  - ros2-distro-mutex >=0.13.0,<0.14.0a0
   - libgcc >=15
   - libgcc >=15
   - libstdcxx >=15
