@@ -4,7 +4,7 @@ import rclpy
 from rclpy.node import Node
 
 from sensor_msgs.msg import Image
-from robp_interfaces.msg import ArmControl, DutyCycles
+from robp_interfaces.msg import ArmControl, DutyCycles, Encoders
 from std_msgs.msg import String
 
 import time
@@ -41,6 +41,9 @@ class Arm_control(Node):
         self.create_subscription(
             Image, '/arm/camera/image_raw', self.image_callback, 3)
         
+        # Subscribe to wheel encoder topic to measure distance during nudges a backing up
+        self.create_subscription(Encoders, '/phidgets/motor/encoders', self.encoder_callback, 1)
+        
         # Listen for commands and report back success/failure to the global planner
         self.create_subscription(String, "/arm/cmd", self.cmd_callback, 10)
         self.report_publisher = self.create_publisher(String, "/arm/report_back", 10)
@@ -53,6 +56,7 @@ class Arm_control(Node):
         self.wheels_on = False
         self.nudge_on_cooldown = False
         self.already_reversed_once = False
+        self.reversing = False
         
         self.init_position = [10,120,50,150,100,120]
         self.joint0grip_value = 105
@@ -66,6 +70,20 @@ class Arm_control(Node):
         # When visual servoing send out a control action every .1 sec
         timer_period = 0.1
         self.timer = self.create_timer(timer_period, self.timer_callback)
+
+    def encoder_callback(self, msg: Encoders):
+        # Used for distance measurement during wheels nudges and backing up
+        # Only left wheel encoder is used for simplicity
+        ## 100 encoder ticks are around 1cm
+        # TODO potential issue: dropped messages, keep this in mind
+        if self.reversing:
+            self.reverse_counter = self.reverse_counter + abs(msg.delta_encoder_left)
+            if self.reverse_counter > 500:      # tunable, corresponds to distance travelled when backing up
+                self.reversing = False
+        elif self.nudging:
+            self.nudge_counter = self.nudge_counter + abs(msg.delta_encoder_left)
+            if self.nudge_counter > 100:      # tunable, corresponds to distance travelled when nudging with the wheels
+                self.nudging = False
 
     def cmd_callback(self, msg):
         # Handle messages received from the global planner
@@ -202,7 +220,11 @@ class Arm_control(Node):
             msg.duty_cycle_right = -0.1
             self.wheels_on = True
             self.wheel_pub.publish(msg)
-            time.sleep(1)   # tunable
+            # Wait until encoders say you backed up enough
+            self.reverse_counter = 0            # tweak distance it backs up in encoder callback
+            self.reversing = True
+            while self.reversing:
+                rclpy.spin_once(self, timeout_sec=0.1)
             msg.duty_cycle_left = 0
             msg.duty_cycle_right = 0
             self.wheel_pub.publish(msg)
@@ -233,30 +255,22 @@ class Arm_control(Node):
                 msg.duty_cycle_right = -0.1
             self.wheels_on = True
             self.wheel_pub.publish(msg)
-            # Set up nudge length and cooldown
-            nudge_length = 0.25      # sec       wheels spin for this long (with 0.2 sec it was around 1cm per nudge)
-            self.nudge_shutoff_timer = self.create_timer(nudge_length, self.nudge_shutoff)
+            # Put this function on a cooldown
             nudge_cooldown = 0.75      # sec
             self.nudge_cooldown_timer = self.create_timer(nudge_cooldown, self.nudge_cooldown_over)
-
-    def nudge_shutoff(self):
-        # This callback stops the wheels after the nudge
-        msg = DutyCycles()
-        msg.duty_cycle_left = 0.0
-        msg.duty_cycle_right = 0.0
-        self.wheel_pub.publish(msg)
-        self.wheels_on = False
-        self.nudge_shutoff_timer.destroy()
+            # Turn off wheels after encoders say it has moved enough
+            self.nudge_counter = 0      # lenght of nudge can be tweaked in the encoder callback
+            self.nudging = True
+            while self.nudging:
+                rclpy.spin_once(self, timeout_sec=0.1)
+            msg.duty_cycle_left = 0.0
+            msg.duty_cycle_right = 0.0
+            self.wheel_pub.publish(msg)
+            self.wheels_on = False
 
     def nudge_cooldown_over(self):              # Nudge cooldown timer callback
         self.nudge_on_cooldown = False
         self.nudge_cooldown_timer.destroy()
-
-
-
-    # Continue code cleanup from here
-    ###########################################################################################################################
-
 
     def timer_callback(self):
         # Visual servoing implemented here
