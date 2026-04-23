@@ -57,6 +57,8 @@ class Arm_control(Node):
         self.nudge_on_cooldown = False
         self.already_reversed_once = False
         self.reversing = False
+        self.nudging = False
+        self.stop_wheels_ASAP = False
         
         self.init_position = [10,120,50,150,100,120]
         self.joint0grip_value = 105
@@ -76,14 +78,20 @@ class Arm_control(Node):
         # Only left wheel encoder is used for simplicity
         ## 100 encoder ticks are around 1cm
         # TODO potential issue: dropped messages, keep this in mind
+        # not potential, actual
         if self.reversing:
             self.reverse_counter = self.reverse_counter + abs(msg.delta_encoder_left)
             if self.reverse_counter > 500:      # tunable, corresponds to distance travelled when backing up
                 self.reversing = False
+                self.stop_wheels_ASAP = True
         elif self.nudging:
+            print("nudge counter:")
             self.nudge_counter = self.nudge_counter + abs(msg.delta_encoder_left)
-            if self.nudge_counter > 100:      # tunable, corresponds to distance travelled when nudging with the wheels
+            print(self.nudge_counter)
+            print(msg)
+            if self.nudge_counter > -1:      # tunable, corresponds to distance travelled when nudging with the wheels
                 self.nudging = False
+                self.stop_wheels_ASAP = True
 
     def cmd_callback(self, msg):
         # Handle messages received from the global planner
@@ -223,12 +231,6 @@ class Arm_control(Node):
             # Wait until encoders say you backed up enough
             self.reverse_counter = 0            # tweak distance it backs up in encoder callback
             self.reversing = True
-            while self.reversing:
-                rclpy.spin_once(self, timeout_sec=0.1)
-            msg.duty_cycle_left = 0
-            msg.duty_cycle_right = 0
-            self.wheel_pub.publish(msg)
-            self.wheels_on = False
             self.already_reversed_once = True
 
     def visual_servo_timeout(self):
@@ -261,12 +263,15 @@ class Arm_control(Node):
             # Turn off wheels after encoders say it has moved enough
             self.nudge_counter = 0      # lenght of nudge can be tweaked in the encoder callback
             self.nudging = True
-            while self.nudging:
-                rclpy.spin_once(self, timeout_sec=0.1)
-            msg.duty_cycle_left = 0.0
-            msg.duty_cycle_right = 0.0
-            self.wheel_pub.publish(msg)
-            self.wheels_on = False
+            
+    def stop_wheels(self):
+        msg = DutyCycles()
+        msg.duty_cycle_left = 0.0
+        msg.duty_cycle_right = 0.0
+        self.wheel_pub.publish(msg)
+        self.wheels_on = False
+        self.nudging = False
+        self.reversing = False
 
     def nudge_cooldown_over(self):              # Nudge cooldown timer callback
         self.nudge_on_cooldown = False
@@ -275,6 +280,8 @@ class Arm_control(Node):
     def timer_callback(self):
         # Visual servoing implemented here
         # TODO put this entire thing into a separate function and maybe even file if thats reasonable
+        if self.stop_wheels_ASAP:
+            self.stop_wheels()
         if self.visual_servoing_ON:
             if self.cube_position_available:
                 try:
