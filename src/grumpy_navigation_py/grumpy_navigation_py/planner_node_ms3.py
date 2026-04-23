@@ -1,24 +1,24 @@
 #!/usr/bin/env python3
+import os
+import math
+import heapq
 import yaml
+
+import numpy as np
+import matplotlib.pyplot as plt
+
 import rclpy
 from rclpy.node import Node
 
 from geometry_msgs.msg import PoseStamped, PoseArray
 from nav_msgs.msg import Path, OccupancyGrid
-from grumpy_interfaces.msg import GoalWithType
+from std_msgs.msg import Bool
 from visualization_msgs.msg import Marker
 
-import numpy as np
-
-import heapq
-import math
+from grumpy_interfaces.msg import GoalWithType
 
 from ament_index_python.packages import get_package_share_directory
-import os
 
-import matplotlib.pyplot as plt
-
-import tf2_ros
 from tf2_ros import Buffer, TransformListener
 
 
@@ -26,45 +26,96 @@ class AStarPlannerNode(Node):
     def __init__(self):
         super().__init__("astar_planner_node")
 
-        # ---- Parameters ----
+        # ---------------------------------------
+        # Parameters
+        # ---------------------------------------
         self.declare_parameter("world_frame", "map")
         self.declare_parameter("workspace_file", "fake_workspace.yaml")
         self.declare_parameter("grid_resolution", 0.02)
 
-        # temporary fixed start position
+        # fallback start if TF fails
         self.declare_parameter("start_x", 0.0)
         self.declare_parameter("start_y", 0.0)
 
+        # inflation
+        self.declare_parameter("workspace_inflation_m", 0.15)
+        self.declare_parameter("object_inflation_m", 0.15)
+        self.declare_parameter("box_inflation_m", 0.35)
+        self.declare_parameter("obstacle_inflation_m", 0.35)
+
+        # candidate search
+        self.declare_parameter("candidate_search_radius_m", 0.50)
+        self.declare_parameter("max_candidate_cells", 20)
+
+        # path blocked checking
+        self.declare_parameter("path_check_rate_hz", 5.0)
+
         self.world_frame = self.get_parameter("world_frame").value
-
-        package_share = get_package_share_directory("grumpy_navigation_py")
-        self.workspace_file = os.path.join(
-            package_share, "config", "fake_workspace.yaml"
-        )
-
         self.resolution = float(self.get_parameter("grid_resolution").value)
         self.start_x = float(self.get_parameter("start_x").value)
         self.start_y = float(self.get_parameter("start_y").value)
 
+        self.workspace_inflation_m = float(
+            self.get_parameter("workspace_inflation_m").value
+        )
+        self.object_inflation_m = float(
+            self.get_parameter("object_inflation_m").value
+        )
+        self.box_inflation_m = float(
+            self.get_parameter("box_inflation_m").value
+        )
+        self.obstacle_inflation_m = float(
+            self.get_parameter("obstacle_inflation_m").value
+        )
+
+        self.candidate_search_radius_m = float(
+            self.get_parameter("candidate_search_radius_m").value
+        )
+        self.max_candidate_cells = int(
+            self.get_parameter("max_candidate_cells").value
+        )
+
+        path_check_rate_hz = float(self.get_parameter("path_check_rate_hz").value)
+
+        package_share = get_package_share_directory("grumpy_navigation_py")
+        self.workspace_file = os.path.join(package_share, "config", "fake_workspace.yaml")
+
+        # ---------------------------------------
+        # TF
+        # ---------------------------------------
         self.tf_buffer = Buffer()
         self.tf_listener = TransformListener(self.tf_buffer, self)
 
-        # ---- Storage ----
+        # ---------------------------------------
+        # State
+        # ---------------------------------------
         self.objects = []
         self.boxes = []
         self.obstacles = []
-        self.goal = None
+
+        self.goal = None                  # (x, y)
+        self.goal_type = None             # GoalWithType enum value
         self.previous_goal = None
 
-        # ---- Workspace ----
+        self.current_grid = None
+        self.current_path_cells = []
+        self.current_path_blocked = False
+
+        # ---------------------------------------
+        # Workspace
+        # ---------------------------------------
         self.workspace_poly = None
         self.min_x = 0.0
         self.max_x = 0.0
         self.min_y = 0.0
         self.max_y = 0.0
+        self.grid_width = 0
+        self.grid_height = 0
         self.load_workspace()
 
-        # ---- ROS ----
+        # ---------------------------------------
+        # ROS
+        # ---------------------------------------
         self.create_subscription(PoseArray, "/detected_objects", self.on_objects, 10)
         self.create_subscription(PoseArray, "/detected_boxes", self.on_boxes, 10)
         self.create_subscription(PoseStamped, "/fake_obstacles", self.on_obstacle, 10)
@@ -73,6 +124,13 @@ class AStarPlannerNode(Node):
         self.path_pub = self.create_publisher(Path, "/nav/path_from_planner", 10)
         self.grid_pub = self.create_publisher(OccupancyGrid, "/nav/grid", 10)
         self.goal_marker_pub = self.create_publisher(Marker, "/nav/goal_marker", 10)
+
+        # New: planner tells task planner/controller that current path is blocked
+        self.path_blocked_pub = self.create_publisher(Bool, "/nav/path_blocked", 10)
+
+        # Continuous path validity checking
+        timer_period = 1.0 / max(path_check_rate_hz, 1e-6)
+        self.create_timer(timer_period, self.check_current_path_collision)
 
         self.get_logger().info("Planner ready")
 
@@ -158,20 +216,86 @@ class AStarPlannerNode(Node):
     # Callbacks
     # ---------------------------------------
     def on_objects(self, msg):
-        for p in msg.poses:
-            self.objects.append((p.position.x, p.position.y))
-        self.rebuild_grid()
+        self.objects = [(p.position.x, p.position.y) for p in msg.poses]
+        self.current_grid = self.rebuild_grid()
 
     def on_boxes(self, msg):
-        for p in msg.poses:
-            self.boxes.append((p.position.x, p.position.y))
-        self.rebuild_grid()
+        self.boxes = [(p.position.x, p.position.y) for p in msg.poses]
+        self.current_grid = self.rebuild_grid()
 
     def on_obstacle(self, msg):
+        # Keeping append behavior here since this topic was already single obstacle style
         x = msg.pose.position.x
         y = msg.pose.position.y
         self.obstacles.append((x, y))
-        self.rebuild_grid()
+        self.current_grid = self.rebuild_grid()
+
+    def on_goal(self, msg):
+        if self.goal is not None:
+            self.previous_goal = self.goal
+
+        goal_pose = msg.goal.pose
+        self.goal = (goal_pose.position.x, goal_pose.position.y)
+        self.goal_type = msg.type
+
+        self.publish_goal_marker(self.goal[0], self.goal[1])
+
+        grid = self.rebuild_grid()
+        self.current_grid = grid
+        if grid is None:
+            self.publish_empty_path()
+            return
+
+        robot = self.lookup_robot_xy()
+        if robot is None:
+            self.get_logger().warn("Could not get robot pose, using parameter fallback")
+            robot = (self.start_x, self.start_y)
+
+        start = self.world_to_grid(robot[0], robot[1])
+        raw_goal = self.world_to_grid(self.goal[0], self.goal[1])
+
+        if not self.cell_in_bounds(start[0], start[1], grid):
+            self.get_logger().warn("Start cell out of bounds")
+            self.current_path_cells = []
+            self.publish_empty_path()
+            return
+
+        if grid[start[1]][start[0]] != 0:
+            self.get_logger().warn("Start cell is occupied")
+            self.current_path_cells = []
+            self.publish_empty_path()
+            return
+
+        if self.goal_type_is_object_or_box(msg.type):
+            result = self.plan_to_free_cell_near_goal(grid, start, raw_goal)
+        else:
+            result = self.plan_directly_to_goal(grid, start, raw_goal)
+
+        if result is None:
+            self.get_logger().warn("Planner found no valid path")
+            self.current_path_cells = []
+            self.publish_empty_path()
+            self.publish_path_blocked(False)
+            return
+
+        best_path_cells, best_cost = result
+
+        self.get_logger().info(f"Planned path with cost {best_cost:.3f}")
+        self.current_path_cells = best_path_cells
+        self.current_path_blocked = False
+        self.publish_path_blocked(False)
+        self.publish_path(best_path_cells)
+
+    def goal_type_is_object_or_box(self, goal_type):
+        if goal_type == GoalWithType.OBJECT:
+            return True
+
+        # Safe if BOX is not defined in the message
+        box_enum = getattr(GoalWithType, "BOX", None)
+        if box_enum is not None and goal_type == box_enum:
+            return True
+
+        return False
 
     def publish_goal_marker(self, x, y):
         marker = Marker()
@@ -199,82 +323,13 @@ class AStarPlannerNode(Node):
 
         self.goal_marker_pub.publish(marker)
 
-    def on_goal(self, msg):
-        if self.goal is not None:
-            self.previous_goal = self.goal
-
-        goal_pose = msg.goal.pose
-        self.goal = (goal_pose.position.x, goal_pose.position.y)
-
-        # publish marker for visualization
-        self.publish_goal_marker(self.goal[0], self.goal[1])
-
-        if msg.type == GoalWithType.OBJECT:
-            self.remove_object_at_goal(self.goal)
-
-        grid = self.rebuild_grid()
-        if grid is None:
-            return
-
-        robot = self.lookup_robot_xy()
-        if robot is None:
-            self.get_logger().warn("Could not get robot pose")
-            return
-
-        start = self.world_to_grid(robot[0], robot[1])
-        goal = self.world_to_grid(self.goal[0], self.goal[1])
-
-        if not self.cell_in_bounds(start[0], start[1], grid):
-            self.get_logger().warn("Start cell out of bounds")
-            return
-
-        if not self.cell_in_bounds(goal[0], goal[1], grid):
-            self.get_logger().warn("Goal cell out of bounds")
-            return
-
-        if grid[start[1]][start[0]] != 0:
-            self.get_logger().warn("Start cell is occupied")
-            return
-
-        if grid[goal[1]][goal[0]] != 0:
-            self.get_logger().warn("Goal cell is occupied")
-            return
-
-        cells = self.run_astar(grid, start, goal)
-
-        if not cells:
-            self.get_logger().warn("A* returned no path")
-            self.publish_empty_path()
-            return
-
-        self.publish_path(cells)
-
-    def remove_object_at_goal(self, goal_xy, tolerance=0.15):
-        if not self.objects:
-            return
-
-        gx, gy = goal_xy
-        best_idx = None
-        best_dist_sq = float("inf")
-
-        for i, (x, y) in enumerate(self.objects):
-            dist_sq = (x - gx) ** 2 + (y - gy) ** 2
-            if dist_sq < best_dist_sq:
-                best_dist_sq = dist_sq
-                best_idx = i
-
-        if best_idx is not None and best_dist_sq <= tolerance * tolerance:
-            removed = self.objects.pop(best_idx)
-            self.get_logger().info(f"Removed object from memory at {removed}")
-        else:
-            self.get_logger().warn("No matching object found near goal to remove")
-
     # ---------------------------------------
-    # TF lookup
+    # TF
     # ---------------------------------------
     def lookup_robot_xy(self):
         target_frame = "base_link"
-        world_frame = "map"
+        world_frame = self.world_frame
+
         try:
             tf = self.tf_buffer.lookup_transform(
                 world_frame,
@@ -291,30 +346,6 @@ class AStarPlannerNode(Node):
     # ---------------------------------------
     # Grid helpers
     # ---------------------------------------
-    def visualize_grid(self, grid, filename="grid.png"):
-        """
-        Visualize occupancy grid and save as image.
-
-        grid: 2D list [y][x]
-        """
-        grid_np = np.array(grid)
-
-        plt.figure()
-        plt.imshow(grid_np, origin="lower")
-        plt.colorbar(label="Occupancy (0=free, 100=occupied)")
-        plt.title("Occupancy Grid")
-
-        save_path = os.path.join(
-            get_package_share_directory("grumpy_navigation_py"),
-            "config",
-            filename
-        )
-
-        plt.savefig(save_path)
-        plt.close()
-
-        self.get_logger().info(f"Saved grid visualization to: {save_path}")
-
     def world_to_grid(self, x, y):
         gx = int((x - self.min_x) / self.resolution)
         gy = int((y - self.min_y) / self.resolution)
@@ -337,26 +368,24 @@ class AStarPlannerNode(Node):
         w = len(grid[0])
         return 0 <= gx < w and 0 <= gy < h
 
-    def clear_region_around_cell(self, grid, center_gx, center_gy, radius_m):
-        radius_cells = int(math.ceil(radius_m / self.resolution))
-        h = len(grid)
-        w = len(grid[0])
+    def visualize_grid(self, grid, filename="grid.png"):
+        grid_np = np.array(grid)
 
-        for dy in range(-radius_cells, radius_cells + 1):
-            for dx in range(-radius_cells, radius_cells + 1):
-                gx = center_gx + dx
-                gy = center_gy + dy
+        plt.figure()
+        plt.imshow(grid_np, origin="lower")
+        plt.colorbar(label="Occupancy (0=free, 100=occupied)")
+        plt.title("Occupancy Grid")
 
-                if not (0 <= gx < w and 0 <= gy < h):
-                    continue
+        save_path = os.path.join(
+            get_package_share_directory("grumpy_navigation_py"),
+            "config",
+            filename
+        )
 
-                dist = math.sqrt(
-                    (dx * self.resolution) ** 2 +
-                    (dy * self.resolution) ** 2
-                )
+        plt.savefig(save_path)
+        plt.close()
 
-                if dist <= radius_m:
-                    grid[gy][gx] = 0
+        self.get_logger().info(f"Saved grid visualization to: {save_path}")
 
     def rebuild_grid(self):
         if self.workspace_poly is None:
@@ -371,46 +400,24 @@ class AStarPlannerNode(Node):
 
         grid = [[0 for _ in range(w)] for _ in range(h)]
 
-        # --- Workspace inflation ---
-        workspace_inflation_m = 0.15
-
+        # Workspace inflation
         for gy in range(h):
             for gx in range(w):
                 x, y = self.grid_to_world(gx, gy)
 
                 outside_workspace = not self.inside_poly(x, y)
                 too_close_to_wall = (
-                    self.distance_to_polygon_edges(x, y) < workspace_inflation_m
+                    self.distance_to_polygon_edges(x, y) < self.workspace_inflation_m
                 )
 
                 if outside_workspace or too_close_to_wall:
                     grid[gy][gx] = 100
-
-        goal_cell = None
-        if self.goal is not None:
-            goal_cell = self.world_to_grid(self.goal[0], self.goal[1])
-
-        previous_goal_cell = None
-        if self.previous_goal is not None:
-            previous_goal_cell = self.world_to_grid(
-                self.previous_goal[0], self.previous_goal[1]
-            )
-
-        object_inflation_m = 0.15
-        box_inflation_m = 0.35
-        obstacle_inflation_m = 0.35
 
         def inflate_positions(positions, inflation_radius_m):
             inflation_cells = int(math.ceil(inflation_radius_m / self.resolution))
 
             for (x, y) in positions:
                 gx, gy = self.world_to_grid(x, y)
-
-                if goal_cell is not None and (gx, gy) == goal_cell:
-                    continue
-
-                if previous_goal_cell is not None and (gx, gy) == previous_goal_cell:
-                    continue
 
                 for dy in range(-inflation_cells, inflation_cells + 1):
                     for dx in range(-inflation_cells, inflation_cells + 1):
@@ -423,37 +430,13 @@ class AStarPlannerNode(Node):
                         if dx * dx + dy * dy > inflation_cells * inflation_cells:
                             continue
 
-                        if goal_cell is not None and (nx, ny) == goal_cell:
-                            continue
-
-                        if previous_goal_cell is not None and (nx, ny) == previous_goal_cell:
-                            continue
-
                         grid[ny][nx] = 100
 
-        inflate_positions(self.objects, object_inflation_m)
-        inflate_positions(self.boxes, box_inflation_m)
-        inflate_positions(self.obstacles, obstacle_inflation_m)
+        inflate_positions(self.objects, self.object_inflation_m)
+        inflate_positions(self.boxes, self.box_inflation_m)
+        inflate_positions(self.obstacles, self.obstacle_inflation_m)
 
-        # Clear a region around the active goal so goals near workspace edges
-        # are still reachable even with workspace inflation enabled.
-        if goal_cell is not None:
-            self.clear_region_around_cell(
-                grid,
-                goal_cell[0],
-                goal_cell[1],
-                radius_m=0.15
-            )
-
-        # Optional: also clear around previous goal
-        if previous_goal_cell is not None:
-            self.clear_region_around_cell(
-                grid,
-                previous_goal_cell[0],
-                previous_goal_cell[1],
-                radius_m=0.10
-            )
-
+        # No goal clearing at all
         self.publish_grid(grid, w, h)
         self.visualize_grid(grid)
 
@@ -473,6 +456,167 @@ class AStarPlannerNode(Node):
 
         msg.data = [cell for row in grid for cell in row]
         self.grid_pub.publish(msg)
+
+    # ---------------------------------------
+    # Planning
+    # ---------------------------------------
+    def plan_directly_to_goal(self, grid, start, goal):
+        if not self.cell_in_bounds(goal[0], goal[1], grid):
+            self.get_logger().warn("Goal cell out of bounds")
+            return None
+
+        if grid[goal[1]][goal[0]] != 0:
+            self.get_logger().warn("Goal cell is occupied")
+            return None
+
+        path_cells, cost = self.run_astar(grid, start, goal)
+        if not path_cells:
+            return None
+
+        return path_cells, cost
+
+    def plan_to_free_cell_near_goal(self, grid, start, goal):
+        candidates = self.find_candidate_goal_cells(grid, goal)
+
+        if not candidates:
+            self.get_logger().warn("No candidate free cells found near goal")
+            return None
+
+        best_path = None
+        best_score = float("inf")
+        best_path_cost = float("inf")
+
+        goalx, goaly = goal
+
+        for candidate in candidates:
+            path_cells, path_cost = self.run_astar(grid, start, candidate)
+            if not path_cells:
+                continue
+
+            # Score = path cost + small penalty for being farther from the true goal
+            dx = candidate[0] - goalx
+            dy = candidate[1] - goaly
+            dist_to_goal_cells = math.sqrt(dx * dx + dy * dy)
+
+            score = path_cost + 0.25 * dist_to_goal_cells
+
+            if score < best_score:
+                best_score = score
+                best_path_cost = path_cost
+                best_path = path_cells
+
+        if best_path is None:
+            return None
+
+        return best_path, best_path_cost
+
+    def find_candidate_goal_cells(self, grid, goal):
+        """
+        Return free cells near the raw goal cell that lie on the boundary
+        of occupied space.
+
+        A candidate cell must:
+        - be within search radius of goal
+        - be free
+        - have at least one occupied neighbor in its 8-neighborhood
+        """
+        candidates = []
+
+        gx, gy = goal
+        h = len(grid)
+        w = len(grid[0])
+
+        search_radius_cells = int(
+            math.ceil(self.candidate_search_radius_m / self.resolution)
+        )
+
+        for dy in range(-search_radius_cells, search_radius_cells + 1):
+            for dx in range(-search_radius_cells, search_radius_cells + 1):
+                nx = gx + dx
+                ny = gy + dy
+
+                if not (0 <= nx < w and 0 <= ny < h):
+                    continue
+
+                # only consider cells inside circular radius
+                if dx * dx + dy * dy > search_radius_cells * search_radius_cells:
+                    continue
+
+                # candidate must be free
+                if grid[ny][nx] != 0:
+                    continue
+
+                has_occupied_neighbor = False
+
+                for ddy in [-1, 0, 1]:
+                    for ddx in [-1, 0, 1]:
+                        if ddx == 0 and ddy == 0:
+                            continue
+
+                        cx = nx + ddx
+                        cy = ny + ddy
+
+                        if not (0 <= cx < w and 0 <= cy < h):
+                            continue
+
+                        if grid[cy][cx] == 100:
+                            has_occupied_neighbor = True
+                            break
+
+                    if has_occupied_neighbor:
+                        break
+
+                if not has_occupied_neighbor:
+                    continue
+
+                dist = math.sqrt(dx * dx + dy * dy)
+                candidates.append((dist, (nx, ny)))
+
+        candidates.sort(key=lambda x: x[0])
+        candidates = [cell for _, cell in candidates[:self.max_candidate_cells]]
+
+        return candidates
+
+    # ---------------------------------------
+    # Path validity checking
+    # ---------------------------------------
+    def check_current_path_collision(self):
+        if self.current_grid is None:
+            return
+
+        if not self.current_path_cells:
+            return
+
+        # Optionally refresh the grid here so dynamic updates are always checked
+        grid = self.rebuild_grid()
+        if grid is None:
+            return
+
+        self.current_grid = grid
+
+        blocked = False
+        for gx, gy in self.current_path_cells:
+            if not self.cell_in_bounds(gx, gy, grid):
+                blocked = True
+                break
+
+            if grid[gy][gx] == 100:
+                blocked = True
+                break
+
+        if blocked and not self.current_path_blocked:
+            self.current_path_blocked = True
+            self.get_logger().warn("Current path is now blocked")
+            self.publish_path_blocked(True)
+
+        elif not blocked and self.current_path_blocked:
+            self.current_path_blocked = False
+            self.publish_path_blocked(False)
+
+    def publish_path_blocked(self, blocked):
+        msg = Bool()
+        msg.data = blocked
+        self.path_blocked_pub.publish(msg)
 
     # ---------------------------------------
     # Path publishing
@@ -502,20 +646,22 @@ class AStarPlannerNode(Node):
         path.header.frame_id = self.world_frame
         self.path_pub.publish(path)
 
+    # ---------------------------------------
+    # A*
+    # ---------------------------------------
     def run_astar(self, grid, start, goal):
         """
         grid[y][x] == 0    -> free
         grid[y][x] != 0    -> occupied
 
-        start = (gx, gy)
-        goal  = (gx, gy)
+        Returns:
+            (path_cells, total_cost)
 
-        Return:
-            [(gx1, gy1), (gx2, gy2), ...]
+        If no path:
+            ([], inf)
         """
-
         def h(a, b):
-            return math.sqrt((a[0] - b[0])**2 + (a[1] - b[1])**2)
+            return math.sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2)
 
         def reconstruct(came_from, current):
             path = [current]
@@ -529,12 +675,17 @@ class AStarPlannerNode(Node):
 
         came_from = {}
         g_score = {start: 0.0}
+        closed_set = set()
 
         while open_set:
             _, current = heapq.heappop(open_set)
 
+            if current in closed_set:
+                continue
+            closed_set.add(current)
+
             if current == goal:
-                return reconstruct(came_from, current)
+                return reconstruct(came_from, current), g_score[current]
 
             cx, cy = current
 
@@ -549,23 +700,28 @@ class AStarPlannerNode(Node):
                 (cx - 1, cy - 1, math.sqrt(2)),
             ]
 
-            for nx, ny, cost in neighbors:
-                if ny < 0 or ny >= len(grid) or nx < 0 or nx >= len(grid[0]):
+            for nx, ny, move_cost in neighbors:
+                if not self.cell_in_bounds(nx, ny, grid):
                     continue
 
                 if grid[ny][nx] != 0:
                     continue
 
+                # Prevent diagonal corner cutting
+                if nx != cx and ny != cy:
+                    if grid[cy][nx] != 0 or grid[ny][cx] != 0:
+                        continue
+
                 neighbor = (nx, ny)
-                tentative_g = g_score[current] + cost
+                tentative_g = g_score[current] + move_cost
 
                 if neighbor not in g_score or tentative_g < g_score[neighbor]:
                     came_from[neighbor] = current
                     g_score[neighbor] = tentative_g
-                    f = tentative_g + h(neighbor, goal)
-                    heapq.heappush(open_set, (f, neighbor))
+                    f_score = tentative_g + h(neighbor, goal)
+                    heapq.heappush(open_set, (f_score, neighbor))
 
-        return []
+        return [], float("inf")
 
 
 def main():

@@ -76,8 +76,6 @@ class TaskPlannerNode(Node):
         
         self.generate_exploration_path_failed = False
 
-        self.approach_success = False
-
         # Planner state
         # self.state = "SELECT_OBJECT"
         self.state = "GENERATE_EXPLORATION_POSE"
@@ -93,7 +91,6 @@ class TaskPlannerNode(Node):
         self.goal_pub = self.create_publisher(GoalWithType, "/nav/goal", 10)
         self.path_to_controller_pub = self.create_publisher(PathWithType, "/nav/path_to_controller", 10)
         self.path_to_controller_pub_viz = self.create_publisher(Path, "/nav/path_to_controller_viz", 10)
-        self.approach_goal_pub = self.create_publisher(PoseStamped, "/nav/approach_start", 10)
 
         self.arm_pub = self.create_publisher(String, "/arm/cmd", 10)
 
@@ -108,7 +105,6 @@ class TaskPlannerNode(Node):
         self.create_subscription(String, "/arm/report_back", self.on_report_back, 10)
         self.create_subscription(PoseArray, "/detected_objects", self.on_objects, 10)
         self.create_subscription(PoseArray, "/detected_boxes", self.on_boxes, 10)
-        self.create_subscription(PoseStamped, "/nav/approach_finished", self.on_approach_finished, 10)
 
         # Update ICP state
         self.ICP_pub = self.create_publisher(String, "/localization/start_update_ICP", 10)  # contant can be anything
@@ -129,9 +125,7 @@ class TaskPlannerNode(Node):
             "Pub: /nav/goal, /arm/cmd  "
             "Sub: /nav/reached, /arm/report_back, /detected_objects, /detected_boxes"
         )
-    
-    def on_approach_finished(self, msg):
-        self.approach_success = True
+
 
 
     # def reset_flags(self):
@@ -551,6 +545,8 @@ class TaskPlannerNode(Node):
         elif self.state == "EXECUTE_PATH_TO_OBJECT": 
 
             if not self._published_this_state:
+
+                print("here")
                 # self.get_logger().info("EXECUTE_PATH_TO_OBJECT")
                 self.publish_path_to_controller(path=self.path_to_goal, goal_type="object")
                 self._published_this_state = True
@@ -558,23 +554,6 @@ class TaskPlannerNode(Node):
                 self.get_logger().info("EXECUTE_PATH_TO_OBJECT: published object path")
 
             if self.execute_path_object_success:
-                self.enter_state("APPROACH_OBJECT")
-                # self.enter_state("PICK_OBJECT")
-
-        elif self.state == "APPROACH_OBJECT":
-            if not self._published_this_state: 
-                self._published_this_state = True
-                approach_pose = PoseStamped()
-                approach_pose.header.frame_id = self.world_frame
-                approach_pose.pose.position.x = self.ox
-                approach_pose.pose.position.y = self.oy
-                approach_pose.pose.position.z = 0.0
-                approach_pose.pose.orientation.w = 1.0
-
-                self.approach_goal_pub.publish(approach_pose)
-
-            if self.approach_success:
-                self.approach_success = False
                 self.enter_state("PICK_OBJECT")
 
 
@@ -602,24 +581,6 @@ class TaskPlannerNode(Node):
                 self.get_logger().info("EXECUTE_PATH_TO_BOX: published object path")
 
             if self.execute_path_box_success:
-                # self.enter_state("DROP_OBJECT")
-                self.enter_state("APPROACH_BOX")
-
-
-        elif self.state == "APPROACH_BOX":
-            if not self._published_this_state: 
-                self._published_this_state = True
-                approach_pose = PoseStamped()
-                approach_pose.header.frame_id = self.world_frame
-                approach_pose.pose.position.x = self.bx
-                approach_pose.pose.position.y = self.by
-                approach_pose.pose.position.z = 0.0
-                approach_pose.pose.orientation.w = 1.0
-
-                self.approach_goal_pub.publish(approach_pose)
-
-            if self.approach_success:
-                self.approach_success = False
                 self.enter_state("DROP_OBJECT")
 
 

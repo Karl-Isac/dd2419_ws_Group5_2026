@@ -66,6 +66,10 @@ class PathControllerNode(Node):
         self.cmd_pub = self.create_publisher(DutyCycles, "/phidgets/motor/duty_cycles", 10)
         self.reached_pub = self.create_publisher(Bool, "/nav/reached", 10)
 
+
+        self.create_subscription(Bool, "/nav/path_blocked", self.on_path_blocked, 10)
+        self.cancel_controller = False
+
         self.path_sub = self.create_subscription(
             PathWithType,
             "/nav/path_to_controller",
@@ -88,6 +92,18 @@ class PathControllerNode(Node):
             "Sub: /nav/path_to_controller  "
             "Pub: /phidgets/motor/duty_cycles, /nav/reached"
         )
+
+
+    def on_path_blocked(self, msg):
+        self.cancel_controller = msg.data
+
+        if msg.data:
+            self.path = None
+            self.next_idx = 0
+            self.reached_latched = False
+            self.stop()
+            self.get_logger().warn("Received /nav/path_blocked=True, stopping controller.")
+
 
     def goal_type_name(self) -> str:
         if self.goal_type == PathWithType.OBJECT:
@@ -168,6 +184,11 @@ class PathControllerNode(Node):
 
     def step(self):
         if self.path is None:
+            self.stop()
+            self.publish_reached(False)
+            return
+
+        if self.cancel_controller:
             self.stop()
             self.publish_reached(False)
             return
