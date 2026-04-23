@@ -265,7 +265,6 @@ class Arm_control(Node):
                 self.nudging = True
             
     def stop_wheels(self):
-        print("stopping wheels")
         msg = DutyCycles()
         msg.duty_cycle_left = 0.0
         msg.duty_cycle_right = 0.0
@@ -312,40 +311,10 @@ class Arm_control(Node):
                     extension_error = self.height_target-cy
                     # TODO you might want to finetune the termination and nudge forward condition error values, changes were def made to rotation error implementation
                     # Termination condition:
-                    if (abs(sideways_error)<30) and (abs(r    self.nudge_on_cooldown = True
-                msg = DutyCycles()
-                if extension_error>0:               # Go forwards or backwards depending on the extension error
-                    msg.duty_cycle_left = 0.1
-                    msg.duty_cycle_right = 0.1
-                else:
-                    msg.duty_cycle_left = -0.1
-                    msg.duty_cycle_right = -0.1
-                self.wheels_on = True
-                self.wheel_pub.publish(msg)
-                # Put this function on a cooldown
-                nudge_cooldown = 0.75      # sec
-                self.nudge_cooldown_timer = self.create_timer(nudge_cooldown, self.nudge_cooldown_over)
-                # Turn off wheels after encoders say it has moved enough
-                self.nudge_counter = 0      # lenght of nudge can be tweaked in the encoder callback
-                self.nudging = Trueotation_error)<25) and (20<extension_error<80) and not self.wheels_on:    # (abs(extension_error)<50)
+                    if (abs(sideways_error)<30) and (abs(rotation_error)<25) and (20<extension_error<80) and not self.wheels_on:    # (abs(extension_error)<50)
                         self.get_logger().info(f"Errors (sidew,rot,ext): {sideways_error:3.0f}, {rotation_error:3.0f}, {extension_error:3.0f}")
                         self.visual_servoing_ON = False
-                        return    self.nudge_on_cooldown = True
-                msg = DutyCycles()
-                if extension_error>0:               # Go forwards or backwards depending on the extension error
-                    msg.duty_cycle_left = 0.1
-                    msg.duty_cycle_right = 0.1
-                else:
-                    msg.duty_cycle_left = -0.1
-                    msg.duty_cycle_right = -0.1
-                self.wheels_on = True
-                self.wheel_pub.publish(msg)
-                # Put this function on a cooldown
-                nudge_cooldown = 0.75      # sec
-                self.nudge_cooldown_timer = self.create_timer(nudge_cooldown, self.nudge_cooldown_over)
-                # Turn off wheels after encoders say it has moved enough
-                self.nudge_counter = 0      # lenght of nudge can be tweaked in the encoder callback
-                self.nudging = True
+                        return
                         
                     # Sideways control (PI)
                     self.sideways_integral_term = self.sideways_integral_term + k_sideways_integral*sideways_error
