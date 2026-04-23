@@ -81,15 +81,13 @@ class Arm_control(Node):
         # not potential, actual
         if self.reversing:
             self.reverse_counter = self.reverse_counter + abs(msg.delta_encoder_left)
-            if self.reverse_counter > 500:      # tunable, corresponds to distance travelled when backing up
+            print(f"reverse counter: {self.reverse_counter}")
+            if self.reverse_counter > 700:      # tunable, corresponds to distance travelled when backing up
                 self.reversing = False
                 self.stop_wheels_ASAP = True
         elif self.nudging:
-            print("nudge counter:")
             self.nudge_counter = self.nudge_counter + abs(msg.delta_encoder_left)
-            print(self.nudge_counter)
-            print(msg)
-            if self.nudge_counter > -1:      # tunable, corresponds to distance travelled when nudging with the wheels
+            if self.nudge_counter > 75:      # tunable, corresponds to distance travelled when nudging with the wheels
                 self.nudging = False
                 self.stop_wheels_ASAP = True
 
@@ -165,6 +163,7 @@ class Arm_control(Node):
                 self.get_logger().warn("Inverse kinematics failed for z={}, rho={}, target might be unreachable".format(z,self.rho))
             position = self.init_position[0],self.joint1target,joint2target,joint3target,joint4target,self.joint5target
             self.goto_position(position)
+            time.sleep(1)       # wait for movement down to finish
             # State 5 - grip
             position = self.joint0grip_value,self.joint1target,joint2target,joint3target,joint4target,self.joint5target
             self.goto_position(position)
@@ -222,7 +221,7 @@ class Arm_control(Node):
             self.visual_servo_timeout()         # terminate visual servoing if reversing didnt help
         else:
             # Drive in reverse for a bit if this is the first occurance per pickup
-            self.nudge_cooldown_timer = self.create_timer(3, self.nudge_cooldown_over)  # put forward nudges on cooldown for a while
+            self.nudge_cooldown_timer = self.create_timer(5, self.nudge_cooldown_over)  # put forward nudges on cooldown for a while
             msg = DutyCycles()
             msg.duty_cycle_left = -0.1
             msg.duty_cycle_right = -0.1
@@ -247,24 +246,26 @@ class Arm_control(Node):
     def nudge_wheels(self,extension_error):
         # Move the robot (generally) forwards in a quick burst, has a cooldown
         if not self.nudge_on_cooldown:
-            self.nudge_on_cooldown = True
-            msg = DutyCycles()
-            if extension_error>0:               # Go forwards or backwards depending on the extension error
-                msg.duty_cycle_left = 0.1
-                msg.duty_cycle_right = 0.1
-            else:
-                msg.duty_cycle_left = -0.1
-                msg.duty_cycle_right = -0.1
-            self.wheels_on = True
-            self.wheel_pub.publish(msg)
-            # Put this function on a cooldown
-            nudge_cooldown = 0.75      # sec
-            self.nudge_cooldown_timer = self.create_timer(nudge_cooldown, self.nudge_cooldown_over)
-            # Turn off wheels after encoders say it has moved enough
-            self.nudge_counter = 0      # lenght of nudge can be tweaked in the encoder callback
-            self.nudging = True
+            if not self.reversing:
+                self.nudge_on_cooldown = True
+                msg = DutyCycles()
+                if extension_error>0:               # Go forwards or backwards depending on the extension error
+                    msg.duty_cycle_left = 0.1
+                    msg.duty_cycle_right = 0.1
+                else:
+                    msg.duty_cycle_left = -0.1
+                    msg.duty_cycle_right = -0.1
+                self.wheels_on = True
+                self.wheel_pub.publish(msg)
+                # Put this function on a cooldown
+                nudge_cooldown = 0.75      # sec
+                self.nudge_cooldown_timer = self.create_timer(nudge_cooldown, self.nudge_cooldown_over)
+                # Turn off wheels after encoders say it has moved enough
+                self.nudge_counter = 0      # lenght of nudge can be tweaked in the encoder callback
+                self.nudging = True
             
     def stop_wheels(self):
+        print("stopping wheels")
         msg = DutyCycles()
         msg.duty_cycle_left = 0.0
         msg.duty_cycle_right = 0.0
@@ -282,6 +283,7 @@ class Arm_control(Node):
         # TODO put this entire thing into a separate function and maybe even file if thats reasonable
         if self.stop_wheels_ASAP:
             self.stop_wheels()
+            self.stop_wheels_ASAP = False
         if self.visual_servoing_ON:
             if self.cube_position_available:
                 try:
@@ -308,12 +310,42 @@ class Arm_control(Node):
                         rotation_target = rotation_target - 90
                     rotation_error = self.joint1target - 120 - rotation_target      # rotation error used as termination condition
                     extension_error = self.height_target-cy
-                    #self.get_logger().info(f"Errors (sidew,rot,ext): {sideways_error:3.0f}, {rotation_error:3.0f}, {extension_error:3.0f}")
                     # TODO you might want to finetune the termination and nudge forward condition error values, changes were def made to rotation error implementation
                     # Termination condition:
-                    if (abs(sideways_error)<30) and (abs(rotation_error)<25) and (abs(extension_error)<50) and not self.wheels_on:
+                    if (abs(sideways_error)<30) and (abs(r    self.nudge_on_cooldown = True
+                msg = DutyCycles()
+                if extension_error>0:               # Go forwards or backwards depending on the extension error
+                    msg.duty_cycle_left = 0.1
+                    msg.duty_cycle_right = 0.1
+                else:
+                    msg.duty_cycle_left = -0.1
+                    msg.duty_cycle_right = -0.1
+                self.wheels_on = True
+                self.wheel_pub.publish(msg)
+                # Put this function on a cooldown
+                nudge_cooldown = 0.75      # sec
+                self.nudge_cooldown_timer = self.create_timer(nudge_cooldown, self.nudge_cooldown_over)
+                # Turn off wheels after encoders say it has moved enough
+                self.nudge_counter = 0      # lenght of nudge can be tweaked in the encoder callback
+                self.nudging = Trueotation_error)<25) and (20<extension_error<80) and not self.wheels_on:    # (abs(extension_error)<50)
+                        self.get_logger().info(f"Errors (sidew,rot,ext): {sideways_error:3.0f}, {rotation_error:3.0f}, {extension_error:3.0f}")
                         self.visual_servoing_ON = False
-                        return
+                        return    self.nudge_on_cooldown = True
+                msg = DutyCycles()
+                if extension_error>0:               # Go forwards or backwards depending on the extension error
+                    msg.duty_cycle_left = 0.1
+                    msg.duty_cycle_right = 0.1
+                else:
+                    msg.duty_cycle_left = -0.1
+                    msg.duty_cycle_right = -0.1
+                self.wheels_on = True
+                self.wheel_pub.publish(msg)
+                # Put this function on a cooldown
+                nudge_cooldown = 0.75      # sec
+                self.nudge_cooldown_timer = self.create_timer(nudge_cooldown, self.nudge_cooldown_over)
+                # Turn off wheels after encoders say it has moved enough
+                self.nudge_counter = 0      # lenght of nudge can be tweaked in the encoder callback
+                self.nudging = True
                         
                     # Sideways control (PI)
                     self.sideways_integral_term = self.sideways_integral_term + k_sideways_integral*sideways_error
