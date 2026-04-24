@@ -210,7 +210,7 @@ class Detection(Node):
 
         self.counter = -2 # keep frames of every x frames, AND, discard first two frames
 
-        print(42)
+        print(4)
 
     def publish_arrays(self, object_poses, object_timestamp, box_poses, box_timestamp):
         """publish object and box poses from map file to ROS topics."""
@@ -546,7 +546,7 @@ class Detection(Node):
             return
 
         for item in self.object_lists:
-            if np.abs(item[0] - object_map.pose.position.x * 100) < 10 and np.abs(item[1] - object_map.pose.position.y * 100) < 10:
+            if np.abs(item[0] - object_map.pose.position.x * 100) < 15 and np.abs(item[1] - object_map.pose.position.y * 100) < 15:
                 self.get_logger().debug(f"repeated object {self.object_lists.index(item)} detection, discarded")
                 break
         else:
@@ -601,7 +601,7 @@ class Detection(Node):
         "yaw: rotation around z in radians "
         "axes: principal axes vectors (2x2) """ 
         
-        if len(points) < 100: 
+        if len(points) < 150: 
             return None, None, None 
         
         # self.get_logger().info(f"the length of points: {len(points)}")
@@ -775,22 +775,24 @@ class Detection(Node):
             normal = dir2 if np.dot(dir2, x_axis) > 0 else -dir2
 
             # project points onto main axis (only dir1 used)
-            projected = pts_centered @ dir1.reshape(2, 1)
+            projected = pts_centered @ dir1
 
-            min_proj = projected.min(axis=0)
-            max_proj = projected.max(axis=0)
-            center_proj = (min_proj + max_proj) / 2
+            min_proj = projected.min()
+            max_proj = projected.max()
 
-            # reconstruct center on the observed edge
+            center_proj = (min_proj + max_proj) / 2.0
             center = mean + center_proj * dir1
 
-            # estimated length along edge
-            length_proj = float(max_proj - min_proj)
+            length_proj = max_proj - min_proj
             width_proj = length_proj  # placeholder (same as old logic)
 
             self.get_logger().debug(
                 f'length_proj: {length_proj:.3f}, width_proj: {width_proj:.3f}'
             )
+
+            # Exclude noise background
+            if length_proj <= 0.1:
+                return None, None, None
 
             # assign box dimensions
             if length_proj >= width_proj:
@@ -986,7 +988,7 @@ class Detection(Node):
         s_hsl[mask_delta] = delta[mask_delta] / denominator
         
         # Final grey condition
-        grey_cond = ((h > 20) | (h == 0)) & (s_hsl < 0.2) & (l < 0.3)
+        grey_cond = ((h > 170) & (h < 270) | (h == 0)) & (s_hsl < 0.2) & (l < 0.3)
         return grey_cond
     
     def _rgb_to_hsv_vectorized(self, r, g, b):
