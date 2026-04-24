@@ -249,13 +249,13 @@ def find_cube_in_image_msg(msg, publisher1, publisher2, publisher3, publisher4, 
         raise Exception("Cube not found in frame")
 
 def is_red(h,s,v):          # Tuned for arm camera, not the same as the values used in detection
-    return True if (h <= 20 or h >= 340) and s > 0.5 and v > 0.5 else False
+    return True if (h <= 20 or h >= 340) and s > 0.3 and v > 0.5 else False
 
 def is_blue(h,s,v):
-    return True if (h >= 180 and h <= 240) and s > 0.5 and v > 0.4 else False
+    return True if (h >= 180 and h <= 240) and s > 0.3 and v > 0.4 else False
 
 def is_green(h,s,v):
-    return True if 140 <= h <= 180 and s > 0.5 and v > 0.25 else False
+    return True if 140 <= h <= 180 and s > 0.3 and v > 0.25 else False
 
 def is_wood(h,s,v):
     return True if (h <= 60 or h >= 340) and 0.2 < s < 0.6 and 0.3 < v < 0.8 else False

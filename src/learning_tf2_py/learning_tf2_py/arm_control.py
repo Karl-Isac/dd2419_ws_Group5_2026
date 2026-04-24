@@ -400,9 +400,7 @@ class Arm_control(Node):
                     raise ex
         elif self.look_at_gripper_contents:     # Visually check whether it actually picked the cube up
             self.cube_being_held = is_the_target_cube_colored(msg, self.width_target, self.height_target, self._pub5)
-            ######################################################################################################################## debug
-
-            #self.look_at_gripper_contents = False      TODO put back
+            self.look_at_gripper_contents = False
 
 
 def main():
