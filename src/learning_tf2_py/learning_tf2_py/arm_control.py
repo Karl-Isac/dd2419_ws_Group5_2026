@@ -59,6 +59,9 @@ class Arm_control(Node):
         self.reversing = False
         self.nudging = False
         self.stop_wheels_ASAP = False
+
+        # Multiple things are accessing this timer, so we need to keep track whether it exists or not
+        self.nudge_cooldown_timer = None
         
         self.init_position = [10,120,50,150,100,120]
         self.joint0grip_value = 105
@@ -73,23 +76,7 @@ class Arm_control(Node):
         timer_period = 0.1
         self.timer = self.create_timer(timer_period, self.timer_callback)
 
-    def encoder_callback(self, msg: Encoders):
-        # Used for distance measurement during wheels nudges and backing up
-        # Only left wheel encoder is used for simplicity
-        ## 100 encoder ticks are around 1cm
-        # TODO potential issue: dropped messages, keep this in mind
-        # not potential, actual
-        if self.reversing:
-            self.reverse_counter = self.reverse_counter + abs(msg.delta_encoder_left)
-            print(f"reverse counter: {self.reverse_counter}")
-            if self.reverse_counter > 700:      # tunable, corresponds to distance travelled when backing up
-                self.reversing = False
-                self.stop_wheels_ASAP = True
-        elif self.nudging:
-            self.nudge_counter = self.nudge_counter + abs(msg.delta_encoder_left)
-            if self.nudge_counter > 75:      # tunable, corresponds to distance travelled when nudging with the wheels
-                self.nudging = False
-                self.stop_wheels_ASAP = True
+
 
     def cmd_callback(self, msg):
         # Handle messages received from the global planner
@@ -221,7 +208,8 @@ class Arm_control(Node):
             self.visual_servo_timeout()         # terminate visual servoing if reversing didnt help
         else:
             # Drive in reverse for a bit if this is the first occurance per pickup
-            self.nudge_cooldown_timer = self.create_timer(5, self.nudge_cooldown_over)  # put forward nudges on cooldown for a while
+            self.reversing = True
+            self.put_nudge_on_cooldown(5)  # put forward nudges on cooldown for a while
             msg = DutyCycles()
             msg.duty_cycle_left = -0.1
             msg.duty_cycle_right = -0.1
@@ -229,8 +217,13 @@ class Arm_control(Node):
             self.wheel_pub.publish(msg)
             # Wait until encoders say you backed up enough
             self.reverse_counter = 0            # tweak distance it backs up in encoder callback
-            self.reversing = True
             self.already_reversed_once = True
+
+    def put_nudge_on_cooldown(self,sec):
+        if self.nudge_cooldown_timer:   # if a timer already exist replace it
+            self.nudge_cooldown_timer.destroy()
+        self.nudge_cooldown_timer = self.create_timer(sec, self.nudge_cooldown_over)  # put forward nudges on cooldown for a while
+        self.nudge_on_cooldown = True
 
     def visual_servo_timeout(self):
         self.get_logger().warn("Visual servoing timed out (no cube seen or stuck for a long time)")
@@ -258,8 +251,8 @@ class Arm_control(Node):
                 self.wheels_on = True
                 self.wheel_pub.publish(msg)
                 # Put this function on a cooldown
-                nudge_cooldown = 0.75      # sec
-                self.nudge_cooldown_timer = self.create_timer(nudge_cooldown, self.nudge_cooldown_over)
+                nudge_cooldown = 1.5      # sec
+                self.put_nudge_on_cooldown(nudge_cooldown)
                 # Turn off wheels after encoders say it has moved enough
                 self.nudge_counter = 0      # lenght of nudge can be tweaked in the encoder callback
                 self.nudging = True
@@ -276,6 +269,25 @@ class Arm_control(Node):
     def nudge_cooldown_over(self):              # Nudge cooldown timer callback
         self.nudge_on_cooldown = False
         self.nudge_cooldown_timer.destroy()
+        self.nudge_cooldown_timer = None
+
+    def encoder_callback(self, msg: Encoders):
+        # Used for distance measurement during wheels nudges and backing up
+        # Only left wheel encoder is used for simplicity
+        ## 100 encoder ticks are around 1cm
+        # TODO potential issue: dropped messages, keep this in mind
+        # not potential, actual
+        if self.reversing:
+            self.reverse_counter = self.reverse_counter + abs(msg.delta_encoder_left)
+            print(f"reverse counter: {self.reverse_counter}")
+            if self.reverse_counter > 700:      # tunable, corresponds to distance travelled when backing up
+                self.reversing = False
+                self.stop_wheels_ASAP = True
+        elif self.nudging:
+            self.nudge_counter = self.nudge_counter + abs(msg.delta_encoder_left)
+            if self.nudge_counter > 75:      # tunable, corresponds to distance travelled when nudging with the wheels
+                self.nudging = False
+                self.stop_wheels_ASAP = True
 
     def timer_callback(self):
         # Visual servoing implemented here
