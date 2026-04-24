@@ -748,8 +748,78 @@ class Detection(Node):
             return center_shifted, yaw, used_axes
 
         else:
-            # One edge situation is neglected for now
-            return None, None, None
+            # =========================================================
+            # single edge case - use PCA axes, shift center along normal
+            # =========================================================
+
+            # define reference x-axis
+            x_axis = np.array([1.0, 0.0])
+
+            # principal directions
+            dir1 = axes[0]
+            dir2 = axes[1]
+
+            # normalize (safety)
+            dir1 = dir1 / (np.linalg.norm(dir1) + 1e-8)
+            dir2 = dir2 / (np.linalg.norm(dir2) + 1e-8)
+
+            # compute angles to x-axis
+            angle_dir1_x = np.arctan2(dir1[1], dir1[0])
+            angle_dir2_x = np.arctan2(dir2[1], dir2[0])
+
+            self.get_logger().debug(
+                f'dir1 与 x 轴夹角: {angle_dir1_x:.2f} rad, dir2 与 x 轴夹角: {angle_dir2_x:.2f} rad'
+            )
+
+            # choose normal direction (pointing roughly +x)
+            normal = dir2 if np.dot(dir2, x_axis) > 0 else -dir2
+
+            # project points onto main axis (only dir1 used)
+            projected = pts_centered @ dir1.reshape(2, 1)
+
+            min_proj = projected.min(axis=0)
+            max_proj = projected.max(axis=0)
+            center_proj = (min_proj + max_proj) / 2
+
+            # reconstruct center on the observed edge
+            center = mean + center_proj * dir1
+
+            # estimated length along edge
+            length_proj = float(max_proj - min_proj)
+            width_proj = length_proj  # placeholder (same as old logic)
+
+            self.get_logger().debug(
+                f'length_proj: {length_proj:.3f}, width_proj: {width_proj:.3f}'
+            )
+
+            # assign box dimensions
+            if length_proj >= width_proj:
+                box_length = box_size[0]
+                box_width = box_size[1]
+            else:
+                # swap (rare here, but keep consistency)
+                dir1, dir2 = dir2, dir1
+                normal = dir2 if np.dot(dir2, x_axis) > 0 else -dir2
+                box_length = box_size[1]
+                box_width = box_size[0]
+
+            # decide shifting magnitude + yaw
+            if length_proj >= box_width:
+                shift_vec = normal * (box_width / 2.0)
+                yaw = angle_dir1_x
+            else:
+                shift_vec = normal * (box_length / 2.0)
+                yaw = angle_dir1_x - np.pi / 2
+
+            center_shifted = center + shift_vec
+
+            used_axes = np.vstack([dir1, normal])
+
+            self.get_logger().debug(
+                f'[Single Edge] center: {center_shifted}, yaw: {yaw:.3f}'
+            )
+
+            return center_shifted, yaw, used_axes
         
     # === RANSAC VISUALIZATION (Simplified) ===
     def publish_ransac_lines(self, pts, lines, timestamp):
