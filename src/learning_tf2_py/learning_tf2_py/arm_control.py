@@ -189,7 +189,8 @@ class Arm_control(Node):
         msg.time = [1000]*6
         msg.position = position
         self._pub_control.publish(msg)          # Lets try to avoid the cases where one command gets ignored and the arm moves really fast
-        self._pub_control.publish(msg)          # by sending commands twice
+        msg.position[5] = msg.position[5]+0.001 # by sending the command again with some negligible difference
+        self._pub_control.publish(msg)          
         time.sleep(1.5)
 
     def report_pick_success(self):
