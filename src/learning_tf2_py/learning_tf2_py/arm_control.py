@@ -4,14 +4,17 @@ import rclpy
 from rclpy.node import Node
 
 from sensor_msgs.msg import Image
-from robp_interfaces.msg import ArmControl, DutyCycles
+from robp_interfaces.msg import ArmControl
 from std_msgs.msg import String
 
+import cv2
+import numpy as np
+from cv_bridge import CvBridge      # to convert between ros2 image and numpy array (for opencv)
 import time
 
 # Self written functions
 from learning_tf2_py.arm_safe_republisher import jointmin,jointMAX
-from learning_tf2_py.inverse_kin import inverse_kinematics_to_joint_states, saturate_z_rho
+from learning_tf2_py.inverse_kin import inverse_kinematics_to_joint_states
 from learning_tf2_py.pickup import saturate_difference,find_cube_in_image_msg, is_the_target_cube_colored
 
 
@@ -21,7 +24,7 @@ class Arm_control(Node):
 
         # Initialize the publishers
 
-        self._pub = self.create_publisher(              # Debug image topics
+        self._pub = self.create_publisher(              # pass these two to pickup function for debug
             Image, '/arm/camera/image_debug', 10)
         self._pub2 = self.create_publisher(
             Image, '/arm/camera/image_debug2', 10)
@@ -32,27 +35,31 @@ class Arm_control(Node):
         self._pub5 = self.create_publisher(
             Image, '/arm/camera/image_debug_gripper_crop', 10)
         
-        self._pub_control = self.create_publisher(      # All arm commands go through this topic, it terminates any obvious unsafe movement
+        self._pub_control = self.create_publisher(
             ArmControl, '/arm/safe_control', 1)
-        
-        self.wheel_pub = self.create_publisher(DutyCycles, '/phidgets/motor/duty_cycles', 1)
 
         # Subscribe to the arm camera topic and call callback function on each received image
         self.create_subscription(
-            Image, '/arm/camera/image_raw', self.image_callback, 3)
+            Image, '/arm/camera/image_raw', self.image_callback, 10)
         
-        # Listen for commands and report back success/failure to the global planner
-        self.create_subscription(String, "/arm/cmd", self.cmd_callback, 10)
-        self.report_publisher = self.create_publisher(String, "/arm/report_back", 10)
+        # Listen for commands:
+        self.create_subscription(
+            String,
+            "/arm/cmd",
+            self.cmd_callback,
+            10
+        )
 
-        # Initialize state variables
+        self.report_publisher = self.create_publisher(
+            String,
+            "/arm/report_back",
+            10
+        )
+
         self.wait_for_pickup_command = False
         self.wait_for_place_command = False
         self.visual_servoing_ON = False
         self.look_at_gripper_contents = False
-        self.wheels_on = False
-        self.nudge_on_cooldown = False
-        self.already_reversed_once = False
         
         self.init_position = [10,120,50,150,100,120]
         self.joint0grip_value = 105
@@ -68,7 +75,6 @@ class Arm_control(Node):
         self.timer = self.create_timer(timer_period, self.timer_callback)
 
     def cmd_callback(self, msg):
-        # Handle messages received from the global planner
         content = msg.data
         if self.wait_for_pickup_command:
             if content[:4] == "pick":
@@ -83,18 +89,20 @@ class Arm_control(Node):
             else:
                 self.get_logger().warn("Invalid command, expecting: place")
         else:
-            pass #self.get_logger().warn("Warning: No command expected at this point")  TODO could be useful for debugging the integrated system
+            pass #self.get_logger().warn("Warning: No command expected at this point")  TODO put back
 
-    def run(self):  # State machine
+    def run(self):
+        # TODO replace all pass-es with spin once or async wait or whatever was recommended during the bootcamp
         while True:
             # State 0 - wait for pickup command:
             self.get_logger().info("Waiting for pick command")
             self.wait_for_pickup_command = True
             while(self.wait_for_pickup_command):
                 rclpy.spin_once(self, timeout_sec=0.1)
+            self.get_logger().info("State 0 done")
             # State 1 - goto initial arm position
-            self.already_reversed_once = False    # we allow backing up once per pickup attempt
             self.goto_position(self.init_position)
+            self.get_logger().info("State 1 done")
             # State 2 - goto z,rho where feedback control can be turned on
             z = 0.175
             self.rho = 0.175
@@ -105,24 +113,25 @@ class Arm_control(Node):
                 # if it does fail here that rly sucks
             position = self.init_position[0],self.init_position[1],joint2target,joint3target,joint4target,self.init_position[5]
             self.goto_position(position)
+            self.get_logger().info("State 2 done")
             # State 3 - feedback control ON, run until all errors are small, camera ON
             self.joint1target = self.init_position[1]
             self.joint2target = joint2target
             self.joint3target = joint3target
             self.joint4target = joint4target
             self.joint5target = self.init_position[5]
-            self.z = z # make arm stay on this z height while visual servoing
+            self.z = z # make arm stay on this z while visual servoing
             self.cube_position_available = False
             self.sideways_integral_term = 0
             # Run visual servoing while the errors don't decrease, or a timeout doesnt trigger
             self.was_timed_out = False
-            main_timeout = 20           # reset if visual servoing isnt complete after this time
+            main_timeout = 10           # reset if visual servoing isnt complete in this time
             self.main_timeout_timer = self.create_timer(main_timeout, self.visual_servo_timeout)
-            cant_see_cube_timeout = 2   # if cube cant be seen for this long while visual servoing - reverse the first time, timeout the second time
-            self.cant_see_cube_timer = self.create_timer(cant_see_cube_timeout, self.cant_see_cube_timeout_function)
+            cant_see_cube_timeout = 2   # reset if cube cant be seen for this long while visual servoing
+            self.cant_see_cube_timer = self.create_timer(cant_see_cube_timeout, self.visual_servo_timeout)
             self.visual_servoing_ON = True
-            while self.visual_servoing_ON:  
-                rclpy.spin_once(self, timeout_sec=1)        # process camera images while visual servoing
+            while self.visual_servoing_ON:
+                rclpy.spin_once(self, timeout_sec=1)
             # Destroy timeout timers
             self.cant_see_cube_timer.destroy()      
             self.main_timeout_timer.destroy()
@@ -131,6 +140,7 @@ class Arm_control(Node):
                 self.get_logger().info("pick failed - timeout")
                 self.goto_position(self.init_position)
                 continue
+            self.get_logger().info("State 3 done")
             # State 4 - feedback control OFF, goto lower z to pick up
             z = 0.14
             try:
@@ -139,13 +149,15 @@ class Arm_control(Node):
                 self.get_logger().warn("Inverse kinematics failed for z={}, rho={}, target might be unreachable".format(z,self.rho))
             position = self.init_position[0],self.joint1target,joint2target,joint3target,joint4target,self.joint5target
             self.goto_position(position)
+            self.get_logger().info("State 4 done")
             # State 5 - grip
             position = self.joint0grip_value,self.joint1target,joint2target,joint3target,joint4target,self.joint5target
             self.goto_position(position)
+            self.get_logger().info("State 5 done")
             # State 6 - goto initial position but gripper closed, check whether pickup was successful, report back
             position = self.init_position.copy()
             position[0] = self.joint0grip_value
-            self.goto_position(position)    
+            self.goto_position(position)
             self.look_at_gripper_contents = True
             while self.look_at_gripper_contents:            # analyze a camera image in a callback
                 rclpy.spin_once(self, timeout_sec=1)
@@ -155,18 +167,21 @@ class Arm_control(Node):
             else:
                 self.report_pick_fail()
                 self.get_logger().info("pick failed")
-                self.goto_position(self.init_position)  # gripper release if it failed
+                self.goto_position(self.init_position)  # gripper release
                 continue
+            self.get_logger().info("State 6 done")
             # State 7 - wait for place command
             self.get_logger().info("Waiting for place command")
             self.wait_for_place_command = True
             while(self.wait_for_place_command):
                 rclpy.spin_once(self, timeout_sec=0.1)
-            # State 8 - Gripper release, goto initial (state 1) position, report back
+            self.get_logger().info("State 7 done")
+            # State 8 - Gripper release, goto initial (state1?) position, report back
             self.goto_position(self.init_position)  # gripper release
             msg = String()
             msg.data = "place_success"
             self.report_publisher.publish(msg)
+            self.get_logger().info("State 8 done")
 
 
     def goto_position(self,position):
@@ -176,99 +191,35 @@ class Arm_control(Node):
         msg.header.stamp = self.get_clock().now().to_msg()
         msg.time = [1000]*6
         msg.position = position
-        self._pub_control.publish(msg)          # Lets try to avoid the cases where one command gets ignored and the arm moves really fast
-        self._pub_control.publish(msg)          # by sending commands twice
+        self._pub_control.publish(msg)
+        print(f"Going to position: {position}")
         time.sleep(1.5)
 
     def report_pick_success(self):
         msg = String()
         msg.data = "pick_success"
-        self.report_publisher.publish(msg)      # message to global planner
+        self.report_publisher.publish(msg)
 
     def report_pick_fail(self):
         msg = String()
         msg.data = "pick_fail"
-        self.report_publisher.publish(msg)      # message to global planner
-
-    def cant_see_cube_timeout_function(self):
-        # Runs if the cube is not in frame while visual servoing
-        if self.already_reversed_once:  
-            self.visual_servo_timeout()         # terminate visual servoing if reversing didnt help
-        else:
-            # Drive in reverse for a bit if this is the first occurance per pickup
-            self.nudge_cooldown_timer = self.create_timer(3, self.nudge_cooldown_over)  # put forward nudges on cooldown for a while
-            msg = DutyCycles()
-            msg.duty_cycle_left = -0.1
-            msg.duty_cycle_right = -0.1
-            self.wheels_on = True
-            self.wheel_pub.publish(msg)
-            time.sleep(1)   # tunable
-            msg.duty_cycle_left = 0
-            msg.duty_cycle_right = 0
-            self.wheel_pub.publish(msg)
-            self.wheels_on = False
-            self.already_reversed_once = True
+        self.report_publisher.publish(msg)
 
     def visual_servo_timeout(self):
         self.get_logger().warn("Visual servoing timed out (no cube seen or stuck for a long time)")
         self.was_timed_out = True
         self.visual_servoing_ON = False
 
-    def arm_reach_saturated(self):
-        # Check whether the arm is extended/contracted to the limit
-        rho = self.rho
-        _,saturated_rho = saturate_z_rho(0,rho)
-        return rho != saturated_rho
-
-    def nudge_wheels(self,extension_error):
-        # Move the robot (generally) forwards in a quick burst, has a cooldown
-        if not self.nudge_on_cooldown:
-            self.nudge_on_cooldown = True
-            msg = DutyCycles()
-            if extension_error>0:               # Go forwards or backwards depending on the extension error
-                msg.duty_cycle_left = 0.1
-                msg.duty_cycle_right = 0.1
-            else:
-                msg.duty_cycle_left = -0.1
-                msg.duty_cycle_right = -0.1
-            self.wheels_on = True
-            self.wheel_pub.publish(msg)
-            # Set up nudge length and cooldown
-            nudge_length = 0.25      # sec       wheels spin for this long (with 0.2 sec it was around 1cm per nudge)
-            self.nudge_shutoff_timer = self.create_timer(nudge_length, self.nudge_shutoff)
-            nudge_cooldown = 0.75      # sec
-            self.nudge_cooldown_timer = self.create_timer(nudge_cooldown, self.nudge_cooldown_over)
-
-    def nudge_shutoff(self):
-        # This callback stops the wheels after the nudge
-        msg = DutyCycles()
-        msg.duty_cycle_left = 0.0
-        msg.duty_cycle_right = 0.0
-        self.wheel_pub.publish(msg)
-        self.wheels_on = False
-        self.nudge_shutoff_timer.destroy()
-
-    def nudge_cooldown_over(self):              # Nudge cooldown timer callback
-        self.nudge_on_cooldown = False
-        self.nudge_cooldown_timer.destroy()
-
-
-
-    # Continue code cleanup from here
-    ###########################################################################################################################
-
-
     def timer_callback(self):
-        # Visual servoing implemented here
-        # TODO put this entire thing into a separate function and maybe even file if thats reasonable
+        # TODO put this entire thing into a separate function and maybe even file
         if self.visual_servoing_ON:
             if self.cube_position_available:
                 try:
                     # Control gains:
-                    k_sideways = 0.01
-                    k_sideways_integral = 0.005
+                    k_sideways = 0.01#0.05                  commented values work with 0.5 sec timer
+                    k_sideways_integral = 0.005#0.1
                     k_rotation = 1
-                    k_extension = 0.001      
+                    k_extension = 0.001
 
                     # Previous targets:
                     prev_joint1target = self.joint1target
@@ -282,15 +233,12 @@ class Arm_control(Node):
                     self.cube_position_available = False
                     # Calculate errors:
                     sideways_error = self.width_target-cx
-                    rotation_target = rotation % 90     # rotation target used for rotation control
-                    if rotation_target > 45:
-                        rotation_target = rotation_target - 90
-                    rotation_error = self.joint1target - 120 - rotation_target      # rotation error used as termination condition
+                    rotation_error = rotation % 90
+                    if rotation_error > 45:
+                        rotation_error = rotation_error - 90
                     extension_error = self.height_target-cy
-                    #self.get_logger().info(f"Errors (sidew,rot,ext): {sideways_error:3.0f}, {rotation_error:3.0f}, {extension_error:3.0f}")
-                    # TODO you might want to finetune the termination and nudge forward condition error values, changes were def made to rotation error implementation
                     # Termination condition:
-                    if (abs(sideways_error)<30) and (abs(rotation_error)<25) and (abs(extension_error)<50) and not self.wheels_on:
+                    if (abs(sideways_error)<30) and (abs(rotation_error)<25) and (abs(extension_error)<50):
                         self.visual_servoing_ON = False
                         return
                         
@@ -307,14 +255,9 @@ class Arm_control(Node):
                         self.joint5target = jointmin[5]
                     
                     # Rotation control (P)
-                    self.joint1target = 120 + k_rotation*rotation_target
+                    self.joint1target = 120 + k_rotation*rotation_error
 
-                    # Wheel control (in discrete bursts)
-                    if (abs(sideways_error)<30) and (abs(rotation_error)<25):   # use the wheels only if the arm is already well positioned sideways and gripper rotation-wise
-                        if self.arm_reach_saturated():
-                            self.nudge_wheels(extension_error)      # command has an internal cooldown, nudges by a fix amount
-
-                    # z-rho control (arm extend/contract + up-down, P)                  
+                    # z-rho control (arm extend/contract + up-down, P)
                     self.rho = 0.175 + k_extension*extension_error
                     try:
                         self.joint2target, self.joint3target, self.joint4target = inverse_kinematics_to_joint_states(z=self.z,rho=self.rho)
@@ -334,7 +277,6 @@ class Arm_control(Node):
                     self.joint4target = saturate_difference(self.joint4target,prev_joint4target,limit/10)
                     self.joint5target = saturate_difference(self.joint5target,prev_joint5target,limit)
 
-                    # Publish the arm command
                     msg = ArmControl()
                     msg.header.stamp = self.get_clock().now().to_msg()
                     msg.time = [100]*6  # move all joints in 100 ms (timer period), safe bcuz of saturation just above
@@ -352,6 +294,7 @@ class Arm_control(Node):
                     raise
         
         
+        
     def image_callback(self, msg: Image):
         # For each image received on /arm/camera/image_raw it updates the cube position and orientation variables
         # Known issues: it can detect multiple cubes/cube-like objects in the same frame, and both get written to the same attribute
@@ -363,9 +306,11 @@ class Arm_control(Node):
             except Exception as ex:     # if crash is due to no cube detected then pass, otherwise reraise
                 if ex.args[0] != "Cube not found in frame":
                     raise ex
-        elif self.look_at_gripper_contents:     # Visually check whether it actually picked the cube up
+        elif self.look_at_gripper_contents:
             self.cube_being_held = is_the_target_cube_colored(msg, self.width_target, self.height_target, self._pub5)
             self.look_at_gripper_contents = False
+
+                      
 
 
 def main():
