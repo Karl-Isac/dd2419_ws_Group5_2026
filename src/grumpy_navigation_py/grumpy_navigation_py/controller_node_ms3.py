@@ -85,6 +85,7 @@ class PathControllerNode(Node):
         self.next_idx = 0
         self.goal_type = PathWithType.OBJECT
         self.reached_latched = False
+        self.stopped_latched = False
 
         rclpy.get_default_context().on_shutdown(self.stop)
 
@@ -137,6 +138,7 @@ class PathControllerNode(Node):
         self.goal_type = msg.type
         self.next_idx = 0
         self.reached_latched = False
+        self.stopped_latched = False
 
         self.get_logger().info(
             f"Received new path with {len(msg.path.poses)} poses, "
@@ -176,8 +178,15 @@ class PathControllerNode(Node):
         msg.data = bool(value)
         self.reached_pub.publish(msg)
 
+    def allow_motion(self):
+        self.stopped_latched = False
+
     def stop(self):
+        if self.stopped_latched:
+            return
+
         self.publish_duty(0.0, 0.0)
+        self.stopped_latched = True
 
     def stop_distance(self) -> float:
         if self.goal_type == PathWithType.BOX:
@@ -281,6 +290,7 @@ class PathControllerNode(Node):
             left = forward_cmd
             right = forward_cmd
 
+        self.allow_motion()
         self.publish_duty(left, right)
 
 
