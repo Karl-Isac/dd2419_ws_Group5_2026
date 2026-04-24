@@ -78,6 +78,9 @@ class TaskPlannerNode(Node):
 
         self.approach_success = False
 
+        self.move_backwards_success = False
+        self.state_after_move_backward = None
+
         # Planner state
         # self.state = "SELECT_OBJECT"
         self.state = "GENERATE_EXPLORATION_POSE"
@@ -97,6 +100,8 @@ class TaskPlannerNode(Node):
 
         self.arm_pub = self.create_publisher(String, "/arm/cmd", 10)
 
+        self.move_backwards_pub = self.create_publisher(Bool, "/nav/move_backwards_start", 10)
+
         # Exploration
         self.exploration_pub = self.create_publisher(String, "/exploration/request_unexplored_point", 10) # content can be anything
         self.create_subscription(Point, "/exploration/return_unexplored_point", self.on_exploration_point, 10) # z value irrelevant, 
@@ -109,6 +114,7 @@ class TaskPlannerNode(Node):
         self.create_subscription(PoseArray, "/detected_objects", self.on_objects, 10)
         self.create_subscription(PoseArray, "/detected_boxes", self.on_boxes, 10)
         self.create_subscription(PoseStamped, "/nav/approach_finished", self.on_approach_finished, 10)
+        self.create_subscription(Bool, "/nav/move_backwards_finished", self.on_move_backwards_finished, 10)
 
         # Update ICP state
         self.ICP_pub = self.create_publisher(String, "/localization/start_update_ICP", 10)  # contant can be anything
@@ -129,6 +135,10 @@ class TaskPlannerNode(Node):
             "Pub: /nav/goal, /arm/cmd  "
             "Sub: /nav/reached, /arm/report_back, /detected_objects, /detected_boxes"
         )
+
+    def on_move_backwards_finished(self, msg):
+        if msg.data:
+            self.move_backwards_success = True
     
     def on_approach_finished(self, msg):
         self.approach_success = True
@@ -650,7 +660,9 @@ class TaskPlannerNode(Node):
                     f"Marked picked object id={self.current_object.id} "
                     f"at ({self.ox:.2f}, {self.oy:.2f})"
                 )
-                self.enter_state("GENERATE_PATH_TO_BOX")
+                # self.enter_state("GENERATE_PATH_TO_BOX")
+                self.state_after_move_backward = "GENERATE_PATH_TO_BOX" 
+                self.enter_state("MOVE_BACKWARD")
 
         # elif self.state == "NAV_TO_BOX":
         #     if not self._published_this_state:
@@ -684,7 +696,23 @@ class TaskPlannerNode(Node):
                 self.bx = None
                 self.by = None
 
-                self.enter_state("DONE")
+                # self.enter_state("DONE")
+                self.state_after_move_backward = "DONE"
+                self.enter_state("MOVE_BACKWARD")
+
+        elif self.state == "MOVE_BACKWARD":
+            if not self._published_this_state:
+                self._published_this_state = True
+                self.move_backwards_success = False
+                b = Bool()
+                b.data = True
+                self.move_backwards_pub.publish(b)
+
+            if self.move_backwards_success:
+                self.move_backwards_success = False
+                self.enter_state(self.state_after_move_backward)
+                     
+            
 
 
 
