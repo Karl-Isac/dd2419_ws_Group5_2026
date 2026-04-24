@@ -215,12 +215,25 @@ class AStarPlannerNode(Node):
     # ---------------------------------------
     # Callbacks
     # ---------------------------------------
+    # def on_objects(self, msg):
+    #     self.objects = [(p.position.x, p.position.y) for p in msg.poses]
+    #     self.current_grid = self.rebuild_grid()
+    #
+    # def on_boxes(self, msg):
+    #     self.boxes = [(p.position.x, p.position.y) for p in msg.poses]
+    #     self.current_grid = self.rebuild_grid()
+
     def on_objects(self, msg):
-        self.objects = [(p.position.x, p.position.y) for p in msg.poses]
+        for p in msg.poses:
+            self.objects.append((p.position.x, p.position.y))
+
         self.current_grid = self.rebuild_grid()
 
+
     def on_boxes(self, msg):
-        self.boxes = [(p.position.x, p.position.y) for p in msg.poses]
+        for p in msg.poses:
+            self.boxes.append((p.position.x, p.position.y))
+
         self.current_grid = self.rebuild_grid()
 
     def on_obstacle(self, msg):
@@ -286,6 +299,9 @@ class AStarPlannerNode(Node):
         self.publish_path_blocked(False)
         self.publish_path(best_path_cells)
 
+        if msg.type == GoalWithType.OBJECT:
+            self.remove_object_at_goal(self.goal)
+
     def goal_type_is_object_or_box(self, goal_type):
         if goal_type == GoalWithType.OBJECT:
             return True
@@ -346,6 +362,28 @@ class AStarPlannerNode(Node):
     # ---------------------------------------
     # Grid helpers
     # ---------------------------------------
+
+    def remove_object_at_goal(self, goal_xy, tolerance=0.20):
+        if not self.objects:
+            return
+
+        gx, gy = goal_xy
+
+        best_idx = None
+        best_dist_sq = float("inf")
+
+        for i, (x, y) in enumerate(self.objects):
+            dist_sq = (x - gx) ** 2 + (y - gy) ** 2
+            if dist_sq < best_dist_sq:
+                best_dist_sq = dist_sq
+                best_idx = i
+
+        if best_idx is not None and best_dist_sq <= tolerance * tolerance:
+            removed = self.objects.pop(best_idx)
+            self.get_logger().info(f"Removed object from memory at {removed}")
+        else:
+            self.get_logger().warn("No matching object found near goal to remove")
+
     def world_to_grid(self, x, y):
         gx = int((x - self.min_x) / self.resolution)
         gy = int((y - self.min_y) / self.resolution)
@@ -385,7 +423,7 @@ class AStarPlannerNode(Node):
         plt.savefig(save_path)
         plt.close()
 
-        self.get_logger().info(f"Saved grid visualization to: {save_path}")
+        # self.get_logger().info(f"Saved grid visualization to: {save_path}")
 
     def rebuild_grid(self):
         if self.workspace_poly is None:

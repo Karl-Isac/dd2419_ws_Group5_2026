@@ -571,6 +571,10 @@ class TaskPlannerNode(Node):
                 self.enter_state("APPROACH_OBJECT")
                 # self.enter_state("PICK_OBJECT")
 
+            elif not self.execute_path_object_success:
+                self.current_object.status = "failed"
+                self.enter_state("SELECT_OBJECT")
+
         elif self.state == "APPROACH_OBJECT":
             if not self._published_this_state: 
                 self._published_this_state = True
