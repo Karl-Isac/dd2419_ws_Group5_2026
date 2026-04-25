@@ -46,6 +46,29 @@ def generate_launch_description():
         output='screen'
     )
 
+    
+    move_backwards = Node(
+        package='grumpy_navigation_py',
+        executable='move_backwards',
+        name='move_backwards',
+        output='screen'
+    )
+
+    obstacle_detection = Node(
+        package='grumpy_navigation_py',
+        executable='obstacle_detection',
+        name='obstacle_detection',
+        output='screen'
+    )
+
+    approach_goal = Node(
+        package='grumpy_navigation_py',
+        executable='approach_goal',
+        name='approach_goal',
+        output='screen'
+    )
+
+
     # map_to_odom = Node(
     #     package='tf2_ros',
     #     executable='static_transform_publisher',
@@ -61,4 +84,7 @@ def generate_launch_description():
         planner,
         controller,
         # map_to_odom,
+        move_backwards,
+        obstacle_detection,
+        approach_goal,
     ])

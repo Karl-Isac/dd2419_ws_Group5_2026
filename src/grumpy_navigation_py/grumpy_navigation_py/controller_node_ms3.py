@@ -38,9 +38,9 @@ class PathControllerNode(Node):
         # self.declare_parameter("box_stop_distance", 0.25)
         # self.declare_parameter("exploration_stop_distance", 0.10)
 
-        self.declare_parameter("object_stop_distance", 0.1)
-        self.declare_parameter("box_stop_distance", 0.1)
-        self.declare_parameter("exploration_stop_distance", 0.1)
+        self.declare_parameter("object_stop_distance", 0.15)
+        self.declare_parameter("box_stop_distance", 0.15)
+        self.declare_parameter("exploration_stop_distance", 0.15)
 
         # Path tracking
         self.declare_parameter("lookahead", 0.20)
@@ -121,6 +121,9 @@ class PathControllerNode(Node):
         return f"unknown({self.goal_type})"
 
     def on_path_with_type(self, msg: PathWithType):
+
+        self.get_logger().info("on_path_with_type")
+
         if not msg.path.poses:
             self.path = None
             self.next_idx = 0
@@ -197,15 +200,15 @@ class PathControllerNode(Node):
         return float(self.get_parameter("object_stop_distance").value)
 
     def step(self):
-        # if self.path is None:
-        #     self.stop()
-        #     self.publish_reached(False)
-        #     return
+        if self.path is None:
+            self.stop()
+            # self.publish_reached(False)
+            return
         #
-        # if self.cancel_controller:
-        #     self.stop()
-        #     self.publish_reached(False)
-        #     return
+        if self.cancel_controller:
+            self.stop()
+            # self.publish_reached(False)
+            return
 
         pose = self.get_pose()
         if pose is None:

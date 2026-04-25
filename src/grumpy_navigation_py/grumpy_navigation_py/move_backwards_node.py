@@ -41,6 +41,7 @@ class MoveBackWardsNode(Node):
         self.timer = self.create_timer(0.05, self.on_timer)
 
     def on_move_backwards_start(self, msg):
+        self.get_logger().info("on_move_backwards_start")
         if not msg.data:
             return
 
@@ -81,7 +82,7 @@ class MoveBackWardsNode(Node):
         duty = float(self.get_parameter("backwards_duty").value)
 
         # If positive duty moves forward on your robot, change this to (-duty, -duty)
-        self.publish_duty(duty, duty)
+        self.publish_duty(-duty, -duty)
 
     def get_robot_xy(self):
         try:

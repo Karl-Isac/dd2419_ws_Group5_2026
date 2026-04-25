@@ -69,7 +69,7 @@ class TaskPlannerNode(Node):
         self.execute_exploration_path_success = False
 
         self.generate_path_object_success = False
-        self.execute_path_object_success = False
+        self.execute_path_object_success = None
 
         self.generate_path_box_success = False
         self.execute_path_box_success = False
@@ -265,16 +265,12 @@ class TaskPlannerNode(Node):
         nav_reached = bool(msg.data)
         # print(f"nav_reaced: {nav_reached}")
         if self.state == "EXECUTE_PATH_TO_OBJECT":
-            if nav_reached:
-                self.execute_path_object_success = True
+            self.execute_path_object_success = nav_reached
         elif self.state == "EXECUTE_PATH_TO_BOX":
-            if nav_reached:
-                self.execute_path_box_success = True
+            self.execute_path_box_success = nav_reached
         elif self.state == "EXECUTE_EXPLORATION_PATH":
-            if nav_reached:
-                self.execute_exploration_path_success = True
+            self.execute_exploration_path_success = nav_reached
 
-                    # TODO: add logic for false
 
 
 
@@ -542,7 +538,7 @@ class TaskPlannerNode(Node):
             self.enter_state("GENERATE_PATH_TO_OBJECT")
             return
 
-        if self.current_object is None and self.state not in ("SELECT_OBJECT", "DONE", "DROP_OBJECT"):
+        if self.current_object is None and self.state not in ("SELECT_OBJECT", "DONE", "DROP_OBJECT", "MOVE_BACKWARD"):
             return
 
         
@@ -567,14 +563,14 @@ class TaskPlannerNode(Node):
                 # self.get_logger().info("EXECUTE_PATH_TO_OBJECT")
                 self.publish_path_to_controller(path=self.path_to_goal, goal_type="object")
                 self._published_this_state = True
-                self.execute_path_object_success = False
+                self.execute_path_object_success = None
                 self.get_logger().info("EXECUTE_PATH_TO_OBJECT: published object path")
 
-            if self.execute_path_object_success:
+            if self.execute_path_object_success is True:
                 self.enter_state("APPROACH_OBJECT")
                 # self.enter_state("PICK_OBJECT")
 
-            elif not self.execute_path_object_success:
+            elif self.execute_path_object_success is False:
                 self.current_object.status = "failed"
                 self.enter_state("SELECT_OBJECT")
 
@@ -709,6 +705,7 @@ class TaskPlannerNode(Node):
 
         elif self.state == "MOVE_BACKWARD":
             if not self._published_this_state:
+                self.get_logger().info("in MOVE_BACKWARD state")
                 self._published_this_state = True
                 self.move_backwards_success = False
                 b = Bool()
