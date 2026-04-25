@@ -149,8 +149,8 @@ def find_cube_in_image_msg(msg, publisher1, publisher2, publisher3, publisher4, 
     # HSL filtering - non-aggressive, just takes out really dark and really gray pixels
     bgr_image = cv2.cvtColor(raw_image,cv2.COLOR_YUV2BGR_YUY2)
     hls = cv2.cvtColor(bgr_image, cv2.COLOR_BGR2HLS)
-    lower = np.array([0, 25, 25])     # H, L, S
-    upper = np.array([179, 255, 255])
+    lower = np.array([0, 25, 127])     # H, L, S
+    upper = np.array([179, 245, 255])
     mask = cv2.inRange(hls, lower, upper)
     filtered = cv2.bitwise_and(bgr_image, bgr_image, mask=mask)
 
@@ -168,6 +168,8 @@ def find_cube_in_image_msg(msg, publisher1, publisher2, publisher3, publisher4, 
     cube_orientation_in_frame = False
     cube_position_available = False
 
+    best_accepted_contour = None
+    best_contour_size = 0
     # Pass 1: If it can clearly see the cube top face, mark it
     contours, hierarchy = cv2.findContours(
         canny, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
@@ -176,15 +178,11 @@ def find_cube_in_image_msg(msg, publisher1, publisher2, publisher3, publisher4, 
         #if hierarchy[0][i][2] == -1:            # look for only the innermost square, sometimes the cube shadow seems like an enveloping larger cube face
         poly = approx_to_polygon(contours[i])
         if is_square(poly):
-            rect = cv2.minAreaRect(poly)  # returns ((cx, cy), (width, height), angle)
-            centerpoint = rect[0]
-            angle = rect[2]         # in degrees
-            cube_position_in_frame = centerpoint
-            cube_orientation_in_frame = angle
-            cube_position_available = True
-            if publish_debug_images:    # mark cube pose in debug image
-                cv2.drawContours(bgr_image, contours, i, (255,0,0), 4)
-                draw_cs_on_image(bgr_image,centerpoint,angle)
+            contour_size = cv2.contourArea(poly)
+            if contour_size > best_contour_size:
+                best_contour_size = contour_size
+                best_accepted_contour = poly
+                cube_position_available = True
 
     # Pass 2: If it cannot see a clear cube top face, try to mark a large smudge distinct from the background
     if not cube_position_available:
@@ -199,15 +197,12 @@ def find_cube_in_image_msg(msg, publisher1, publisher2, publisher3, publisher4, 
             area = cv2.contourArea(contours[i])     # if the smudge is large enough, treat it as the cube       
             min_area = 1000                          # might need to finetune
             if area > min_area:
-                rect = cv2.minAreaRect(contours[i])  # returns ((cx, cy), (width, height), angle)
-                centerpoint = rect[0]
-                angle = rect[2]         # in degrees
-                cube_position_in_frame = centerpoint
-                cube_orientation_in_frame = angle
-                cube_position_available = True
-                if publish_debug_images:    # mark cube pose in debug image
-                    cv2.drawContours(bgr_image, contours, i, (255,0,0), 4)
-                    draw_cs_on_image(bgr_image,centerpoint,angle)
+                contour_size = cv2.contourArea(contours[i])
+                if contour_size > best_contour_size:
+                    best_contour_size = contour_size
+                    best_accepted_contour = contours[i]
+                    cube_position_available = True
+    cube_position_in_frame, cube_orientation_in_frame = find_center_and_draw(best_accepted_contour,publish_debug_images,bgr_image)
 
     if publish_debug_images:
         out_msg = bridge.cv2_to_imgmsg(         # convert the np array back to ros2 Image msg
@@ -268,3 +263,16 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
+def find_center_and_draw(contour,publish_debug_images,bgr_image):       # contour = poly or contours[i]
+    rect = cv2.minAreaRect(contour)  # returns ((cx, cy), (width, height), angle)
+    centerpoint = rect[0]
+    angle = rect[2]         # in degrees
+    cube_position_in_frame = centerpoint
+    cube_orientation_in_frame = angle
+    if publish_debug_images:    # mark cube pose in debug image
+        cv2.drawContours(bgr_image, [contour], 0, (255,0,0), 4)
+        # cv2.drawContours(bgr_image, contours, i, (255,0,0), 4) if it crashes, but then you need to pass more stuff
+        draw_cs_on_image(bgr_image,centerpoint,angle)
+    return cube_position_in_frame, cube_orientation_in_frame
