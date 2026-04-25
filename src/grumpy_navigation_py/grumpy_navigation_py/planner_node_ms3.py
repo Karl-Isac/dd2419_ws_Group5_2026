@@ -401,39 +401,78 @@ class AStarPlannerNode(Node):
     #     t = tf.transform.translation
     #     return (float(t.x), float(t.y))
 
+
     def lookup_robot_xy(self):
         target_frame = "base_link"
         world_frame = self.world_frame
 
-        max_age = 0.15          # seconds; tune this
-        timeout_sec = 5.0
-        start = self.get_clock().now()
+        try:
+            future = self.tf_buffer.wait_for_transform_async(
+                world_frame,
+                target_frame,
+                # Time()
+                self.get_clock().now()
+            )
 
-        while (self.get_clock().now() - start).nanoseconds * 1e-9 < timeout_sec:
-            try:
-                tf = self.tf_buffer.lookup_transform(
-                    world_frame,
-                    target_frame,
-                    Time(),  # latest available
-                    timeout=Duration(seconds=0.1)
-                )
+            rclpy.spin_until_future_complete(
+                self,
+                future,
+                timeout_sec=1.0
+            )
 
-                tf_time = Time.from_msg(tf.header.stamp)
-                age = (self.get_clock().now() - tf_time).nanoseconds * 1e-9
+            if not future.done():
+                self.get_logger().warn("TF async wait timed out")
+                return None
 
-                if age <= max_age:
-                    t = tf.transform.translation
-                    return (float(t.x), float(t.y))
+            future.result()
 
-                self.get_logger().warn(f"Waiting for fresh TF, age={age:.3f}s")
+            tf = self.tf_buffer.lookup_transform(
+                world_frame,
+                target_frame,
+                Time(),
+                timeout=Duration(seconds=0.1)
+            )
 
-            except Exception as e:
-                self.get_logger().warn(f"TF lookup failed: {e}")
+        except Exception as e:
+            self.get_logger().warn(f"TF lookup failed: {e}")
+            return None
 
-            rclpy.spin_once(self, timeout_sec=0.05)
+        t = tf.transform.translation
+        return (float(t.x), float(t.y))
 
-        self.get_logger().warn("Timed out waiting for fresh TF")
-        return None
+    # def lookup_robot_xy(self):
+    #     target_frame = "base_link"
+    #     world_frame = self.world_frame
+    #
+    #     max_age = 0.15          # seconds; tune this
+    #     timeout_sec = 5.0
+    #     start = self.get_clock().now()
+    #
+    #     while (self.get_clock().now() - start).nanoseconds * 1e-9 < timeout_sec:
+    #         try:
+    #             tf = self.tf_buffer.lookup_transform(
+    #                 world_frame,
+    #                 target_frame,
+    #                 Time(),  # latest available
+    #                 timeout=Duration(seconds=0.1)
+    #             )
+    #
+    #             tf_time = Time.from_msg(tf.header.stamp)
+    #             age = (self.get_clock().now() - tf_time).nanoseconds * 1e-9
+    #
+    #             if age <= max_age:
+    #                 t = tf.transform.translation
+    #                 return (float(t.x), float(t.y))
+    #
+    #             self.get_logger().warn(f"Waiting for fresh TF, age={age:.3f}s")
+    #
+    #         except Exception as e:
+    #             self.get_logger().warn(f"TF lookup failed: {e}")
+    #
+    #         rclpy.spin_once(self, timeout_sec=0.05)
+    #
+    #     self.get_logger().warn("Timed out waiting for fresh TF")
+    #     return None
 
     # def lookup_robot_xy(self):
     #     target_frame = "base_link"
