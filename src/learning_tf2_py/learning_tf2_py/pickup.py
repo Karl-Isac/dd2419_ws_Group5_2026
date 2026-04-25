@@ -168,7 +168,6 @@ def find_cube_in_image_msg(msg, publisher1, publisher2, publisher3, publisher4, 
     cube_orientation_in_frame = False
     cube_position_available = False
 
-    best_accepted_contour = None
     best_contour_size = 0
     # Pass 1: If it can clearly see the cube top face, mark it
     contours, hierarchy = cv2.findContours(
@@ -202,7 +201,8 @@ def find_cube_in_image_msg(msg, publisher1, publisher2, publisher3, publisher4, 
                     best_contour_size = contour_size
                     best_accepted_contour = contours[i]
                     cube_position_available = True
-    cube_position_in_frame, cube_orientation_in_frame = find_center_and_draw(best_accepted_contour,publish_debug_images,bgr_image)
+    if best_contour_size != 0:
+        cube_position_in_frame, cube_orientation_in_frame = find_center_and_draw(best_accepted_contour,publish_debug_images,bgr_image)
 
     if publish_debug_images:
         out_msg = bridge.cv2_to_imgmsg(         # convert the np array back to ros2 Image msg
