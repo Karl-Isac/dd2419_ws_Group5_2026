@@ -274,6 +274,9 @@ class TaskPlannerNode(Node):
             if nav_reached:
                 self.execute_exploration_path_success = True
 
+                    # TODO: add logic for false
+
+
 
     def lookup_xy(self, target_frame: str):
         try:

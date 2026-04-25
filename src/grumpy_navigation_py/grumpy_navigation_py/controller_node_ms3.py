@@ -38,9 +38,9 @@ class PathControllerNode(Node):
         # self.declare_parameter("box_stop_distance", 0.25)
         # self.declare_parameter("exploration_stop_distance", 0.10)
 
-        self.declare_parameter("object_stop_distance", 0.185)
-        self.declare_parameter("box_stop_distance", 0.25)
-        self.declare_parameter("exploration_stop_distance", 0.10)
+        self.declare_parameter("object_stop_distance", 0.1)
+        self.declare_parameter("box_stop_distance", 0.1)
+        self.declare_parameter("exploration_stop_distance", 0.1)
 
         # Path tracking
         self.declare_parameter("lookahead", 0.20)
@@ -106,6 +106,7 @@ class PathControllerNode(Node):
             self.path = None
             self.next_idx = 0
             self.reached_latched = False
+            self.publish_reached(False)
             self.stop()
             self.get_logger().warn("Received /nav/path_blocked=True, stopping controller.")
 
@@ -196,15 +197,15 @@ class PathControllerNode(Node):
         return float(self.get_parameter("object_stop_distance").value)
 
     def step(self):
-        if self.path is None:
-            self.stop()
-            self.publish_reached(False)
-            return
-
-        if self.cancel_controller:
-            self.stop()
-            self.publish_reached(False)
-            return
+        # if self.path is None:
+        #     self.stop()
+        #     self.publish_reached(False)
+        #     return
+        #
+        # if self.cancel_controller:
+        #     self.stop()
+        #     self.publish_reached(False)
+        #     return
 
         pose = self.get_pose()
         if pose is None:
@@ -239,9 +240,9 @@ class PathControllerNode(Node):
                     f"Reached ({self.goal_type_name()}) within {stop_dist:.2f} m (d={d_final:.2f})."
                 )
             return
-        else:
-            self.publish_reached(False)
-            self.reached_latched = False
+        # else:
+        #     self.publish_reached(False)
+        #     self.reached_latched = False
 
         # Advance along the path
         while self.next_idx + 1 < len(self.path.poses):
