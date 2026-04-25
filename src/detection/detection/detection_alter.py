@@ -777,18 +777,26 @@ class Detection(Node):
             # project points onto main axis (only dir1 used)
             projected = pts_centered @ dir1
 
-            min_proj = projected.min()
-            max_proj = projected.max()
+            # min_proj = projected.min()
+            # max_proj = projected.max()
 
-            center_proj = (min_proj + max_proj) / 2.0
+            # center_proj = (min_proj + max_proj) / 2.0
+            # center = mean + center_proj * dir1
+
+            # length_proj = max_proj - min_proj
+
+            q_low  = np.percentile(projected, 5)
+            q_high = np.percentile(projected, 95)
+
+            center_proj = (q_high + q_low) / 2.0
             center = mean + center_proj * dir1
 
-            length_proj = max_proj - min_proj
+            length_proj = float(q_high - q_low)
             width_proj = length_proj  # placeholder (same as old logic)
 
-            self.get_logger().debug(
-                f'length_proj: {length_proj:.3f}, width_proj: {width_proj:.3f}'
-            )
+            # self.get_logger().info(
+            #     f'length_proj: {length_proj:.3f}'
+            # )
 
             # Exclude noise background
             if length_proj <= 0.1:
