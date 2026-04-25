@@ -165,6 +165,7 @@ class PathControllerNode(Node):
         return t.x, t.y, yaw
 
     def publish_duty(self, left: float, right: float):
+        self.get_logger().info(f"publishin duty = ({left}, {right})")
         left_scale = float(self.get_parameter("left_scale").value)
         right_scale = float(self.get_parameter("right_scale").value)
         max_duty = float(self.get_parameter("max_duty").value)
@@ -242,6 +243,8 @@ class PathControllerNode(Node):
                 self.get_logger().info(
                     f"Reached ({self.goal_type_name()}) within {stop_dist:.2f} m (d={d_final:.2f})."
                 )
+            self.path = None
+            self.next_idx = 0
             return
         # else:
         #     self.publish_reached(False)

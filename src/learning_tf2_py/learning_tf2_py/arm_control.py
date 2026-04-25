@@ -280,8 +280,9 @@ class Arm_control(Node):
         # not potential, actual
         if self.reversing:
             self.reverse_counter = self.reverse_counter + abs(msg.delta_encoder_left)
-            print(f"reverse counter: {self.reverse_counter}")
-            if self.reverse_counter > 700:      # tunable, corresponds to distance travelled when backing up
+            # print(f"reverse counter: {self.reverse_counter}")
+            self.get_logger().info(f"reverse counter: {self.reverse_counter} hello")
+            if self.reverse_counter > 400:      # tunable, corresponds to distance travelled when backing up
                 self.reversing = False
                 self.stop_wheels_ASAP = True
         elif self.nudging:

@@ -714,6 +714,7 @@ class TaskPlannerNode(Node):
 
             if self.move_backwards_success:
                 self.move_backwards_success = False
+                self.get_logger().info(f"robot pos = ({rx}, {ry})")
                 self.enter_state(self.state_after_move_backward)
                      
             

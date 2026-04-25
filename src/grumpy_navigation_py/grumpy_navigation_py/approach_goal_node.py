@@ -33,7 +33,7 @@ class ApproachGoalNode(Node):
         self.declare_parameter("turn_duty", 0.10)
 
         # Forward behavior
-        self.declare_parameter("forward_distance", 0.12)  # meters
+        self.declare_parameter("forward_distance", 0.07)  # meters
         self.declare_parameter("forward_duty", 0.10)
 
         self.world_frame = self.get_parameter("world_frame").value
@@ -96,6 +96,7 @@ class ApproachGoalNode(Node):
         return float(t.x), float(t.y), float(yaw)
 
     def publish_duty(self, left: float, right: float):
+        self.get_logger().info(f"publsihing duty: ({left}, {right})")
         msg = DutyCycles()
         msg.duty_cycle_left = float(left)
         msg.duty_cycle_right = float(right)

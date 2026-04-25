@@ -21,6 +21,12 @@ from ament_index_python.packages import get_package_share_directory
 
 from tf2_ros import Buffer, TransformListener
 
+from visualization_msgs.msg import Marker
+
+from rclpy.duration import Duration
+from rclpy.time import Time
+
+
 
 class AStarPlannerNode(Node):
     def __init__(self):
@@ -128,11 +134,43 @@ class AStarPlannerNode(Node):
         # New: planner tells task planner/controller that current path is blocked
         self.path_blocked_pub = self.create_publisher(Bool, "/nav/path_blocked", 10)
 
+        #debug
+        self.marker_pub = self.create_publisher(Marker, "/debug/robot_start", 10)
+
         # Continuous path validity checking
         timer_period = 1.0 / max(path_check_rate_hz, 1e-6)
         self.create_timer(timer_period, self.check_current_path_collision)
 
         self.get_logger().info("Planner ready")
+
+    def publish_robot_start_marker(self, x, y):
+        marker = Marker()
+        marker.header.frame_id = "map"   # IMPORTANT: match your RViz fixed frame
+        marker.header.stamp = self.get_clock().now().to_msg()
+
+        marker.ns = "robot_start"
+        marker.id = 0
+        marker.type = Marker.SPHERE
+        marker.action = Marker.ADD
+
+        marker.pose.position.x = float(x)
+        marker.pose.position.y = float(y)
+        marker.pose.position.z = 0.0
+
+        marker.pose.orientation.w = 1.0
+
+        # Size of the point
+        marker.scale.x = 0.1
+        marker.scale.y = 0.1
+        marker.scale.z = 0.1
+
+        # Color (RGBA)
+        marker.color.r = 1.0
+        marker.color.g = 0.2
+        marker.color.b = 0.2
+        marker.color.a = 1.0
+
+        self.marker_pub.publish(marker)
 
     # ---------------------------------------
     # Workspace
@@ -265,6 +303,9 @@ class AStarPlannerNode(Node):
             robot = (self.start_x, self.start_y)
 
         start = self.world_to_grid(robot[0], robot[1])
+        self.get_logger().info(f"robot start pos = ({robot[0]}, {robot[1]})")
+        self.publish_robot_start_marker(robot[0], robot[1])
+
         raw_goal = self.world_to_grid(self.goal[0], self.goal[1])
 
         if not self.cell_in_bounds(start[0], start[1], grid):
@@ -342,22 +383,83 @@ class AStarPlannerNode(Node):
     # ---------------------------------------
     # TF
     # ---------------------------------------
+    # def lookup_robot_xy(self):
+    #     target_frame = "base_link"
+    #     world_frame = self.world_frame
+    #
+    #     try:
+    #         tf = self.tf_buffer.lookup_transform(
+    #             world_frame,
+    #             target_frame,
+    #             rclpy.time.Time(),
+    #             timeout=Duration(seconds=5.0)
+    #         )
+    #     except Exception as e:
+    #         self.get_logger().warn(f"TF lookup failed: {e}")
+    #         return None
+    #
+    #     t = tf.transform.translation
+    #     return (float(t.x), float(t.y))
+
     def lookup_robot_xy(self):
         target_frame = "base_link"
         world_frame = self.world_frame
 
-        try:
-            tf = self.tf_buffer.lookup_transform(
-                world_frame,
-                target_frame,
-                rclpy.time.Time()
-            )
-        except Exception as e:
-            self.get_logger().warn(f"TF lookup failed: {e}")
-            return None
+        max_age = 0.15          # seconds; tune this
+        timeout_sec = 5.0
+        start = self.get_clock().now()
 
-        t = tf.transform.translation
-        return (float(t.x), float(t.y))
+        while (self.get_clock().now() - start).nanoseconds * 1e-9 < timeout_sec:
+            try:
+                tf = self.tf_buffer.lookup_transform(
+                    world_frame,
+                    target_frame,
+                    Time(),  # latest available
+                    timeout=Duration(seconds=0.1)
+                )
+
+                tf_time = Time.from_msg(tf.header.stamp)
+                age = (self.get_clock().now() - tf_time).nanoseconds * 1e-9
+
+                if age <= max_age:
+                    t = tf.transform.translation
+                    return (float(t.x), float(t.y))
+
+                self.get_logger().warn(f"Waiting for fresh TF, age={age:.3f}s")
+
+            except Exception as e:
+                self.get_logger().warn(f"TF lookup failed: {e}")
+
+            rclpy.spin_once(self, timeout_sec=0.05)
+
+        self.get_logger().warn("Timed out waiting for fresh TF")
+        return None
+
+    # def lookup_robot_xy(self):
+    #     target_frame = "base_link"
+    #     world_frame = self.world_frame
+    #
+    #     try:
+    #         tf = self.tf_buffer.lookup_transform(
+    #             world_frame,
+    #             target_frame,
+    #             Time(),  # latest available transform
+    #             timeout=Duration(seconds=1.0)
+    #         )
+    #     except Exception as e:
+    #         self.get_logger().warn(f"TF lookup failed: {e}")
+    #         return None
+    #
+    #     # reject stale transforms
+    #     tf_time = Time.from_msg(tf.header.stamp)
+    #     age = (self.get_clock().now() - tf_time).nanoseconds * 1e-9
+    #
+    #     if age > 0.2:
+    #         self.get_logger().warn(f"TF too old: {age:.3f}s")
+    #         return None
+    #
+    #     t = tf.transform.translation
+    #     return (float(t.x), float(t.y))
 
     # ---------------------------------------
     # Grid helpers
