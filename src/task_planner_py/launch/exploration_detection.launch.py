@@ -32,10 +32,18 @@ def generate_launch_description():
         output='screen'
     )
 
+    detection_apr26 = Node(
+        package='detection',
+        executable='alter_apr26',
+        name='detection_apr26',
+        output='screen'
+    )
+
 
     return LaunchDescription([
         exploration_mapper,
         # exploration_mapper_new,
         # detection,
-        detection_apr20,
+        # detection_apr20,
+        detection_apr26,
     ])

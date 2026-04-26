@@ -75,9 +75,7 @@ class Detection(Node):
         # open and load map file and workspace (csv)
         package_path = get_package_share_directory('detection')
         # map_path = os.path.join(package_path, 'config', 'blank.csv')
-        # map_path = os.path.join(package_path, 'config', 'map_1_1.csv')
-        # map_path = os.path.join(package_path, 'config', 'map_1_3.csv')
-        map_path = os.path.join(package_path, 'config', 'map_1_4.csv')
+        map_path = os.path.join(package_path, 'config', 'map_1_5.csv')
         workspace_path = os.path.join(package_path, 'config', 'workspace_1.csv')
         self.metadata_rows = []
         self.boundary = [] # List of intersection of edges of workspace, in format of [[x1, y1], [x2, y2], ...] 
@@ -213,7 +211,7 @@ class Detection(Node):
 
         self.counter = -2 # keep frames of every x frames, AND, discard first two frames
 
-        print(42)
+        print(4)
 
     def publish_arrays(self, object_poses, object_timestamp, box_poses, box_timestamp):
         """publish object and box poses from map file to ROS topics."""
@@ -316,7 +314,6 @@ class Detection(Node):
         else:
             candidates = np.empty((0, 6), dtype=np.float32)
             test_points_cube = []
-            self.get_logger().warn("no points for object detection")
 
         # Build grey_points list: (z, -x) format for box detection
         # Build grey_points list: (z, -x) format for box detection
@@ -391,9 +388,7 @@ class Detection(Node):
         #     box_cloud = pc2.create_cloud(header, fields, test_points_box)
         #     self.test_pub_box.publish(box_cloud)
         if test_points_cube:
-            
             cube_cloud = pc2.create_cloud(header, fields, test_points_cube)
-            # print("publishing cude point cloud")
             self.test_pub_cube.publish(cube_cloud)
         
 
@@ -552,7 +547,7 @@ class Detection(Node):
             return
 
         for item in self.object_lists:
-            if np.abs(item[0] - object_map.pose.position.x * 100) < 10 and np.abs(item[1] - object_map.pose.position.y * 100) < 10:
+            if np.abs(item[0] - object_map.pose.position.x * 100) < 15 and np.abs(item[1] - object_map.pose.position.y * 100) < 15:
                 self.get_logger().debug(f"repeated object {self.object_lists.index(item)} detection, discarded")
                 break
         else:
@@ -607,7 +602,7 @@ class Detection(Node):
         "yaw: rotation around z in radians "
         "axes: principal axes vectors (2x2) """ 
         
-        if len(points) < 100: 
+        if len(points) < 150: 
             return None, None, None 
         
         # self.get_logger().info(f"the length of points: {len(points)}")
@@ -754,8 +749,88 @@ class Detection(Node):
             return center_shifted, yaw, used_axes
 
         else:
-            # One edge situation is neglected for now
-            return None, None, None
+            # =========================================================
+            # single edge case - use PCA axes, shift center along normal
+            # =========================================================
+
+            # define reference x-axis
+            x_axis = np.array([1.0, 0.0])
+
+            # principal directions
+            dir1 = axes[0]
+            dir2 = axes[1]
+
+            # normalize (safety)
+            dir1 = dir1 / (np.linalg.norm(dir1) + 1e-8)
+            dir2 = dir2 / (np.linalg.norm(dir2) + 1e-8)
+
+            # compute angles to x-axis
+            angle_dir1_x = np.arctan2(dir1[1], dir1[0])
+            angle_dir2_x = np.arctan2(dir2[1], dir2[0])
+
+            self.get_logger().debug(
+                f'dir1 与 x 轴夹角: {angle_dir1_x:.2f} rad, dir2 与 x 轴夹角: {angle_dir2_x:.2f} rad'
+            )
+
+            # choose normal direction (pointing roughly +x)
+            normal = dir2 if np.dot(dir2, x_axis) > 0 else -dir2
+
+            # project points onto main axis (only dir1 used)
+            projected = pts_centered @ dir1
+
+            # min_proj = projected.min()
+            # max_proj = projected.max()
+
+            # center_proj = (min_proj + max_proj) / 2.0
+            # center = mean + center_proj * dir1
+
+            # length_proj = max_proj - min_proj
+
+            q_low  = np.percentile(projected, 5)
+            q_high = np.percentile(projected, 95)
+
+            center_proj = (q_high + q_low) / 2.0
+            center = mean + center_proj * dir1
+
+            length_proj = float(q_high - q_low)
+            width_proj = length_proj  # placeholder (same as old logic)
+
+            # self.get_logger().info(
+            #     f'length_proj: {length_proj:.3f}'
+            # )
+
+            # Exclude noise background
+            if length_proj <= 0.1:
+                return None, None, None
+
+            # assign box dimensions
+            if length_proj >= width_proj:
+                box_length = box_size[0]
+                box_width = box_size[1]
+            else:
+                # swap (rare here, but keep consistency)
+                dir1, dir2 = dir2, dir1
+                normal = dir2 if np.dot(dir2, x_axis) > 0 else -dir2
+                box_length = box_size[1]
+                box_width = box_size[0]
+
+            # decide shifting magnitude + yaw
+            if length_proj >= box_width:
+                shift_vec = normal * (box_width / 2.0)
+                yaw = angle_dir1_x
+            else:
+                shift_vec = normal * (box_length / 2.0)
+                yaw = angle_dir1_x - np.pi / 2
+
+            center_shifted = center + shift_vec
+
+            used_axes = np.vstack([dir1, normal])
+
+            self.get_logger().debug(
+                f'[Single Edge] center: {center_shifted}, yaw: {yaw:.3f}'
+            )
+
+            return center_shifted, yaw, used_axes
         
     # === RANSAC VISUALIZATION (Simplified) ===
     def publish_ransac_lines(self, pts, lines, timestamp):
@@ -922,7 +997,7 @@ class Detection(Node):
         s_hsl[mask_delta] = delta[mask_delta] / denominator
         
         # Final grey condition
-        grey_cond = ((h > 20) | (h == 0)) & (s_hsl < 0.2) & (l < 0.3)
+        grey_cond = ((h > 170) & (h < 270) | (h == 0)) & (s_hsl < 0.2) & (l < 0.3)
         return grey_cond
     
     def _rgb_to_hsv_vectorized(self, r, g, b):

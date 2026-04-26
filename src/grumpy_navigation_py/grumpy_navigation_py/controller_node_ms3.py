@@ -165,7 +165,7 @@ class PathControllerNode(Node):
         return t.x, t.y, yaw
 
     def publish_duty(self, left: float, right: float):
-        self.get_logger().info(f"publishin duty = ({left}, {right})")
+        # self.get_logger().info(f"publishin duty = ({left}, {right})")
         left_scale = float(self.get_parameter("left_scale").value)
         right_scale = float(self.get_parameter("right_scale").value)
         max_duty = float(self.get_parameter("max_duty").value)
