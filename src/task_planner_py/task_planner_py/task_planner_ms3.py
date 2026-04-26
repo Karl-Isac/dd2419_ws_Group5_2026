@@ -9,7 +9,7 @@ from std_msgs.msg import Bool, String
 from nav_msgs.msg import Path
 from geometry_msgs.msg import PoseStamped, PoseArray, Point
 
-from grumpy_interfaces.msg import GoalWithType, PathWithType
+from grumpy_interfaces.msg import GoalWithType, PathWithType, PathWithStatus
 
 import sys
 
@@ -68,10 +68,11 @@ class TaskPlannerNode(Node):
         self.generate_exploration_path_success = False
         self.execute_exploration_path_success = False
 
-        self.generate_path_object_success = False
+        self.generate_path_object_success = None
+
         self.execute_path_object_success = None
 
-        self.generate_path_box_success = False
+        self.generate_path_box_success = None
         self.execute_path_box_success = False
         
         self.generate_exploration_path_failed = False
@@ -80,6 +81,8 @@ class TaskPlannerNode(Node):
 
         self.move_backwards_success = False
         self.state_after_move_backward = None
+
+        self.last_planner_status = None
 
         # Planner state
         # self.state = "SELECT_OBJECT"
@@ -109,7 +112,8 @@ class TaskPlannerNode(Node):
 
         # Subscribers
         self.create_subscription(Bool, "/nav/reached", self.on_reached, 10)
-        self.create_subscription(Path, "/nav/path_from_planner", self.on_path_from_planner, 10)
+        # self.create_subscription(Path, "/nav/path_from_planner", self.on_path_from_planner, 10)
+        self.create_subscription(PathWithStatus, "/nav/path_from_planner", self.on_path_from_planner, 10)
         self.create_subscription(String, "/arm/report_back", self.on_report_back, 10)
         self.create_subscription(PoseArray, "/detected_objects", self.on_objects, 10)
         self.create_subscription(PoseArray, "/detected_boxes", self.on_boxes, 10)
@@ -182,12 +186,15 @@ class TaskPlannerNode(Node):
     #     elif self.state == "GENERATE_EXPLORATION_PATH":
     #         self.generate_exploration_path_success = True
 
-    def on_path_from_planner(self, msg: Path):
+    def on_path_from_planner(self, msg: PathWithStatus):
 
-        success = len(msg.poses) > 0
+        # success = len(msg.poses) > 0
+        success = msg.status == "success" and len(msg.path.poses) > 0
+        self.last_planner_status = msg.status
 
         if self.state == "GENERATE_PATH_TO_OBJECT":
             self.generate_path_object_success = success
+            
 
         elif self.state == "GENERATE_PATH_TO_BOX":
             self.generate_path_box_success = success
@@ -197,9 +204,10 @@ class TaskPlannerNode(Node):
             self.generate_exploration_path_failed = not success
 
         if success:
-            self.path_to_goal = msg
+            self.path_to_goal = msg.path
         else:
-            self.get_logger().warn(f"Empty path received in state {self.state}")
+            self.path_to_goal = None
+            self.get_logger().warn(f"Empty path received in state {self.state}, status={msg.status}")
 
     
     def distance_sq(self, x1: float, y1: float, x2: float, y2: float) -> float:
@@ -475,9 +483,14 @@ class TaskPlannerNode(Node):
                 return
 
             if self.generate_exploration_path_failed:
-                self.get_logger().warn("Exploration point was not reachable, requesting a new one")
-                self.current_exploration_point = None
-                self.enter_state("GENERATE_EXPLORATION_POSE")
+                if self.last_planner_status == "no_path":
+                    self.get_logger().warn("Exploration point was not reachable, requesting a new one")
+                    self.current_exploration_point = None
+                    self.enter_state("GENERATE_EXPLORATION_POSE")
+                if self.last_planner_status == "start_occupied" or self.last_planner_status == "start_out_of_bounds":
+                    self.current_exploration_point = None
+                    self.state_after_move_backward = "GENERATE_EXPLORATION_POSE"
+                    self.enter_state("MOVE_BACKWARD")
                 return
 
 
@@ -549,12 +562,23 @@ class TaskPlannerNode(Node):
                 # self.publish_pose_to_path_planner(self.ox, self.oy)
                 self.publish_goal_to_path_planner(self.ox, self.oy, goal_type="object")
                 self._published_this_state = True
-                self.generate_path_object_success = False
+                self.generate_path_object_success = None
                 self.get_logger().info("GENERATE_PATH_TO_OBJECT: published object goal")
 
-            if self.generate_path_object_success:
+            if self.generate_path_object_success is True:
                 # self.enter_state("EXECUTE_PATH_TO_OBJECT")
                 self.start_update_icp("EXECUTE_PATH_TO_OBJECT")
+
+            if self.generate_path_object_success is False:
+                if self.last_planner_status in ("start_occupied", "start_out_of_bounds"):
+                    self.state_after_move_backward = "GENERATE_PATH_TO_OBJECT"
+                    self.enter_state("MOVE_BACKWARD")
+                else:
+                    self.get_logger().warn(f"GENERATE_PATH_TO_OBJECT: path failed status = {self.last_planner_status}")
+                    self.enter_state("SELECT_OBJECT")
+
+            
+
 
 
         elif self.state == "EXECUTE_PATH_TO_OBJECT": 
@@ -570,7 +594,7 @@ class TaskPlannerNode(Node):
                 self.enter_state("APPROACH_OBJECT")
                 # self.enter_state("PICK_OBJECT")
 
-            elif self.execute_path_object_success is False:
+            if self.execute_path_object_success is False:
                 self.current_object.status = "failed"
                 self.enter_state("SELECT_OBJECT")
 
@@ -598,12 +622,21 @@ class TaskPlannerNode(Node):
                 #self.publish_pose_to_path_planner(self.bx, self.by)
                 self.publish_goal_to_path_planner(self.bx, self.by, goal_type="box")
                 self._published_this_state = True
-                self.generate_path_box_success = False
+                self.generate_path_box_success = None
                 self.get_logger().info("GENERATE_PATH_TO_BOX: published object goal")
 
-            if self.generate_path_box_success:
+            if self.generate_path_box_success is True:
                 # self.enter_state("EXECUTE_PATH_TO_BOX")
                 self.start_update_icp("EXECUTE_PATH_TO_BOX")
+
+
+            if self.generate_path_box_success is False:
+                if self.last_planner_status in ("start_occupied", "start_out_of_bounds"):
+                    self.state_after_move_backward = "GENERATE_PATH_TO_BOX"
+                    self.enter_state("MOVE_BACKWARD")
+                else:
+                    self.get_logger().info(f"GENERATE_PATH_TO_BOX: path plannur status message: {self.last_planner_status}")
+                    self.enter_state("SELECT_OBJECT")
 
 
         elif self.state == "EXECUTE_PATH_TO_BOX": 

@@ -15,7 +15,7 @@ from nav_msgs.msg import Path, OccupancyGrid
 from std_msgs.msg import Bool
 from visualization_msgs.msg import Marker
 
-from grumpy_interfaces.msg import GoalWithType
+from grumpy_interfaces.msg import GoalWithType, PathWithStatus
 
 from ament_index_python.packages import get_package_share_directory
 
@@ -127,7 +127,7 @@ class AStarPlannerNode(Node):
         self.create_subscription(PoseStamped, "/fake_obstacles", self.on_obstacle, 10)
         self.create_subscription(GoalWithType, "/nav/goal", self.on_goal, 10)
 
-        self.path_pub = self.create_publisher(Path, "/nav/path_from_planner", 10)
+        self.path_pub = self.create_publisher(PathWithStatus, "/nav/path_from_planner", 10)
         self.grid_pub = self.create_publisher(OccupancyGrid, "/nav/grid", 10)
         self.goal_marker_pub = self.create_publisher(Marker, "/nav/goal_marker", 10)
 
@@ -294,7 +294,8 @@ class AStarPlannerNode(Node):
         grid = self.rebuild_grid()
         self.current_grid = grid
         if grid is None:
-            self.publish_empty_path()
+            # self.publish_empty_path()
+            self.publish_empty_path_result("grid_failed")
             return
 
         robot = self.lookup_robot_xy()
@@ -311,13 +312,15 @@ class AStarPlannerNode(Node):
         if not self.cell_in_bounds(start[0], start[1], grid):
             self.get_logger().warn("Start cell out of bounds")
             self.current_path_cells = []
-            self.publish_empty_path()
+            # self.publish_empty_path()
+            self.publish_empty_path_result("start_out_of_bounds")
             return
 
         if grid[start[1]][start[0]] != 0:
             self.get_logger().warn("Start cell is occupied")
             self.current_path_cells = []
-            self.publish_empty_path()
+            # self.publish_empty_path()
+            self.publish_empty_path_result("start_occupied")
             return
 
         if self.goal_type_is_object_or_box(msg.type):
@@ -328,7 +331,8 @@ class AStarPlannerNode(Node):
         if result is None:
             self.get_logger().warn("Planner found no valid path")
             self.current_path_cells = []
-            self.publish_empty_path()
+            # self.publish_empty_path()
+            self.publish_empty_path_result("no_path")
             self.publish_path_blocked(False)
             return
 
@@ -338,7 +342,8 @@ class AStarPlannerNode(Node):
         self.current_path_cells = best_path_cells
         self.current_path_blocked = False
         self.publish_path_blocked(False)
-        self.publish_path(best_path_cells)
+        # self.publish_path(best_path_cells)
+        self.publish_path_result(best_path_cells, "success")
 
         if msg.type == GoalWithType.OBJECT:
             self.remove_object_at_goal(self.goal)
@@ -800,7 +805,32 @@ class AStarPlannerNode(Node):
     # ---------------------------------------
     # Path publishing
     # ---------------------------------------
-    def publish_path(self, cells):
+    # def publish_path(self, cells):
+    #     path = Path()
+    #     path.header.stamp = self.get_clock().now().to_msg()
+    #     path.header.frame_id = self.world_frame
+    #
+    #     for gx, gy in cells:
+    #         x, y = self.grid_to_world(gx, gy)
+    #
+    #         p = PoseStamped()
+    #         p.header = path.header
+    #         p.pose.position.x = x
+    #         p.pose.position.y = y
+    #         p.pose.position.z = 0.0
+    #         p.pose.orientation.w = 1.0
+    #
+    #         path.poses.append(p)
+    #
+    #     self.path_pub.publish(path)
+    #
+    # def publish_empty_path(self):
+    #     path = Path()
+    #     path.header.stamp = self.get_clock().now().to_msg()
+    #     path.header.frame_id = self.world_frame
+    #     self.path_pub.publish(path)
+
+    def make_path_msg(self, cells):
         path = Path()
         path.header.stamp = self.get_clock().now().to_msg()
         path.header.frame_id = self.world_frame
@@ -817,13 +847,24 @@ class AStarPlannerNode(Node):
 
             path.poses.append(p)
 
-        self.path_pub.publish(path)
+        return path
 
-    def publish_empty_path(self):
-        path = Path()
-        path.header.stamp = self.get_clock().now().to_msg()
-        path.header.frame_id = self.world_frame
-        self.path_pub.publish(path)
+
+    def publish_path_result(self, cells, status):
+        msg = PathWithStatus()
+        msg.path = self.make_path_msg(cells)
+        msg.status = status
+        self.path_pub.publish(msg)
+
+
+    def publish_empty_path_result(self, status):
+        msg = PathWithStatus()
+
+        msg.path.header.stamp = self.get_clock().now().to_msg()
+        msg.path.header.frame_id = self.world_frame
+        msg.status = status
+
+        self.path_pub.publish(msg)
 
     # ---------------------------------------
     # A*
