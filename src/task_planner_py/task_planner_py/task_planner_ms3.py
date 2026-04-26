@@ -99,7 +99,8 @@ class TaskPlannerNode(Node):
         self.goal_pub = self.create_publisher(GoalWithType, "/nav/goal", 10)
         self.path_to_controller_pub = self.create_publisher(PathWithType, "/nav/path_to_controller", 10)
         self.path_to_controller_pub_viz = self.create_publisher(Path, "/nav/path_to_controller_viz", 10)
-        self.approach_goal_pub = self.create_publisher(PoseStamped, "/nav/approach_start", 10)
+        # self.approach_goal_pub = self.create_publisher(PoseStamped, "/nav/approach_start", 10)
+        self.approach_goal_pub = self.create_publisher(GoalWithType, "/nav/approach_start", 10)
 
         self.arm_pub = self.create_publisher(String, "/arm/cmd", 10)
 
@@ -608,7 +609,12 @@ class TaskPlannerNode(Node):
                 approach_pose.pose.position.z = 0.0
                 approach_pose.pose.orientation.w = 1.0
 
-                self.approach_goal_pub.publish(approach_pose)
+                approach_goal = GoalWithType()
+                approach_goal.goal = approach_pose
+                approach_goal.type = GoalWithType.OBJECT
+
+                self.approach_goal_pub.publish(approach_goal)
+
 
             if self.approach_success:
                 self.approach_success = False
@@ -662,7 +668,14 @@ class TaskPlannerNode(Node):
                 approach_pose.pose.position.z = 0.0
                 approach_pose.pose.orientation.w = 1.0
 
-                self.approach_goal_pub.publish(approach_pose)
+                approach_goal = GoalWithType()
+                approach_goal.goal = approach_pose
+                approach_goal.type = GoalWithType.BOX
+
+
+
+                # self.approach_goal_pub.publish(approach_pose)
+                self.approach_goal_pub.publish(approach_goal)
 
             if self.approach_success:
                 self.approach_success = False

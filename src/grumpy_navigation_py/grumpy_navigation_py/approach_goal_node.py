@@ -8,6 +8,8 @@ import tf2_ros
 from geometry_msgs.msg import PoseStamped
 from robp_interfaces.msg import DutyCycles
 
+from grumpy_interfaces.msg import GoalWithType
+
 
 def wrap_pi(a: float) -> float:
     return (a + math.pi) % (2.0 * math.pi) - math.pi
@@ -34,7 +36,9 @@ class ApproachGoalNode(Node):
 
         # Forward behavior
         # self.declare_parameter("forward_distance", 0.07)  # meters
-        self.declare_parameter("stop_distance", 0.19)
+        # self.declare_parameter("stop_distance", 0.19)
+        self.declare_parameter("stop_distance_object", 0.19)
+        self.declare_parameter("stop_distance_box", 0.22)
         self.declare_parameter("forward_duty", 0.10)
 
         self.world_frame = self.get_parameter("world_frame").value
@@ -43,8 +47,15 @@ class ApproachGoalNode(Node):
         self.tf_buffer = tf2_ros.Buffer()
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, self)
 
+        # self.create_subscription(
+        #     PoseStamped,
+        #     "/nav/approach_start",
+        #     self.on_approach_start,
+        #     10,
+        # )
+
         self.create_subscription(
-            PoseStamped,
+            GoalWithType,
             "/nav/approach_start",
             self.on_approach_start,
             10,
@@ -64,6 +75,7 @@ class ApproachGoalNode(Node):
         # State
         self.state = "IDLE"   # IDLE / TURNING / FORWARD
         self.target_pose = None
+        self.target_type = None
         self.forward_start_xy = None
 
         dt = 1.0 / float(self.get_parameter("rate_hz").value)
@@ -73,12 +85,15 @@ class ApproachGoalNode(Node):
 
         self.get_logger().info("ApproachGoalNode up")
 
-    def on_approach_start(self, msg: PoseStamped):
-        self.target_pose = msg
+    def on_approach_start(self, msg: GoalWithType):
+        self.target_pose = msg.goal
+        self.target_type = msg.type
         self.forward_start_xy = None
         self.state = "TURNING"
+
         self.get_logger().info(
-            f"Received approach target ({msg.pose.position.x:.2f}, {msg.pose.position.y:.2f})"
+            f"Received approach target ({msg.goal.pose.position.x:.2f}, "
+            f"{msg.goal.pose.position.y:.2f}), type={msg.type}"
         )
 
     def lookup_pose(self):
@@ -167,7 +182,18 @@ class ApproachGoalNode(Node):
 
             dist_to_target = math.hypot(tx - x, ty - y)
 
-            stop_distance = float(self.get_parameter("stop_distance").value)
+            # stop_distance = float(self.get_parameter("stop_distance").value)
+
+            if self.target_type == GoalWithType.OBJECT:
+                stop_distance = float(self.get_parameter("stop_distance_object").value)
+            elif self.target_type == GoalWithType.BOX:
+                stop_distance = float(self.get_parameter("stop_distance_box").value)
+            else:
+                self.get_logger().warn(
+                    f"Approach got unsupported target_type={self.target_type}; using object stop distance"
+                )
+                stop_distance = float(self.get_parameter("stop_distance_object").value)
+
             forward_duty = float(self.get_parameter("forward_duty").value)
 
             if dist_to_target <= stop_distance:
@@ -175,6 +201,7 @@ class ApproachGoalNode(Node):
                 self.publish_finished()
                 self.state = "IDLE"
                 self.target_pose = None
+                self.target_type = None
                 self.forward_start_xy = None
                 self.get_logger().info("Approach finished")
                 return
