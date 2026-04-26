@@ -33,7 +33,8 @@ class ApproachGoalNode(Node):
         self.declare_parameter("turn_duty", 0.10)
 
         # Forward behavior
-        self.declare_parameter("forward_distance", 0.07)  # meters
+        # self.declare_parameter("forward_distance", 0.07)  # meters
+        self.declare_parameter("stop_distance", 0.16)
         self.declare_parameter("forward_duty", 0.10)
 
         self.world_frame = self.get_parameter("world_frame").value
@@ -156,13 +157,20 @@ class ApproachGoalNode(Node):
             if self.forward_start_xy is None:
                 self.forward_start_xy = (x, y)
 
-            sx, sy = self.forward_start_xy
-            traveled = math.hypot(x - sx, y - sy)
+            # sx, sy = self.forward_start_xy
+            # traveled = math.hypot(x - sx, y - sy)
+            #
+            # forward_distance = float(self.get_parameter("forward_distance").value)
+            # forward_duty = float(self.get_parameter("forward_duty").value)
+            #
+            # if traveled >= forward_distance:
 
-            forward_distance = float(self.get_parameter("forward_distance").value)
+            dist_to_target = math.hypot(tx - x, ty - y)
+
+            stop_distance = float(self.get_parameter("stop_distance").value)
             forward_duty = float(self.get_parameter("forward_duty").value)
 
-            if traveled >= forward_distance:
+            if dist_to_target <= stop_distance:
                 self.stop()
                 self.publish_finished()
                 self.state = "IDLE"

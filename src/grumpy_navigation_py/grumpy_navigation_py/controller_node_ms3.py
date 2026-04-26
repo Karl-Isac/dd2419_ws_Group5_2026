@@ -251,13 +251,43 @@ class PathControllerNode(Node):
         #     self.reached_latched = False
 
         # Advance along the path
+        # while self.next_idx + 1 < len(self.path.poses):
+        #     p = self.path.poses[self.next_idx].pose.position
+        #     d = math.hypot(p.x - x, p.y - y)
+        #     if d < advance_tol:
+        #         self.next_idx += 1
+        #     else:
+        #         break
+
+        # Advance along the path by snapping to the closest point ahead
+        closest_idx = self.next_idx
+        closest_dist = float("inf")
+
+        for i in range(self.next_idx, len(self.path.poses)):
+            p = self.path.poses[i].pose.position
+            d = math.hypot(p.x - x, p.y - y)
+
+            if d < closest_dist:
+                closest_dist = d
+                closest_idx = i
+
+        if closest_idx > self.next_idx:
+            self.next_idx = closest_idx
+
+        # Also skip points we are already close to
         while self.next_idx + 1 < len(self.path.poses):
             p = self.path.poses[self.next_idx].pose.position
             d = math.hypot(p.x - x, p.y - y)
+
             if d < advance_tol:
                 self.next_idx += 1
             else:
                 break
+
+        # self.get_logger().info(
+        #     f"idx={self.next_idx}, target_idx={target_idx}, d_final={d_final:.2f}, err={err:.2f}",
+        #     throttle_duration_sec=0.5,
+        # )
 
         # Choose lookahead target
         target_idx = len(self.path.poses) - 1
