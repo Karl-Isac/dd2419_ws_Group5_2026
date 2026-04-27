@@ -194,7 +194,7 @@ def find_cube_in_image_msg(msg, publisher1, publisher2, publisher3, publisher4, 
         )
         for i in range(len(contours)):
             area = cv2.contourArea(contours[i])     # if the smudge is large enough, treat it as the cube       
-            min_area = 500                          # might need to finetune, 1000 initially
+            min_area = 500
             if area > min_area:
                 contour_size = cv2.contourArea(contours[i])
                 if contour_size > best_contour_size:
@@ -273,6 +273,5 @@ def find_center_and_draw(contour,publish_debug_images,bgr_image):       # contou
     cube_orientation_in_frame = angle
     if publish_debug_images:    # mark cube pose in debug image
         cv2.drawContours(bgr_image, [contour], 0, (255,0,0), 4)
-        # cv2.drawContours(bgr_image, contours, i, (255,0,0), 4) if it crashes, but then you need to pass more stuff
         draw_cs_on_image(bgr_image,centerpoint,angle)
     return cube_position_in_frame, cube_orientation_in_frame

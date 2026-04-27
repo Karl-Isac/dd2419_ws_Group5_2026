@@ -277,7 +277,7 @@ class Arm_control(Node):
         # Only left wheel encoder is used for simplicity
         ## 100 encoder ticks are around 1cm
         # TODO potential issue: dropped messages, keep this in mind
-        # not potential, actual
+        # not potential, actual, but what can you do
         if self.reversing:
             self.reverse_counter = self.reverse_counter + abs(msg.delta_encoder_left)
             print(f"reverse counter: {self.reverse_counter}")
