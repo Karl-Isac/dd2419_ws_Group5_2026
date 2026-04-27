@@ -6,7 +6,7 @@ from robp_interfaces.msg import ArmControl
 import time
 
 jointmin = [0,0,15,10,40,0]               # min and max allowed angles, 0 - gripper, 5 - rotating base
-jointMAX = [105,240,230,230,200,155]
+jointMAX = [108,240,230,230,200,155]
 
 class ArmSafeRepublisher(Node):
     def __init__(self):
