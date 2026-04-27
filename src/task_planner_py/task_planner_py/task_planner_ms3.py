@@ -73,7 +73,7 @@ class TaskPlannerNode(Node):
         self.execute_path_object_success = None
 
         self.generate_path_box_success = None
-        self.execute_path_box_success = False
+        self.execute_path_box_success = None
         
         self.generate_exploration_path_failed = False
 
@@ -595,9 +595,14 @@ class TaskPlannerNode(Node):
                 self.enter_state("APPROACH_OBJECT")
                 # self.enter_state("PICK_OBJECT")
 
+            # if self.execute_path_object_success is False:
+            #     self.current_object.status = "failed"
+            #     self.enter_state("SELECT_OBJECT")
+
+            # only scenario this becomes false is if the path is in collision course
             if self.execute_path_object_success is False:
-                self.current_object.status = "failed"
-                self.enter_state("SELECT_OBJECT")
+                self.get_logger().warn("Object path blocked/cancelled, replanning same object")
+                self.enter_state("GENERATE_PATH_TO_OBJECT")
 
         elif self.state == "APPROACH_OBJECT":
             if not self._published_this_state: 
@@ -650,12 +655,16 @@ class TaskPlannerNode(Node):
                 # self.get_logger().info("EXECUTE_PATH_TO_BOX")
                 self.publish_path_to_controller(path=self.path_to_goal, goal_type="box")
                 self._published_this_state = True
-                self.execute_path_box_success = False
+                self.execute_path_box_success = None
                 self.get_logger().info("EXECUTE_PATH_TO_BOX: published object path")
 
-            if self.execute_path_box_success:
+            if self.execute_path_box_success is True:
                 # self.enter_state("DROP_OBJECT")
                 self.enter_state("APPROACH_BOX")
+
+            if self.execute_path_box_success is False:
+                self.get_logger().warn("Box path blocked/cancelled, replanning same box")
+                self.enter_state("GENERATE_PATH_TO_BOX")
 
 
         elif self.state == "APPROACH_BOX":

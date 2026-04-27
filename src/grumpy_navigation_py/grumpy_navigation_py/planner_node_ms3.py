@@ -44,10 +44,10 @@ class AStarPlannerNode(Node):
         self.declare_parameter("start_y", 0.0)
 
         # inflation
-        self.declare_parameter("workspace_inflation_m", 0.25)
-        self.declare_parameter("object_inflation_m", 0.15)
-        self.declare_parameter("box_inflation_m", 0.35)
-        self.declare_parameter("obstacle_inflation_m", 0.35)
+        self.declare_parameter("workspace_inflation_m", 0.30)
+        self.declare_parameter("object_inflation_m", 0.20)
+        self.declare_parameter("box_inflation_m", 0.27)
+        self.declare_parameter("obstacle_inflation_m", 0.30)
 
         # candidate search
         self.declare_parameter("candidate_search_radius_m", 0.50)
@@ -742,27 +742,52 @@ class AStarPlannerNode(Node):
                 if grid[ny][nx] != 0:
                     continue
 
-                has_occupied_neighbor = False
+                # has_occupied_neighbor = False
+                #
+                # for ddy in [-1, 0, 1]:
+                #     for ddx in [-1, 0, 1]:
+                #         if ddx == 0 and ddy == 0:
+                #             continue
+                #
+                #         cx = nx + ddx
+                #         cy = ny + ddy
+                #
+                #         if not (0 <= cx < w and 0 <= cy < h):
+                #             continue
+                #
+                #         if grid[cy][cx] == 100:
+                #             has_occupied_neighbor = True
+                #             break
+                #
+                #     if has_occupied_neighbor:
+                #         break
+                #
+                # if not has_occupied_neighbor:
+                #     continue
 
-                for ddy in [-1, 0, 1]:
-                    for ddx in [-1, 0, 1]:
-                        if ddx == 0 and ddy == 0:
-                            continue
+                # require clearance from occupied cells
+                min_clearance_cells = int(math.ceil(0.08 / self.resolution))  # tune 0.08-0.15
 
+                too_close = False
+                for ddy in range(-min_clearance_cells, min_clearance_cells + 1):
+                    for ddx in range(-min_clearance_cells, min_clearance_cells + 1):
                         cx = nx + ddx
                         cy = ny + ddy
 
                         if not (0 <= cx < w and 0 <= cy < h):
                             continue
 
+                        if ddx * ddx + ddy * ddy > min_clearance_cells * min_clearance_cells:
+                            continue
+
                         if grid[cy][cx] == 100:
-                            has_occupied_neighbor = True
+                            too_close = True
                             break
 
-                    if has_occupied_neighbor:
+                    if too_close:
                         break
 
-                if not has_occupied_neighbor:
+                if too_close:
                     continue
 
                 dist = math.sqrt(dx * dx + dy * dy)
@@ -776,6 +801,24 @@ class AStarPlannerNode(Node):
     # ---------------------------------------
     # Path validity checking
     # ---------------------------------------
+    def find_closest_path_index_to_robot(self):
+        robot = self.lookup_robot_xy()
+        if robot is None:
+            return 0
+
+        rx, ry = robot
+        best_idx = 0
+        best_dist = float("inf")
+
+        for i, (gx, gy) in enumerate(self.current_path_cells):
+            x, y = self.grid_to_world(gx, gy)
+            d = math.hypot(x - rx, y - ry)
+            if d < best_dist:
+                best_dist = d
+                best_idx = i
+
+        return best_idx
+
     def check_current_path_collision(self):
         if self.current_grid is None:
             return
@@ -791,7 +834,11 @@ class AStarPlannerNode(Node):
         self.current_grid = grid
 
         blocked = False
-        for gx, gy in self.current_path_cells:
+
+        # for gx, gy in self.current_path_cells:
+        start_idx = self.find_closest_path_index_to_robot()
+        future_cells = self.current_path_cells[start_idx:]
+        for gx, gy in future_cells:
             if not self.cell_in_bounds(gx, gy, grid):
                 blocked = True
                 break

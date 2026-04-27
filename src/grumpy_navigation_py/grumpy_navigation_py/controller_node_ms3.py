@@ -124,15 +124,17 @@ class PathControllerNode(Node):
 
         self.get_logger().info("on_path_with_type")
 
-        if self.cancel_controller:
-            self.path = None
-            self.next_idx = 0
-            self.reached_latched = False
+        self.cancel_controller = False
 
-            self.stop() # <- this might not be needed
-
-            self.get_logger().info("Path in collision course before planner could the recieve the path.")
-            return
+        # if self.cancel_controller:
+        #     self.path = None
+        #     self.next_idx = 0
+        #     self.reached_latched = False
+        #
+        #     self.stop() # <- this might not be needed
+        #
+        #     self.get_logger().info("Path in collision course before planner could the recieve the path.")
+        #     return
 
         if not msg.path.poses:
             self.path = None
