@@ -194,7 +194,7 @@ def find_cube_in_image_msg(msg, publisher1, publisher2, publisher3, publisher4, 
         )
         for i in range(len(contours)):
             area = cv2.contourArea(contours[i])     # if the smudge is large enough, treat it as the cube       
-            min_area = 1000                          # might need to finetune
+            min_area = 500                          # might need to finetune, 1000 initially
             if area > min_area:
                 contour_size = cv2.contourArea(contours[i])
                 if contour_size > best_contour_size:
