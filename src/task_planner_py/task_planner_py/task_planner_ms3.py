@@ -523,14 +523,19 @@ class TaskPlannerNode(Node):
                 # self.get_logger().info("EXECUTE_EXPLORATION_PATH")
                 self.publish_path_to_controller(self.path_to_goal, goal_type="exploration_point")  # or exploration type if you add one
                 self._published_this_state = True
-                self.execute_exploration_path_success = False
+                self.execute_exploration_path_success = None
 
-            if self.execute_exploration_path_success:
+            if self.execute_exploration_path_success is True:
                 if len(self.known_objects) > 0 and len(self.known_boxes) > 0:
                     self.enter_state("SELECT_OBJECT")
                 else:
                     self.enter_state("GENERATE_EXPLORATION_POSE")
+                return
 
+            elif self.execute_exploration_path_success is False:
+                self.get_logger().warn("Exploration path blocked/cancelled, replanning same exploration")
+                self.enter_state("GENERATE_EXPLORATION_PATH")
+                return
 
 
         elif self.state == "SELECT_OBJECT":

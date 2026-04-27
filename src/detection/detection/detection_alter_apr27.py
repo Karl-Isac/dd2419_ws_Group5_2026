@@ -547,7 +547,7 @@ class Detection(Node):
             return
 
         # Check if the detected object is inside any of the known boxes (with a tolerance), if yes, discard it, since objects inside boxes should not be detected
-        if self.is_point_inside_any_box(object_map.pose.position.x, object_map.pose.position.y, tolerance=0.03):
+        if self.is_point_inside_any_box(object_map.pose.position.x, object_map.pose.position.y, tolerance=0.10):
             self.get_logger().debug("Object is inside a box (with tolerance), ignored.")
             return
 

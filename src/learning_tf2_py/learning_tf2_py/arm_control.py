@@ -64,7 +64,7 @@ class Arm_control(Node):
         self.nudge_cooldown_timer = None
         
         self.init_position = [10,120,50,150,100,120]
-        self.joint0grip_value = 105
+        self.joint0grip_value = 108
 
         # Cube target within camera frame
         image_half_width = 320
@@ -150,7 +150,7 @@ class Arm_control(Node):
                 self.get_logger().warn("Inverse kinematics failed for z={}, rho={}, target might be unreachable".format(z,self.rho))
             position = self.init_position[0],self.joint1target,joint2target,joint3target,joint4target,self.joint5target
             self.goto_position(position)
-            time.sleep(1.5)       # wait for movement down to finish
+            time.sleep(2)       # wait for movement down to finish
             # State 5 - grip
             position = self.joint0grip_value,self.joint1target,joint2target,joint3target,joint4target,self.joint5target
             self.goto_position(position)

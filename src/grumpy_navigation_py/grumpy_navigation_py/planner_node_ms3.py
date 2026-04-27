@@ -90,7 +90,9 @@ class AStarPlannerNode(Node):
         # ---------------------------------------
         # TF
         # ---------------------------------------
-        self.tf_buffer = Buffer()
+        self.tf_buffer = Buffer(
+            cache_time=Duration(seconds=30.0)
+        )
         # self.tf_listener = TransformListener(self.tf_buffer, self, spin_thread=True)
         self.tf_listener = TransformListener(self.tf_buffer, self)
 
