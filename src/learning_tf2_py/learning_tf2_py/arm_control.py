@@ -150,7 +150,7 @@ class Arm_control(Node):
                 self.get_logger().warn("Inverse kinematics failed for z={}, rho={}, target might be unreachable".format(z,self.rho))
             position = self.init_position[0],self.joint1target,joint2target,joint3target,joint4target,self.joint5target
             self.goto_position(position)
-            time.sleep(1)       # wait for movement down to finish
+            time.sleep(1.5)       # wait for movement down to finish
             # State 5 - grip
             position = self.joint0grip_value,self.joint1target,joint2target,joint3target,joint4target,self.joint5target
             self.goto_position(position)
@@ -277,11 +277,10 @@ class Arm_control(Node):
         # Only left wheel encoder is used for simplicity
         ## 100 encoder ticks are around 1cm
         # TODO potential issue: dropped messages, keep this in mind
-        # not potential, actual
+        # not potential, actual, but what can you do
         if self.reversing:
             self.reverse_counter = self.reverse_counter + abs(msg.delta_encoder_left)
-            # print(f"reverse counter: {self.reverse_counter}")
-            self.get_logger().info(f"reverse counter: {self.reverse_counter} hello")
+            print(f"reverse counter: {self.reverse_counter}")
             if self.reverse_counter > 400:      # tunable, corresponds to distance travelled when backing up
                 self.reversing = False
                 self.stop_wheels_ASAP = True

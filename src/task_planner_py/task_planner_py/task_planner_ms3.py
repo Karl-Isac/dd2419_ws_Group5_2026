@@ -129,7 +129,7 @@ class TaskPlannerNode(Node):
         self.state_after_update_icp = None
         self.update_ICP_done = False
         self.update_ICP_start_time = None
-        self.update_ICP_timeout = 3.0  # seconds
+        self.update_ICP_timeout = 0.1  # seconds
 
         dt = 1.0 / float(self.get_parameter("rate_hz").value)
         self.step_timer = self.create_timer(dt, self.step)
@@ -277,6 +277,7 @@ class TaskPlannerNode(Node):
     def on_reached(self, msg: Bool):
         nav_reached = bool(msg.data)
         # print(f"nav_reaced: {nav_reached}")
+        self.get_logger().info(f"on_reached. nav_reached = {nav_reached}")
         if self.state == "EXECUTE_PATH_TO_OBJECT":
             self.execute_path_object_success = nav_reached
         elif self.state == "EXECUTE_PATH_TO_BOX":

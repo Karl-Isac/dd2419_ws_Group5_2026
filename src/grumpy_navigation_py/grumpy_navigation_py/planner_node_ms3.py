@@ -26,6 +26,7 @@ from visualization_msgs.msg import Marker
 from rclpy.duration import Duration
 from rclpy.time import Time
 
+from rclpy.executors import MultiThreadedExecutor
 
 
 class AStarPlannerNode(Node):
@@ -44,10 +45,10 @@ class AStarPlannerNode(Node):
         self.declare_parameter("start_y", 0.0)
 
         # inflation
-        self.declare_parameter("workspace_inflation_m", 0.30)
+        self.declare_parameter("workspace_inflation_m", 0.18)
         self.declare_parameter("object_inflation_m", 0.20)
         self.declare_parameter("box_inflation_m", 0.27)
-        self.declare_parameter("obstacle_inflation_m", 0.30)
+        self.declare_parameter("obstacle_inflation_m", 0.20)
 
         # candidate search
         self.declare_parameter("candidate_search_radius_m", 0.50)
@@ -90,6 +91,7 @@ class AStarPlannerNode(Node):
         # TF
         # ---------------------------------------
         self.tf_buffer = Buffer()
+        # self.tf_listener = TransformListener(self.tf_buffer, self, spin_thread=True)
         self.tf_listener = TransformListener(self.tf_buffer, self)
 
         # ---------------------------------------
@@ -101,11 +103,13 @@ class AStarPlannerNode(Node):
 
         self.goal = None                  # (x, y)
         self.goal_type = None             # GoalWithType enum value
-        self.previous_goal = None
+        # self.previous_goal = None
 
         self.current_grid = None
         self.current_path_cells = []
         self.current_path_blocked = False
+
+        self.rerun_on_goal_later = False
 
         # ---------------------------------------
         # Workspace
@@ -265,6 +269,7 @@ class AStarPlannerNode(Node):
     #     self.current_grid = self.rebuild_grid()
 
     def on_objects(self, msg):
+        self.get_logger().info("on_objects")
         for p in msg.poses:
             self.objects.append((p.position.x, p.position.y))
 
@@ -272,6 +277,7 @@ class AStarPlannerNode(Node):
 
 
     def on_boxes(self, msg):
+        self.get_logger().info("on_boxes")
         for p in msg.poses:
             self.boxes.append((p.position.x, p.position.y))
 
@@ -285,6 +291,9 @@ class AStarPlannerNode(Node):
     #     self.current_grid = self.rebuild_grid()
 
     def on_obstacles(self, msg):
+        
+        # self.get_logger().info("on_obstacles")
+
         # overwrite, not append (important!)
         self.obstacles = [
             (p.position.x, p.position.y)
@@ -297,8 +306,10 @@ class AStarPlannerNode(Node):
 
         self.get_logger().info("on_goal")
 
-        if self.goal is not None:
-            self.previous_goal = self.goal
+        self.latest_on_goal_message = msg
+
+        # if self.goal is not None:
+        #     self.previous_goal = self.goal
 
         goal_pose = msg.goal.pose
         self.goal = (goal_pose.position.x, goal_pose.position.y)
@@ -313,10 +324,12 @@ class AStarPlannerNode(Node):
             self.publish_empty_path_result("grid_failed")
             return
 
-        robot = self.lookup_robot_xy()
+        msg_time = Time.from_msg(msg.goal.header.stamp)
+        robot = self.lookup_robot_xy(msg_time)
         if robot is None:
             self.get_logger().warn("Could not get robot pose, using parameter fallback")
-            robot = (self.start_x, self.start_y)
+            # robot = (self.start_x, self.start_y)
+            return
 
         start = self.world_to_grid(robot[0], robot[1])
         self.get_logger().info(f"robot start pos = ({robot[0]}, {robot[1]})")
@@ -422,43 +435,56 @@ class AStarPlannerNode(Node):
     #     return (float(t.x), float(t.y))
 
 
-    def lookup_robot_xy(self):
+    def lookup_robot_xy(self, msg_time):
         target_frame = "base_link"
         world_frame = self.world_frame
 
         try:
-            future = self.tf_buffer.wait_for_transform_async(
-                world_frame,
-                target_frame,
-                # Time()
-                self.get_clock().now()
-            )
+            # future = self.tf_buffer.wait_for_transform_async(
+            #     world_frame,
+            #     target_frame,
+            #     # Time()
+            #     self.get_clock().now()
+            # )
+            #
+            # rclpy.spin_until_future_complete(
+            #     self,
+            #     future,
+            #     timeout_sec=1.0
+            # )
+            #
+            # if not future.done():
+            #     self.get_logger().warn("TF async wait timed out")
+            #     return None
+            #
+            # future.result()
 
-            rclpy.spin_until_future_complete(
-                self,
-                future,
-                timeout_sec=1.0
-            )
-
-            if not future.done():
-                self.get_logger().warn("TF async wait timed out")
-                return None
-
-            future.result()
+            # msg_time = Time.from_msg(stamp)    
 
             tf = self.tf_buffer.lookup_transform(
                 world_frame,
                 target_frame,
-                Time(),
+                # Time(),
+                msg_time,
                 timeout=Duration(seconds=0.1)
             )
 
         except Exception as e:
             self.get_logger().warn(f"TF lookup failed: {e}")
+
+            # self.rerun_on_goal_later = True
+
+            self.rerun_on_goal_timer = self.create_timer(0.1, self.rerun_on_goal_callback)
+
             return None
 
         t = tf.transform.translation
         return (float(t.x), float(t.y))
+
+    def rerun_on_goal_callback(self):
+        self.get_logger().info("rerun_on_goal_callback")
+        self.rerun_on_goal_timer.destroy() 
+        self.on_goal(self.latest_on_goal_message)
 
     # def lookup_robot_xy(self):
     #     target_frame = "base_link"
@@ -637,7 +663,7 @@ class AStarPlannerNode(Node):
 
         # No goal clearing at all
         self.publish_grid(grid, w, h)
-        self.visualize_grid(grid)
+        # self.visualize_grid(grid)
 
         return grid
 
@@ -804,8 +830,8 @@ class AStarPlannerNode(Node):
     # ---------------------------------------
     # Path validity checking
     # ---------------------------------------
-    def find_closest_path_index_to_robot(self):
-        robot = self.lookup_robot_xy()
+    def find_closest_path_index_to_robot(self, msg_time):
+        robot = self.lookup_robot_xy(msg_time)
         if robot is None:
             return 0
 
@@ -839,7 +865,9 @@ class AStarPlannerNode(Node):
         blocked = False
 
         # for gx, gy in self.current_path_cells:
-        start_idx = self.find_closest_path_index_to_robot()
+       
+        time = Time()
+        start_idx = self.find_closest_path_index_to_robot(time)
         future_cells = self.current_path_cells[start_idx:]
         for gx, gy in future_cells:
             if not self.cell_in_bounds(gx, gy, grid):
@@ -1012,6 +1040,20 @@ def main():
     rclpy.spin(node)
     node.destroy_node()
     rclpy.shutdown()
+
+# def main():
+#     rclpy.init()
+#     node = AStarPlannerNode()
+#
+#     executor = MultiThreadedExecutor(num_threads=2)
+#     executor.add_node(node)
+#
+#     try:
+#         executor.spin()
+#     finally:
+#         executor.shutdown()
+#         node.destroy_node()
+#         rclpy.shutdown()
 
 
 if __name__ == "__main__":

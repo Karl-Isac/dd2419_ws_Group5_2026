@@ -25,17 +25,24 @@ def generate_launch_description():
     #     output='screen'
     # )
 
-    detection_apr20 = Node(
-        package='detection',
-        executable='alter_apr20',
-        name='detection_apr20',
-        output='screen'
-    )
+    # detection_apr20 = Node(
+    #     package='detection',
+    #     executable='alter_apr20',
+    #     name='detection_apr20',
+    #     output='screen'
+    # )
+    #
+    # detection_apr26 = Node(
+    #     package='detection',
+    #     executable='alter_apr26',
+    #     name='detection_apr26',
+    #     output='screen'
+    # )
 
-    detection_apr26 = Node(
+    detection_apr27 = Node(
         package='detection',
-        executable='alter_apr26',
-        name='detection_apr26',
+        executable='alter_apr27',
+        name='detection_apr27',
         output='screen'
     )
 
@@ -45,5 +52,6 @@ def generate_launch_description():
         # exploration_mapper_new,
         # detection,
         # detection_apr20,
-        detection_apr26,
+        # detection_apr26,
+        detection_apr27,
     ])
