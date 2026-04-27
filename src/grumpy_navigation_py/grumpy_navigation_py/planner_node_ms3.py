@@ -44,7 +44,7 @@ class AStarPlannerNode(Node):
         self.declare_parameter("start_y", 0.0)
 
         # inflation
-        self.declare_parameter("workspace_inflation_m", 0.15)
+        self.declare_parameter("workspace_inflation_m", 0.25)
         self.declare_parameter("object_inflation_m", 0.15)
         self.declare_parameter("box_inflation_m", 0.35)
         self.declare_parameter("obstacle_inflation_m", 0.35)
@@ -124,7 +124,10 @@ class AStarPlannerNode(Node):
         # ---------------------------------------
         self.create_subscription(PoseArray, "/detected_objects", self.on_objects, 10)
         self.create_subscription(PoseArray, "/detected_boxes", self.on_boxes, 10)
-        self.create_subscription(PoseStamped, "/fake_obstacles", self.on_obstacle, 10)
+
+        # self.create_subscription(PoseStamped, "/fake_obstacles", self.on_obstacle, 10)
+        self.create_subscription(PoseArray, "/detected_obstacles", self.on_obstacles, 10)
+
         self.create_subscription(GoalWithType, "/nav/goal", self.on_goal, 10)
 
         self.path_pub = self.create_publisher(PathWithStatus, "/nav/path_from_planner", 10)
@@ -274,11 +277,20 @@ class AStarPlannerNode(Node):
 
         self.current_grid = self.rebuild_grid()
 
-    def on_obstacle(self, msg):
-        # Keeping append behavior here since this topic was already single obstacle style
-        x = msg.pose.position.x
-        y = msg.pose.position.y
-        self.obstacles.append((x, y))
+    # def on_obstacle(self, msg):
+    #     # Keeping append behavior here since this topic was already single obstacle style
+    #     x = msg.pose.position.x
+    #     y = msg.pose.position.y
+    #     self.obstacles.append((x, y))
+    #     self.current_grid = self.rebuild_grid()
+
+    def on_obstacles(self, msg):
+        # overwrite, not append (important!)
+        self.obstacles = [
+            (p.position.x, p.position.y)
+            for p in msg.poses
+        ]
+
         self.current_grid = self.rebuild_grid()
 
     def on_goal(self, msg):

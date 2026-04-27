@@ -24,6 +24,11 @@ def generate_launch_description():
             output='screen'
         ),
 
+        # ExecuteProcess(
+        #     cmd=['pixi', 'run', 'lidar'],
+        #     output='screen'
+        # ),
+
 #         Node(
 #             package='learning_tf2_py',
 #             executable='arm_safe_republisher',

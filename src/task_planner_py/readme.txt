@@ -22,10 +22,9 @@ ros2 run rviz2 rviz2 -d ~/dd2419_ws_Group5_2026/my_conf_2.rviz
 
 Then run commands in this order, order is important:
 
+pixi run phidgets
 ros2 launch task_planner_py background.launch.py
 ros2 launch task_planner_py nodes.launch.py
-ros2 run grumpy_navigation_py fake_obstacles
-pixi run phidgets
 ros2 launch task_planner_py exploration_detection.launch.py
 
 
