@@ -101,6 +101,7 @@ class TaskPlannerNode(Node):
         self.path_to_controller_pub_viz = self.create_publisher(Path, "/nav/path_to_controller_viz", 10)
         # self.approach_goal_pub = self.create_publisher(PoseStamped, "/nav/approach_start", 10)
         self.approach_goal_pub = self.create_publisher(GoalWithType, "/nav/approach_start", 10)
+        self.path_blocked_pub = self.create_publisher(Bool, "/nav/path_blocked", 10)
 
         self.arm_pub = self.create_publisher(String, "/arm/cmd", 10)
 
@@ -140,6 +141,9 @@ class TaskPlannerNode(Node):
             "Pub: /nav/goal, /arm/cmd  "
             "Sub: /nav/reached, /arm/report_back, /detected_objects, /detected_boxes"
         )
+
+    def cancel_controller(self):
+        self.path_blocked_pub.publish(Bool(data=True))
 
     def on_move_backwards_finished(self, msg):
         if msg.data:
@@ -381,9 +385,22 @@ class TaskPlannerNode(Node):
 
         self.get_logger().info(f"Published {goal_type}") 
 
+    # def enter_state(self, new_state: str):
+    #     self.state = new_state
+    #     self._published_this_state = False
+    #     self.get_logger().info(f"State -> {new_state}")
+
     def enter_state(self, new_state: str):
         self.state = new_state
         self._published_this_state = False
+
+        if new_state == "EXECUTE_EXPLORATION_PATH":
+            self.execute_exploration_path_success = None
+        elif new_state == "EXECUTE_PATH_TO_OBJECT":
+            self.execute_path_object_success = None
+        elif new_state == "EXECUTE_PATH_TO_BOX":
+            self.execute_path_box_success = None
+
         self.get_logger().info(f"State -> {new_state}")
 
     def step(self):
@@ -415,6 +432,11 @@ class TaskPlannerNode(Node):
             and len(available_objects) > 0
             and len(self.known_boxes) > 0
         ):
+            # self.enter_state("SELECT_OBJECT")
+            # return
+            self.get_logger().warn("Preempting exploration because object and box are known")
+            self.cancel_controller()
+            self.execute_exploration_path_success = None
             self.enter_state("SELECT_OBJECT")
             return
 
@@ -561,6 +583,7 @@ class TaskPlannerNode(Node):
                 # self.get_logger().info("GENERATE_PATH_TO_OBJECT")
                 #self.publish_goal_xy(self.ox, self.oy, goal_type="object") # TODO: probably dont need goal type here
                 # self.publish_pose_to_path_planner(self.ox, self.oy)
+                self.get_logger().info(f"(ox,oy) = ({self.ox}, {self.oy})")
                 self.publish_goal_to_path_planner(self.ox, self.oy, goal_type="object")
                 self._published_this_state = True
                 self.generate_path_object_success = None

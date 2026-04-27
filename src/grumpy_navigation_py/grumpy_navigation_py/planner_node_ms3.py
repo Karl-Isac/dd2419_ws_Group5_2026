@@ -294,6 +294,9 @@ class AStarPlannerNode(Node):
         self.current_grid = self.rebuild_grid()
 
     def on_goal(self, msg):
+
+        self.get_logger().info("on_goal")
+
         if self.goal is not None:
             self.previous_goal = self.goal
 
