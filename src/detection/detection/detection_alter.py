@@ -545,6 +545,11 @@ class Detection(Node):
             self.get_logger().warn(f"object detected outside of workspace boundary, discarded, position: {object_map.pose.position.x}, {object_map.pose.position.y}")
             return
 
+        # Check if the detected object is inside any of the known boxes (with a tolerance), if yes, discard it, since objects inside boxes should not be detected
+        if self.is_point_inside_any_box(object_map.pose.position.x, object_map.pose.position.y, tolerance=0.03):
+            self.get_logger().debug("Object is inside a box (with tolerance), ignored.")
+            return
+
         for item in self.object_lists:
             if np.abs(item[0] - object_map.pose.position.x * 100) < 15 and np.abs(item[1] - object_map.pose.position.y * 100) < 15:
                 self.get_logger().debug(f"repeated object {self.object_lists.index(item)} detection, discarded")
@@ -578,6 +583,31 @@ class Detection(Node):
 
             self.get_logger().info(f'Object {self.object_num}: {color} {object_map.pose.position.x} {object_map.pose.position.y} N/A')
             # print(f"z distance: {sum_z / counter:.3f} m")
+
+    def is_point_inside_any_box(self, x, y, tolerance=0.03):
+        """
+        Check if an object at (x, y) is inside any of the detected and known boxes, considering the box dimensions and a tolerance.
+        L, W: box dimensions (meters), for example L=0.24, W=0.16
+        tolerance: expansion distance (meters), for example 0.03
+        """
+        L = 0.24
+        W = 0.16
+        half_L = L / 2.0 + tolerance
+        half_W = W / 2.0 + tolerance
+        for box in self.box_lists:
+            cx = box[0] / 100.0
+            cy = box[1] / 100.0
+            angle_deg = box[2]
+            angle_rad = math.radians(angle_deg)
+            dx = x - cx
+            dy = y - cy
+            cos_a = math.cos(angle_rad)
+            sin_a = math.sin(angle_rad)
+            local_x = dx * cos_a + dy * sin_a
+            local_y = -dx * sin_a + dy * cos_a
+            if abs(local_x) <= half_L and abs(local_y) <= half_W:
+                return True
+        return False
         
     def publish_2d_cloud(self, points_xz, header):
         h = std_msgs.msg.Header()
