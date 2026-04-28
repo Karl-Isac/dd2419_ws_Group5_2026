@@ -149,7 +149,7 @@ def find_cube_in_image_msg(msg, publisher1, publisher2, publisher3, publisher4, 
     # HSL filtering - non-aggressive, just takes out really dark and really gray pixels
     bgr_image = cv2.cvtColor(raw_image,cv2.COLOR_YUV2BGR_YUY2)
     hls = cv2.cvtColor(bgr_image, cv2.COLOR_BGR2HLS)
-    lower = np.array([0, 25, 127])     # H, L, S
+    lower = np.array([0, 25, 100])     # H, L, S
     upper = np.array([179, 245, 255])
     mask = cv2.inRange(hls, lower, upper)
     filtered = cv2.bitwise_and(bgr_image, bgr_image, mask=mask)
@@ -185,7 +185,7 @@ def find_cube_in_image_msg(msg, publisher1, publisher2, publisher3, publisher4, 
 
     # Pass 2: If it cannot see a clear cube top face, try to mark a large smudge distinct from the background
     if not cube_position_available:
-        _, bw = cv2.threshold(gray, 100, 255, cv2.THRESH_BINARY)
+        _, bw = cv2.threshold(gray, 40, 255, cv2.THRESH_BINARY)        # originally 100,255
         kernel = np.ones((9,9), np.uint8)
         bw_opened = cv2.morphologyEx(bw, cv2.MORPH_OPEN, kernel, iterations=2)
         

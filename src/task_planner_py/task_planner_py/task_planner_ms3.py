@@ -5,7 +5,7 @@ import rclpy
 from rclpy.node import Node
 import tf2_ros
 
-from std_msgs.msg import Bool, String
+from std_msgs.msg import Bool, String, Header
 from nav_msgs.msg import Path
 from geometry_msgs.msg import PoseStamped, PoseArray, Point
 
@@ -105,7 +105,8 @@ class TaskPlannerNode(Node):
 
         self.arm_pub = self.create_publisher(String, "/arm/cmd", 10)
 
-        self.move_backwards_pub = self.create_publisher(Bool, "/nav/move_backwards_start", 10)
+        # self.move_backwards_pub = self.create_publisher(Bool, "/nav/move_backwards_start", 10)
+        self.move_backwards_pub = self.create_publisher(Header, "/nav/move_backwards_start", 10)
 
         # Exploration
         self.exploration_pub = self.create_publisher(String, "/exploration/request_unexplored_point", 10) # content can be anything

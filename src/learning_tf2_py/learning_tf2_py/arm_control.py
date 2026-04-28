@@ -127,9 +127,9 @@ class Arm_control(Node):
             self.sideways_integral_term = 0
             # Run visual servoing while the errors don't decrease, or a timeout doesnt trigger
             self.was_timed_out = False
-            main_timeout = 20           # reset if visual servoing isnt complete after this time
+            main_timeout = 30           # reset if visual servoing isnt complete after this time
             self.main_timeout_timer = self.create_timer(main_timeout, self.visual_servo_timeout)
-            cant_see_cube_timeout = 2   # if cube cant be seen for this long while visual servoing - reverse the first time, timeout the second time
+            cant_see_cube_timeout = 3   # if cube cant be seen for this long while visual servoing - reverse the first time, timeout the second time
             self.cant_see_cube_timer = self.create_timer(cant_see_cube_timeout, self.cant_see_cube_timeout_function)
             self.visual_servoing_ON = True
             while self.visual_servoing_ON:  
@@ -252,7 +252,7 @@ class Arm_control(Node):
                 self.wheels_on = True
                 self.wheel_pub.publish(msg)
                 # Put this function on a cooldown
-                nudge_cooldown = 1.5      # sec
+                nudge_cooldown = 3      # sec
                 self.put_nudge_on_cooldown(nudge_cooldown)
                 # Turn off wheels after encoders say it has moved enough
                 self.nudge_counter = 0      # lenght of nudge can be tweaked in the encoder callback
@@ -280,13 +280,14 @@ class Arm_control(Node):
         # not potential, actual, but what can you do
         if self.reversing:
             self.reverse_counter = self.reverse_counter + abs(msg.delta_encoder_left)
-            print(f"reverse counter: {self.reverse_counter}")
+            # print(f"reverse counter: {self.reverse_counter}")
             if self.reverse_counter > 400:      # tunable, corresponds to distance travelled when backing up
                 self.reversing = False
                 self.stop_wheels_ASAP = True
         elif self.nudging:
             self.nudge_counter = self.nudge_counter + abs(msg.delta_encoder_left)
-            if self.nudge_counter > 75:      # tunable, corresponds to distance travelled when nudging with the wheels
+            self.get_logger().info(f"Nudge counter: {self.nudge_counter}")
+            if self.nudge_counter > 50:      # tunable, corresponds to distance travelled when nudging with the wheels
                 self.nudging = False
                 self.stop_wheels_ASAP = True
 
@@ -310,7 +311,7 @@ class Arm_control(Node):
                     prev_joint2target = self.joint2target
                     prev_joint3target = self.joint3target
                     prev_joint4target = self.joint4target
-                    prev_joint5target = self.joint5target                    
+                    prev_joint5target = self.joint5target             
 
                     cx,cy = self.cube_position_in_frame
                     rotation = self.cube_orientation_in_frame
@@ -325,10 +326,11 @@ class Arm_control(Node):
                     # TODO you might want to finetune the termination and nudge forward condition error values, changes were def made to rotation error implementation
                     # Termination condition:
                     if (abs(sideways_error)<30) and (abs(rotation_error)<25) and (20<extension_error<50) and not self.wheels_on:    # below 80?
-
-                        self.get_logger().info(f"Errors (sidew,rot,ext): {sideways_error:3.0f}, {rotation_error:3.0f}, {extension_error:3.0f}")
-                        self.visual_servoing_ON = False
-                        return
+                        time.sleep(2)
+                        if (abs(sideways_error)<30) and (abs(rotation_error)<25) and (20<extension_error<50) and not self.wheels_on:    # below 80?
+                            self.get_logger().info(f"Errors (sidew,rot,ext): {sideways_error:3.0f}, {rotation_error:3.0f}, {extension_error:3.0f}")
+                            self.visual_servoing_ON = False
+                            return
                         
                     # Sideways control (PI)
                     self.sideways_integral_term = self.sideways_integral_term + k_sideways_integral*sideways_error

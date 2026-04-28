@@ -3,11 +3,12 @@ import math
 
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import Bool
+from std_msgs.msg import Bool, Header
 from robp_interfaces.msg import DutyCycles
 
 from tf2_ros import Buffer, TransformListener, LookupException, ConnectivityException, ExtrapolationException
 
+from rclpy.time import Time
 
 def clamp(x, lo, hi):
     return max(lo, min(hi, x))
@@ -26,6 +27,7 @@ class MoveBackWardsNode(Node):
         self.base_frame = "base_link"
         self.world_frame = "map"
 
+        self.start_stamp = None
         self.start_x = None
         self.start_y = None
         self.moving = False
@@ -40,6 +42,7 @@ class MoveBackWardsNode(Node):
         self.tf_listener = TransformListener(self.tf_buffer, self)
 
         self.timer = self.create_timer(0.05, self.on_timer)
+        self.timer.cancel()
 
     def on_move_backwards_start(self, msg):
         self.get_logger().info("on_move_backwards_start")
@@ -47,20 +50,69 @@ class MoveBackWardsNode(Node):
         # if not msg.data:
         #     return
 
-        pose = self.get_robot_xy(msg.stamp)
-        if pose is None:
-            self.get_logger().warn("Could not get robot pose, cannot move backwards")
-            return
+        self.start_stamp = msg.stamp
+        self.start_x = None
+        self.start_y = None
 
-        self.start_x, self.start_y = pose
+        # pose = self.get_robot_xy(msg.stamp)
+        # if pose is None:
+        #     self.get_logger().warn("Could not get robot pose, cannot move backwards")
+        #     return
+
+
+        # self.start_x, self.start_y = pose
+
+        self.timer.reset()
         self.moving = True
-        self.get_logger().info("Moving backwards")
+        # self.get_logger().info("Moving backwards")
+
+    # def on_timer(self):
+    #     if not self.moving:
+    #         return
+    #
+    #     pose = self.get_robot_xy()
+    #     if pose is None:
+    #         self.stop()
+    #         return
+    #
+    #     x, y = pose
+    #     dist = math.hypot(x - self.start_x, y - self.start_y)
+    #
+    #     target_dist = float(self.get_parameter("backwards_distance").value)
+    #
+    #     if dist >= target_dist:
+    #         self.stop()
+    #         self.moving = False
+    #
+    #         msg = Bool()
+    #         msg.data = True
+    #         self.move_backwards_finished_pub.publish(msg)
+    #
+    #         self.get_logger().info("Finished moving backwards")
+    #         return
+    #
+    #     duty = float(self.get_parameter("backwards_duty").value)
+    #
+    #     # If positive duty moves forward on your robot, change this to (-duty, -duty)
+    #     self.publish_duty(-duty, -duty)
+
 
     def on_timer(self):
         if not self.moving:
+            # self.get_logger().info("not self.moving")
             return
 
-        pose = self.get_robot_xy()
+        # initialize start pose (retry until TF is ready)
+        if self.start_x is None:
+            pose = self.get_robot_xy(self.start_stamp)
+            if pose is None:
+                return  # just wait for TF
+
+            self.start_x, self.start_y = pose
+            self.get_logger().info("Start pose initialized")
+            return
+
+        pose = self.get_robot_xy(self.start_stamp)
         if pose is None:
             self.stop()
             return
@@ -78,6 +130,8 @@ class MoveBackWardsNode(Node):
             msg.data = True
             self.move_backwards_finished_pub.publish(msg)
 
+            self.timer.cancel()
+
             self.get_logger().info("Finished moving backwards")
             return
 
@@ -86,12 +140,16 @@ class MoveBackWardsNode(Node):
         # If positive duty moves forward on your robot, change this to (-duty, -duty)
         self.publish_duty(-duty, -duty)
 
+
+
     def get_robot_xy(self, stamp):
         try:
+            t = Time.from_msg(stamp)
             tf = self.tf_buffer.lookup_transform(
                 self.world_frame,
                 self.base_frame,
-                rclpy.time.Time()
+                # rclpy.time.Time(),
+                t
             )
 
             x = tf.transform.translation.x
@@ -102,14 +160,8 @@ class MoveBackWardsNode(Node):
 
         except Exception as e:
             self.get_logger().warn(f"TF lookup failed: {e}")
-            # self.rerun_on_goal_later = True
-            self.rerun_on_backup_timer = self.create_timer(0.1, self.rerun_on_move_backwards_callback)
             return None
 
-    def rerun_on_move_backwards_callback(self):
-        self.get_logger().info("rerun_on_move_backwards_callback")
-        self.rerun_on_backup_timer.destroy() 
-        self.on_goal(self.latest_on_goal_message)
 
     def stop(self):
         self.publish_duty(0.0, 0.0)
