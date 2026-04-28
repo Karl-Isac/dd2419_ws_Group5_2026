@@ -39,7 +39,7 @@ class PathControllerNode(Node):
         # self.declare_parameter("exploration_stop_distance", 0.10)
 
         self.declare_parameter("object_stop_distance", 0.15)
-        self.declare_parameter("box_stop_distance", 0.15)
+        self.declare_parameter("box_stop_distance", 0.17)
         self.declare_parameter("exploration_stop_distance", 0.15)
 
         # Path tracking

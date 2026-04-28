@@ -324,7 +324,8 @@ class Arm_control(Node):
                     extension_error = self.height_target-cy
                     # TODO you might want to finetune the termination and nudge forward condition error values, changes were def made to rotation error implementation
                     # Termination condition:
-                    if (abs(sideways_error)<30) and (abs(rotation_error)<25) and (20<extension_error<80) and not self.wheels_on:    # (abs(extension_error)<50)
+                    if (abs(sideways_error)<30) and (abs(rotation_error)<25) and (20<extension_error<50) and not self.wheels_on:    # below 80?
+
                         self.get_logger().info(f"Errors (sidew,rot,ext): {sideways_error:3.0f}, {rotation_error:3.0f}, {extension_error:3.0f}")
                         self.visual_servoing_ON = False
                         return
