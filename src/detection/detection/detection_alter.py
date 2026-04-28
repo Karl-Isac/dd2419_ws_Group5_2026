@@ -31,7 +31,8 @@ import struct
 
 np.random.seed(42)  # for reproducibility
 
-######################################################################################################
+####################  /home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/share/orocos_kdl/cmake/orocos_kdl-config.cmake:13 (include)
+##################################################################################
 # TODO: discuss the unit of the communication (PoseArray): m
 # TODO: One edge situation for box detection is neglected for now
 ######################################################################################################
@@ -210,7 +211,7 @@ class Detection(Node):
 
         self.counter = -2 # keep frames of every x frames, AND, discard first two frames
 
-        print(4)
+        print(41)
 
     def publish_arrays(self, object_poses, object_timestamp, box_poses, box_timestamp):
         """publish object and box poses from map file to ROS topics."""
@@ -645,6 +646,8 @@ class Detection(Node):
         
         # Step 3: two edge vs single edge decision based on variance ratio
         ratio = S[1] / S[0] 
+
+        # self.get_logger().info(f"ratio: {ratio}")
 
         if ratio > 0.1:
             # =========================================================
