@@ -57,6 +57,10 @@ class Detection(Node):
         self.create_subscription(
             PointCloud2, '/realsense/depth/color/points', self.cloud_callback, 10)
         
+        # TODO: Topic name of Objects need to be detected again
+        self.create_subscription(
+            Point, 'Undefined', self.redetection_callback, 10)
+        
         self.tf_buffer = Buffer(cache_time=rclpy.duration.Duration(seconds=10))
         self.tf_listener = TransformListener(self.tf_buffer, self)
 
@@ -90,7 +94,7 @@ class Detection(Node):
 
         self.object_poses = []
         self.box_poses = []
-        self.object_lists = []
+        self.object_lists = [] # object_list now stores [x, y, color, type, status], where x and y are position in cm, type tells if the object is a known item or detected one, and status tells whether an object is accepted and no need to redetect.
         self.box_lists = []
 
         self.object_num = 0
@@ -126,7 +130,7 @@ class Detection(Node):
 
                 if type_id == 'O':
                     self.object_poses.append(pose)
-                    self.object_lists.append([x, y, angle_deg])
+                    self.object_lists.append([x, y, 'unknown', 'map', True]) # color is 'unknown' and status is True, which means don't need to be redetected.
                     self.object_num += 1
                     self.known_obj_num += 1
                     
@@ -232,6 +236,8 @@ class Detection(Node):
             self.boxes_pub.publish(box_msg)
 
         # self.get_logger().info(f'Published {len(object_poses)} objects and {len(box_poses)} boxes')
+
+    def redetection_callback(self, msg: Point):
 
     def cloud_callback(self, msg: PointCloud2):
         # Spatial and color filtering, reconstructing cloud as [Timestamp, header, fields, candidates, grey_points],
@@ -553,11 +559,11 @@ class Detection(Node):
 
         for item in self.object_lists:
             if np.abs(item[0] - object_map.pose.position.x * 100) < 15 and np.abs(item[1] - object_map.pose.position.y * 100) < 15:
-                self.get_logger().debug(f"repeated object {self.object_lists.index(item)} detection, discarded")
+                # self.get_logger().debug(f"repeated object {self.object_lists.index(item)} detection, discarded")
                 break
         else:
                        
-            self.object_lists.append([int(round(object_map.pose.position.x * 100)), int(round(object_map.pose.position.y * 100)), 0])
+            self.object_lists.append([int(round(object_map.pose.position.x * 100)), int(round(object_map.pose.position.y * 100)), f'{color}', 'detection', True])
             new_object_msg = Pose()
             new_object_msg.position.x = object_map.pose.position.x
             new_object_msg.position.y = object_map.pose.position.y
@@ -1072,7 +1078,7 @@ class Detection(Node):
                 for meta_row in self.metadata_rows:
                     writer.writerow(meta_row)
                 for obj in self.object_lists:
-                    writer.writerow(['O'] + obj)
+                    writer.writerow(['O'] + obj[0:2])
                 for box in self.box_lists:
                     writer.writerow(['B'] + box)
             self.get_logger().debug(f'CSV file updated: {self.output_map_path}')
