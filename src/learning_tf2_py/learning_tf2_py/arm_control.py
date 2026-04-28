@@ -129,7 +129,7 @@ class Arm_control(Node):
             self.was_timed_out = False
             main_timeout = 20           # reset if visual servoing isnt complete after this time
             self.main_timeout_timer = self.create_timer(main_timeout, self.visual_servo_timeout)
-            cant_see_cube_timeout = 2   # if cube cant be seen for this long while visual servoing - reverse the first time, timeout the second time
+            cant_see_cube_timeout = 3   # if cube cant be seen for this long while visual servoing - reverse the first time, timeout the second time
             self.cant_see_cube_timer = self.create_timer(cant_see_cube_timeout, self.cant_see_cube_timeout_function)
             self.visual_servoing_ON = True
             while self.visual_servoing_ON:  
@@ -280,13 +280,14 @@ class Arm_control(Node):
         # not potential, actual, but what can you do
         if self.reversing:
             self.reverse_counter = self.reverse_counter + abs(msg.delta_encoder_left)
-            print(f"reverse counter: {self.reverse_counter}")
+            # print(f"reverse counter: {self.reverse_counter}")
             if self.reverse_counter > 400:      # tunable, corresponds to distance travelled when backing up
                 self.reversing = False
                 self.stop_wheels_ASAP = True
         elif self.nudging:
             self.nudge_counter = self.nudge_counter + abs(msg.delta_encoder_left)
-            if self.nudge_counter > 75:      # tunable, corresponds to distance travelled when nudging with the wheels
+            self.get_logger().info(f"Nudge counter: {self.nudge_counter}")
+            if self.nudge_counter > 50:      # tunable, corresponds to distance travelled when nudging with the wheels
                 self.nudging = False
                 self.stop_wheels_ASAP = True
 
