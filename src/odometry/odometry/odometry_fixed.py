@@ -14,6 +14,7 @@ from geometry_msgs.msg import TransformStamped, PoseStamped
 from robp_interfaces.msg import Encoders
 from sensor_msgs.msg import Imu
 from nav_msgs.msg import Path
+import time
 
 
 class Odometry(Node):
@@ -57,7 +58,14 @@ class Odometry(Node):
         # Ignore first encoder message so odom starts cleanly at zero
         self._got_first_encoder = False
 
+        self.imu_callback_counter = 0
+        self.start = time.time()
+
     def imu_callback(self, msg: Imu):
+        self.imu_callback_counter = self.imu_callback_counter + 1
+        self.get_logger().info(f"Counter: {self.imu_callback_counter}")
+        self.get_logger().info(f"Time [s]: {(time.time()-self.start):.1f}")
+        self.get_logger().info(f"Yaw [degrees]: {(self._yaw_imu/math.pi*180):.3f}")
         q = msg.orientation
         # Convert quaternion → Euler
         _, _, yaw = euler_from_quaternion([q.x, q.y, q.z, q.w])
