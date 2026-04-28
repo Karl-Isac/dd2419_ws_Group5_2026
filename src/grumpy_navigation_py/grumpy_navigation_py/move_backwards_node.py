@@ -30,7 +30,8 @@ class MoveBackWardsNode(Node):
         self.start_y = None
         self.moving = False
 
-        self.create_subscription(Bool, "/nav/move_backwards_start", self.on_move_backwards_start, 10)
+        # self.create_subscription(Bool, "/nav/move_backwards_start", self.on_move_backwards_start, 10)
+        self.create_subscription(Header, "/nav/move_backwards_start", self.on_move_backwards_start, 10)
         self.move_backwards_finished_pub = self.create_publisher(Bool, "/nav/move_backwards_finished", 10)
 
         self.cmd_pub = self.create_publisher(DutyCycles, "/phidgets/motor/duty_cycles", 10)
@@ -42,10 +43,11 @@ class MoveBackWardsNode(Node):
 
     def on_move_backwards_start(self, msg):
         self.get_logger().info("on_move_backwards_start")
-        if not msg.data:
-            return
 
-        pose = self.get_robot_xy()
+        # if not msg.data:
+        #     return
+
+        pose = self.get_robot_xy(msg.stamp)
         if pose is None:
             self.get_logger().warn("Could not get robot pose, cannot move backwards")
             return
@@ -84,7 +86,7 @@ class MoveBackWardsNode(Node):
         # If positive duty moves forward on your robot, change this to (-duty, -duty)
         self.publish_duty(-duty, -duty)
 
-    def get_robot_xy(self):
+    def get_robot_xy(self, stamp):
         try:
             tf = self.tf_buffer.lookup_transform(
                 self.world_frame,
@@ -96,8 +98,18 @@ class MoveBackWardsNode(Node):
             y = tf.transform.translation.y
             return x, y
 
-        except (LookupException, ConnectivityException, ExtrapolationException):
+        # except (LookupException, ConnectivityException, ExtrapolationException):
+
+        except Exception as e:
+            self.get_logger().warn(f"TF lookup failed: {e}")
+            # self.rerun_on_goal_later = True
+            self.rerun_on_backup_timer = self.create_timer(0.1, self.rerun_on_move_backwards_callback)
             return None
+
+    def rerun_on_move_backwards_callback(self):
+        self.get_logger().info("rerun_on_move_backwards_callback")
+        self.rerun_on_backup_timer.destroy() 
+        self.on_goal(self.latest_on_goal_message)
 
     def stop(self):
         self.publish_duty(0.0, 0.0)

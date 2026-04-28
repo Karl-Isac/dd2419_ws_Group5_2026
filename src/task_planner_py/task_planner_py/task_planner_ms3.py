@@ -792,9 +792,14 @@ class TaskPlannerNode(Node):
                 self.get_logger().info("in MOVE_BACKWARD state")
                 self._published_this_state = True
                 self.move_backwards_success = False
-                b = Bool()
-                b.data = True
-                self.move_backwards_pub.publish(b)
+
+                # b = Bool()
+                # b.data = True
+                # self.move_backwards_pub.publish(b)
+
+                msg = Header()
+                msg.stamp = self.get_clock().now().to_msg()
+                self.move_backwards_pub.publish(msg)
 
             if self.move_backwards_success:
                 self.move_backwards_success = False
