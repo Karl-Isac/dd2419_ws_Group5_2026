@@ -59,6 +59,7 @@ class Arm_control(Node):
         self.reversing = False
         self.nudging = False
         self.stop_wheels_ASAP = False
+        self.termination_passed_once = False
 
         # Multiple things are accessing this timer, so we need to keep track whether it exists or not
         self.nudge_cooldown_timer = None
@@ -326,11 +327,15 @@ class Arm_control(Node):
                     # TODO you might want to finetune the termination and nudge forward condition error values, changes were def made to rotation error implementation
                     # Termination condition:
                     if (abs(sideways_error)<30) and (abs(rotation_error)<25) and (20<extension_error<50) and not self.wheels_on:    # below 80?
-                        time.sleep(2)
-                        if (abs(sideways_error)<30) and (abs(rotation_error)<25) and (20<extension_error<50) and not self.wheels_on:    # below 80?
+                        if self.termination_passed_once:
                             self.get_logger().info(f"Errors (sidew,rot,ext): {sideways_error:3.0f}, {rotation_error:3.0f}, {extension_error:3.0f}")
+                            self.termination_passed_once = False
                             self.visual_servoing_ON = False
                             return
+                        else:
+                            self.termination_passed_once = True
+                            time.sleep(2)
+                            
                         
                     # Sideways control (PI)
                     self.sideways_integral_term = self.sideways_integral_term + k_sideways_integral*sideways_error
