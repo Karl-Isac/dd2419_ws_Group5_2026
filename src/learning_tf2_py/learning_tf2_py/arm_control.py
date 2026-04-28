@@ -311,7 +311,7 @@ class Arm_control(Node):
                     prev_joint2target = self.joint2target
                     prev_joint3target = self.joint3target
                     prev_joint4target = self.joint4target
-                    prev_joint5target = self.joint5target                    
+                    prev_joint5target = self.joint5target             
 
                     cx,cy = self.cube_position_in_frame
                     rotation = self.cube_orientation_in_frame
@@ -326,10 +326,11 @@ class Arm_control(Node):
                     # TODO you might want to finetune the termination and nudge forward condition error values, changes were def made to rotation error implementation
                     # Termination condition:
                     if (abs(sideways_error)<30) and (abs(rotation_error)<25) and (20<extension_error<50) and not self.wheels_on:    # below 80?
-
-                        self.get_logger().info(f"Errors (sidew,rot,ext): {sideways_error:3.0f}, {rotation_error:3.0f}, {extension_error:3.0f}")
-                        self.visual_servoing_ON = False
-                        return
+                        time.sleep(2)
+                        if (abs(sideways_error)<30) and (abs(rotation_error)<25) and (20<extension_error<50) and not self.wheels_on:    # below 80?
+                            self.get_logger().info(f"Errors (sidew,rot,ext): {sideways_error:3.0f}, {rotation_error:3.0f}, {extension_error:3.0f}")
+                            self.visual_servoing_ON = False
+                            return
                         
                     # Sideways control (PI)
                     self.sideways_integral_term = self.sideways_integral_term + k_sideways_integral*sideways_error
