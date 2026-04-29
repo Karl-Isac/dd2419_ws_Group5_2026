@@ -598,8 +598,8 @@ class Detection(Node):
                 
         # Extract all objects that need to be redetected, stored as indices in re_object_list.
         re_object_list = [i for i in range(len(self.object_lists)) if not self.object_lists[i][4]]
-        self.get_logger().info(f"re_object_list: {re_object_list}")
-        self.get_logger().info(f"object in map: {object_map.pose.position.x}, {object_map.pose.position.y}, color: {color}")
+        # self.get_logger().info(f"re_object_list: {re_object_list}")
+        # self.get_logger().info(f"object in map: {object_map.pose.position.x}, {object_map.pose.position.y}, color: {color}")
         
         if re_object_list:
             for index in re_object_list:
@@ -607,6 +607,7 @@ class Detection(Node):
                 # Color criteria and position criteria
                 if np.abs(item[0] - object_map.pose.position.x * 100) < 15 and np.abs(item[1] - object_map.pose.position.y * 100) < 15 and item[2] == color:
                     self.object_lists[index][4] = True
+                    self.object_lists[index][3] = True
                     self.get_logger().info(f"Object {index + 1} redetected at position {object_map.pose.position.x}, {object_map.pose.position.y}")
                     self.object_lists[index][0] = int(round(object_map.pose.position.x * 100))
                     self.object_lists[index][1] = int(round(object_map.pose.position.y * 100))
