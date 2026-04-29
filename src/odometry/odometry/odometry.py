@@ -46,8 +46,8 @@ class Odometry(Node):
         
         self._yaw_imu = 0.0
         self._IMU_offset = None
-        #self._start_offset = 0 # If start yaw is not 0, change it here
-        self._start_offset = -3.2428191 # For Lidar_bag
+        self._start_offset = 0 # If start yaw is not 0, change it here
+        #self._start_offset = -3.2428191 # For Lidar_bag
 
         # 2D pose
         self._x = 0.0

@@ -1,27 +1,28 @@
 #!/usr/bin/env python3
 
 import csv
-
 import rclpy
 from rclpy.node import Node
 from pathlib import Path
 
 import numpy as np
-
 import rclpy.time
-from tf2_ros import TransformBroadcaster
 from sensor_msgs.msg import LaserScan
-from nav_msgs.msg import Odometry
 from std_msgs.msg import String
 from geometry_msgs.msg import TransformStamped
 
 import tf_transformations
-import tf2_ros
+from tf2_ros import TransformBroadcaster, Buffer, TransformListener
+#from sklearn.neighbors import NearestNeighbors        maybe remove if not used, but for now we keep it since it's needed for ICP
+#from simpleicp import SimpleICP, PointCloud.           rip
+import open3d as o3d
 
-from sklearn.neighbors import NearestNeighbors
 
 base_dir = Path(__file__).resolve().parent.parent.parent.parent.parent.parent.parent.parent
 KNOWN_PATH = base_dir / 'Workspace/map_1_1.csv'
+
+
+# ---------------- ICP ----------------
 
 def scan_to_points(scan):
     angles = np.linspace(scan.angle_min, scan.angle_max, len(scan.ranges))
@@ -29,41 +30,11 @@ def scan_to_points(scan):
 
     for r, a in zip(scan.ranges, angles):
         if np.isfinite(r):
-            x = r * np.cos(a)
-            y = r * np.sin(a)
-            points.append([x, y])
+            points.append([r * np.cos(a), r * np.sin(a)])
 
     return np.array(points)
 
-def icp(source, target, max_iter=20):
-    T = np.eye(3)
-
-    for _ in range(max_iter):
-        nbrs = NearestNeighbors(n_neighbors=1).fit(target)
-        distances, indices = nbrs.kneighbors(source)
-        matched = target[indices[:, 0]]
-
-        mu_s = np.mean(source, axis=0)
-        mu_t = np.mean(matched, axis=0)
-
-        S = source - mu_s
-        M = matched - mu_t
-
-        W = M.T @ S
-        U, _, VT = np.linalg.svd(W)
-        R = U @ VT
-
-        t = mu_t - R @ mu_s
-
-        source = (R @ source.T).T + t
-
-        T_step = np.eye(3)
-        T_step[:2, :2] = R
-        T_step[:2, 2] = t
-
-        T = T_step @ T
-
-    return T
+# ---------------- NODE ----------------
 
 class ICPMapper(Node):
 
@@ -73,172 +44,183 @@ class ICPMapper(Node):
         self.scan_sub = self.create_subscription(
             LaserScan, '/lidar/scan', self.scan_cb, 10)
 
-        self.tf_buffer = tf2_ros.Buffer()
-        self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, self)
-
         self.cmd_sub = self.create_subscription(
             String, '/command', self.cmd_cb, 10)
 
         self.tf_broadcaster = TransformBroadcaster(self)
-
         self.timer = self.create_timer(0.1, self.publish_tf)
         
+        self.tf_buffer = Buffer()
+        self.tf_listener = TransformListener(self.tf_buffer, self)
+
+        # -------- load start pose --------
         with open(KNOWN_PATH, newline='', encoding='utf-8-sig') as csvfile:
             reader = csv.DictReader(csvfile)
             for row in reader:
                 if row['Type'] == 'S':
-                    type = str(row['Type'])
-                    x = float(row['x'])/100  # convert to meters
-                    y = float(row['y'])/100
-                    angle = float(row['angle'])
-                    start = (type, x, y, angle)
+                    start = (
+                        row['Type'],
+                        float(row['x']) / 100,
+                        float(row['y']) / 100,
+                        float(row['angle'])
+                    )
 
-        self.last_scan = None
-        self.last_stamp = None
-        self.map_points = None
-        self.last_odom_pose = None
-
-        start_x = start[1] # type: ignore
-        start_y = start[2] #type: ignore
-        start_yaw = start[3] #type: ignore
+        start_x, start_y, start_yaw = start[1], start[2], start[3] # type: ignore
 
         self.T_map_odom = np.eye(3)
-
+        self.T_map_odom[:2, :2] = [
+            [np.cos(start_yaw), -np.sin(start_yaw)],
+            [np.sin(start_yaw),  np.cos(start_yaw)]
+        ]
         self.T_map_odom[0, 2] = start_x
         self.T_map_odom[1, 2] = start_y
 
-        self.T_map_odom[0, 0] = np.cos(start_yaw)
-        self.T_map_odom[0, 1] = -np.sin(start_yaw)
-        self.T_map_odom[1, 0] = np.sin(start_yaw)
-        self.T_map_odom[1, 1] = np.cos(start_yaw)
-        
-        self.current_odom_pose = None
+        # -------- state --------
+        self.last_scan = None
+        self.map_points = None
+        self.last_stamp = None
+        ##self.last_odom_pose = self.T_map_odom
+
         self.publish_tf()
-        
+
+    # ---------------- callbacks ----------------
+
     def scan_cb(self, msg):
         self.last_scan = scan_to_points(msg)
         self.last_stamp = msg.header.stamp
-        
-    def get_odom_pose(self):
+
+    def cmd_cb(self, msg):
+        if msg.data == "start":
+            self.start_mapping()
+        elif msg.data == "correct":
+            self.correct_pose()
+            
+    def get_odom_to_base(self):
         try:
-            trans = self.tf_buffer.lookup_transform(
-                'map',        # target frame
-                'base_link',   # source frame
-                rclpy.time.Time(seconds=0)
+            t = self.tf_buffer.lookup_transform(
+                "odom",          # target frame
+                "base_link",     # source frame
+                rclpy.time.Time()  # latest available
             )
 
-            x = trans.transform.translation.x
-            y = trans.transform.translation.y
-            
-            self.get_logger().info(f"Odom pose:\n{x:.2f}, {y:.2f}")
+            x = t.transform.translation.x
+            y = t.transform.translation.y
 
-            q = trans.transform.rotation
-            yaw = tf_transformations.euler_from_quaternion(
-                [q.x, q.y, q.z, q.w])[2]
+            q = t.transform.rotation
+            _, _, yaw = tf_transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])
 
-            return np.array([x, y, yaw])
+            return x, y, yaw
 
         except Exception as e:
             self.get_logger().warn(f"TF lookup failed: {e}")
             return None
-        
-    def cmd_cb(self, msg):
-        if msg.data == "start":
-            self.start_mapping()
 
-        elif msg.data == "correct":
-            self.correct_pose()
-            
+    # ---------------- mapping ----------------
+
     def start_mapping(self):
-        self.current_odom_pose = self.get_odom_pose()
-        
-        if self.last_scan is None or self.current_odom_pose is None:
-            self.get_logger().warn("Missing scan or odom")
+        if self.last_scan is None:
+            self.get_logger().warn("No scan yet")
             return
 
         self.map_points = self.last_scan.copy()
-        self.last_odom_pose = self.current_odom_pose.copy()
-
         self.get_logger().info("Map initialized")
-        
+
+    # ---------------- ICP correction ----------------
+
     def correct_pose(self):
-        self.current_odom_pose = self.get_odom_pose()
+        if self.map_points is None or self.last_scan is None:
+            return
+
+        # ---------------- convert to Open3D point clouds ----------------
+        pc_fix = o3d.geometry.PointCloud()
+        pc_fix.points = o3d.utility.Vector3dVector(to_3d(self.map_points))
+
+        pc_mov = o3d.geometry.PointCloud()
+        pc_mov.points = o3d.utility.Vector3dVector(to_3d(self.last_scan))
+
+        self.get_logger().info(
+            f"Map size: {len(self.map_points)}, Scan size: {len(self.last_scan)}"
+        )
         
-        if self.map_points is None or self.last_scan is None or self.current_odom_pose is None:
-            self.get_logger().warn("Missing data")
-            return
+        x, y, _ = self.get_odom_to_base() or (0, 0, 0)
+        delta_len = np.sqrt(x**2 + y**2)
+        max_angle_error = np.radians(10)
+        delta_alpha = delta_len*np.tan(max_angle_error)
+        print(f"x: {x:.2f}, y: {y:.2f}, delta_alpha: {delta_alpha:.2f}")
 
-        if self.last_odom_pose is None:
-            self.get_logger().warn("No previous odom reference")
-            return
+        # ---------------- run ICP ----------------
+        icp_success = True
+        try:
+            reg = o3d.pipelines.registration.registration_icp(
+                pc_mov,
+                pc_fix,
+                max_correspondence_distance=max(0.5, delta_alpha * 1.2),
+                init=se2_to_se3(self.T_map_odom),
+                estimation_method=o3d.pipelines.registration.TransformationEstimationPointToPoint()
+            )
 
-        # --- 1. Compute odometry delta ---
-        dx = self.current_odom_pose[0]# - self.last_odom_pose[0]
-        dy = self.current_odom_pose[1]# - self.last_odom_pose[1]
-        dtheta = self.current_odom_pose[2]# - self.last_odom_pose[2]
+            H = reg.transformation  # 4x4 SE(3)
 
-        R_odom = np.array([
-            [np.cos(dtheta), -np.sin(dtheta)],
-            [np.sin(dtheta),  np.cos(dtheta)]
-        ])
-        t_odom = np.array([dx, dy])
+        except Exception as e:
+            self.get_logger().warn(f"ICP failed: {e}")
+            icp_success = False
+            H = np.eye(4)
 
-        # --- 2. Apply odometry as initial guess ---
-        source = self.last_scan.copy()
-        source = (R_odom @ source.T).T + t_odom
+        # ---------------- convert SE3 → SE2 ----------------
+        T_icp_se2 = se3_to_se2(H)
 
-        target = self.map_points.copy()
+        # ---------------- extract motion ----------------
+        dx = T_icp_se2[0, 2]
+        dy = T_icp_se2[1, 2]
+        trans_err = np.sqrt(dx**2 + dy**2)
+        dtheta = np.arctan2(T_icp_se2[1, 0], T_icp_se2[0, 0])
 
-        # --- 3. Run ICP ---
-        T_icp = icp(source, target)
+        # ---------------- apply update ----------------
+        maybe_T_map_odom = T_icp_se2 @ self.T_map_odom
+        good = icp_success
 
-        self.get_logger().info(f"ICP correction:\n{T_icp}")
+        # reject large jumps
+        if trans_err > 0.5:
+            self.get_logger().warn(f"ICP rejected (too large motion): {trans_err:.2f}m")
+            good = False
+            
+        if abs(dtheta) > max_angle_error:
+            self.get_logger().warn(f"ICP rejected (too large rotation: {dtheta:.2f} rad)")
+            good = False
 
-        # --- 4. Combine transforms ---
-        T_odom = np.eye(3)
-        T_odom[:2, :2] = R_odom
-        T_odom[:2, 2] = t_odom
+        # consistency with odometry
+        ##if self.last_odom_pose is not None:
+        ##    odom_dx, odom_dy = self.last_odom_pose
+        ##    if (odom_dx * dx + odom_dy * dy) < 0:
+        ##        self.get_logger().warn("ICP disagrees with odometry → ignored")
+        ##        good = False
 
-        T_total = T_icp @ T_odom
+        if good:
+            self.T_map_odom = maybe_T_map_odom
+            self.get_logger().info(
+                f"ICP accepted: Δx={dx:.2f}, Δy={dy:.2f}, err={trans_err:.2f}"
+            )
 
-        self.T_map_odom = T_total @ self.T_map_odom
+        # ---------------- update map ----------------
+        # transform scan using estimated transform
+        R = T_icp_se2[:2, :2]
+        t = T_icp_se2[:2, 2]
 
-        # --- 5. Transform scan into map frame ---
-        R_total = T_total[:2, :2]
-        t_total = T_total[:2, 2]
+        transformed_scan = (R @ self.last_scan.T).T + t
 
-        transformed_scan = (R_total @ self.last_scan.T).T + t_total
+        if self.map_points is None:
+            self.map_points = transformed_scan
+        else:
+            self.map_points = np.vstack((self.map_points, transformed_scan))
 
-        # --- 6. Downsample BEFORE adding ---
-        #transformed_scan = self.downsample(transformed_scan)
+        self.get_logger().info(f"Map size: {len(self.map_points)}")
 
-        # --- 7. Add to map ---
-        self.map_points = np.vstack((self.map_points, transformed_scan))
-
-        # --- 8. Downsample whole map (important!) ---
-        #self.map_points = self.downsample(self.map_points)
-
-        self.get_logger().info(f"Map size: {self.map_points.shape[0]}")
-
-        # --- 9. Update odom reference ---
-        self.last_odom_pose = self.current_odom_pose.copy()
-
-    #def downsample(self, points, voxel_size=0.1):
-    #    if len(points) == 0:
-    #        return points
-#
-    #    # Quantize points into grid
-    #    grid = np.floor(points / voxel_size)
-#
-    #    # Keep one point per grid cell
-    #    _, unique_indices = np.unique(grid, axis=0, return_index=True)
-#
-    #    return points[unique_indices]
+    # ---------------- TF ----------------
 
     def publish_tf(self):
         t = TransformStamped()
 
-        t.header.stamp = self.get_clock().now().to_msg() #self.last_stamp or self.get_clock().now().to_msg()
+        t.header.stamp = self.get_clock().now().to_msg()
         t.header.frame_id = "map"
         t.child_frame_id = "odom"
 
@@ -250,18 +232,67 @@ class ICPMapper(Node):
             self.T_map_odom[0, 0]
         )
 
-        quat = tf_transformations.quaternion_from_euler(0, 0, theta)
+        q = tf_transformations.quaternion_from_euler(0, 0, theta)
 
         t.transform.translation.x = float(x)
         t.transform.translation.y = float(y)
         t.transform.translation.z = 0.0
 
-        t.transform.rotation.x = quat[0]
-        t.transform.rotation.y = quat[1]
-        t.transform.rotation.z = quat[2]
-        t.transform.rotation.w = quat[3]
+        t.transform.rotation.x = q[0]
+        t.transform.rotation.y = q[1]
+        t.transform.rotation.z = q[2]
+        t.transform.rotation.w = q[3]
 
         self.tf_broadcaster.sendTransform(t)
+
+
+# ---------------- main ----------------
+def to_3d(points):
+    return np.hstack((points, np.zeros((points.shape[0], 1))))
+#def to_3d(points):
+#    return np.array(
+#        np.hstack((points, np.zeros((points.shape[0], 1)))),
+#        dtype=np.float64,
+#        copy=True
+#    )
+
+def se3_to_se2(H):
+    """
+    Convert SE(3) homogeneous transform (4x4) → SE(2) transform (3x3)
+    by extracting yaw + x,y translation.
+    """
+
+    # --- extract yaw from SE3 rotation matrix ---
+    yaw = np.arctan2(H[1, 0], H[0, 0])
+
+    # --- build SE2 rotation ---
+    T = np.eye(3)
+    T[:2, :2] = [
+        [np.cos(yaw), -np.sin(yaw)],
+        [np.sin(yaw),  np.cos(yaw)]
+    ]
+
+    # --- extract translation (ignore z) ---
+    T[0, 2] = H[0, 3]
+    T[1, 2] = H[1, 3]
+
+    return T
+
+def se2_to_se3(T):
+    """
+    Convert SE(2) (3x3) → SE(3) (4x4)
+    """
+
+    H = np.eye(4)
+
+    # rotation (embed in XY plane)
+    H[0:2, 0:2] = T[0:2, 0:2]
+
+    # translation
+    H[0, 3] = T[0, 2]
+    H[1, 3] = T[1, 2]
+
+    return H
 
 def main(args=None):
     rclpy.init(args=args)
@@ -269,5 +300,7 @@ def main(args=None):
     rclpy.spin(node)
     node.destroy_node()
     rclpy.shutdown()
+
+
 if __name__ == '__main__':
     main()

@@ -1,0 +1,2 @@
+[] Remove map-lookup and take original odom from static-TF
+    [] publich an original odom and be able to use it, and also update

@@ -1,1 +1,2 @@
-/Users/ki/Desktop/Skola/Robot/dd2419_ws_Group5_2026/build/robp_autocomplete/completion/bash/rosidl
+#compdef rosidl
+eval "$(register-python-argcomplete rosidl)"

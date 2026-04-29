@@ -33,12 +33,10 @@ class make_space(Node):
             QoS)
         
         print("thing")
-        
+        self.things = []
         self.first_placements()
         
     def first_placements(self):
-        
-        things = []
         
         with open(KNOWN_PATH, newline='', encoding='utf-8-sig') as csvfile:
             reader = csv.DictReader(csvfile)
@@ -47,13 +45,13 @@ class make_space(Node):
                 x = float(row['x'])/100  # convert to meters
                 y = float(row['y'])/100
                 angle = float(row['angle'])
-                things.append((type, x, y, angle))
+                self.things.append((type, x, y, angle))
                 
         with open(NEW_PATH, 'w', newline='', encoding='utf-8') as csvfile:
             fieldnames = ["Type", "x", "y", "angle"]
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
             writer.writeheader()
-            for thing_type, x, y, angle in things:
+            for thing_type, x, y, angle in self.things:
                 writer.writerow({
                     "Type": thing_type,
                     "x": x,
@@ -63,7 +61,7 @@ class make_space(Node):
 
         global MAX_ID
         MAX_ID = 0
-        for the_type, x, y, angle in things:
+        for the_type, x, y, angle in self.things:
             marker = Marker()
             
             marker.header.frame_id = "map"

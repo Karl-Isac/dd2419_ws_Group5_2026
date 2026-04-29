@@ -1,0 +1,6 @@
+source;share/display_markers/hook/pythonpath.ps1
+source;share/display_markers/hook/pythonpath.dsv
+source;share/display_markers/hook/pythonpath.sh
+source;share/display_markers/hook/ament_prefix_path.ps1
+source;share/display_markers/hook/ament_prefix_path.dsv
+source;share/display_markers/hook/ament_prefix_path.sh
