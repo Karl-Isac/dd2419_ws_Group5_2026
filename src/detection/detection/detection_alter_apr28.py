@@ -31,7 +31,8 @@ import struct
 
 np.random.seed(42)  # for reproducibility
 
-######################################################################################################
+####################  /home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/share/orocos_kdl/cmake/orocos_kdl-config.cmake:13 (include)
+##################################################################################
 # TODO: discuss the unit of the communication (PoseArray): m
 # TODO: One edge situation for box detection is neglected for now
 ######################################################################################################
@@ -56,6 +57,13 @@ class Detection(Node):
         self.create_subscription(
             PointCloud2, '/realsense/depth/color/points', self.cloud_callback, 10)
         
+        # TODO: Topic names need to be decided
+        self.create_subscription(
+            Point, '/Failure', self.redetection_callback, 10)
+        self.create_subscription(
+            Point, '/Success', self.success_callback, 10
+        )
+                
         self.tf_buffer = Buffer(cache_time=rclpy.duration.Duration(seconds=10))
         self.tf_listener = TransformListener(self.tf_buffer, self)
 
@@ -74,7 +82,6 @@ class Detection(Node):
 
         # open and load map file and workspace (csv)
         package_path = get_package_share_directory('detection')
-        # map_path = os.path.join(package_path, 'config', 'blank.csv')
         map_path = os.path.join(package_path, 'config', 'map_1_5.csv')
         workspace_path = os.path.join(package_path, 'config', 'workspace_1.csv')
         self.metadata_rows = []
@@ -90,8 +97,10 @@ class Detection(Node):
 
         self.object_poses = []
         self.box_poses = []
-        self.object_lists = []
+        self.object_lists = [] # object_list now stores [x, y, color, status 1, status 2, map_x, map_y], where x and y are position in cm, status 1 tells if the object exists at current position, and status 2 tells whether an object is accepted and no need to redetect, map_x and map_y are coordinates that needs to be written into map file.
         self.box_lists = []
+
+        self.color_unassigned_indices_list = [] # Indices of objects read from map file
 
         self.object_num = 0
         self.known_obj_num = 0
@@ -99,7 +108,7 @@ class Detection(Node):
         self.known_box_num = 0
 
         # Using a deque as a buffer to store incoming point cloud messages for processing
-        self.cloud_queue = deque(maxlen=1000)
+        self.cloud_queue = deque(maxlen=10)
         self.timer = self.create_timer(0.1, self.process_queue)
 
         # Reading map file
@@ -125,8 +134,10 @@ class Detection(Node):
                 pose.orientation.w = q[3]
 
                 if type_id == 'O':
+                    self.color_unassigned_indices_list.append(self.object_num)
+
                     self.object_poses.append(pose)
-                    self.object_lists.append([x, y, angle_deg])
+                    self.object_lists.append([x, y, 'unknown', True, True, x, y]) # color is 'unknown',status 1 is True which means there is an actual object at position now, status 2 is True, which means don't need to be redetected.
                     self.object_num += 1
                     self.known_obj_num += 1
                     
@@ -142,6 +153,8 @@ class Detection(Node):
                     tf.transform.rotation.z = 0.0
                     tf.transform.rotation.w = 1.0
                     self.static_broadcaster.sendTransform(tf)
+
+                    
 
                 elif type_id == 'B':
                     self.box_poses.append(pose)
@@ -211,7 +224,7 @@ class Detection(Node):
 
         self.counter = -2 # keep frames of every x frames, AND, discard first two frames
 
-        print(4)
+        print(41)
 
     def publish_arrays(self, object_poses, object_timestamp, box_poses, box_timestamp):
         """publish object and box poses from map file to ROS topics."""
@@ -232,6 +245,25 @@ class Detection(Node):
             self.boxes_pub.publish(box_msg)
 
         # self.get_logger().info(f'Published {len(object_poses)} objects and {len(box_poses)} boxes')
+
+    def redetection_callback(self, msg: Point):
+        # Search whole list, matching corresponding object that needs to be redetected, and set its status to False.
+        for index in range(len(self.object_lists)):
+            object = self.object_lists[index]
+            if int(round(msg.x * 100)) == object[0] and int(round(msg.y * 100)) == object[1] and object[4]:
+                object[4] = False # needs to be redetected
+                object[3] = False # no actual object there
+                self.get_logger().info(f"Object {index + 1} needs redetection.")
+                return
+    
+    def success_callback(self, msg: Point):
+        # Delete successfully picked up objects since it will never be used later.
+        for index in range(len(self.object_lists)):
+            object = self.object_lists[index]
+            if int(round(msg.x * 100)) == object[0] and int(round(msg.y * 100)) == object[1] and object[4]:
+                object[3] = False # no actual object there
+                self.get_logger().info(f"Object {index + 1} has picked up successfully")               
+                return
 
     def cloud_callback(self, msg: PointCloud2):
         # Spatial and color filtering, reconstructing cloud as [Timestamp, header, fields, candidates, grey_points],
@@ -316,7 +348,6 @@ class Detection(Node):
             test_points_cube = []
 
         # Build grey_points list: (z, -x) format for box detection
-        # Build grey_points list: (z, -x) format for box detection
         if len(box_indices) > 0:
             grey_points = np.column_stack([z[box_indices], -x[box_indices]]).astype(np.float32)
             test_points_box = gen[box_indices].tolist()
@@ -354,7 +385,7 @@ class Detection(Node):
             # self.get_logger().info(f"Time difference: {t_cloud.sec - latest_tf_time.sec}.{t_cloud.nanosec - latest_tf_time.nanosec}")
             # self.get_logger().info(f"Pointcloud Timestamp: {t_cloud.sec}.{t_cloud.nanosec}")
             # self.get_logger().info(f"Latest TF Timestamp: {latest_tf_time.sec}.{latest_tf_time.nanosec}")
-            # self.get_logger().info(f"num of queue:{len(self.cloud_queue)}")
+            self.get_logger().info(f"num of queue:{len(self.cloud_queue)}")
 
             if self.tf_buffer.can_transform(
                 'map',
@@ -518,6 +549,9 @@ class Detection(Node):
         self.object.pose.orientation.z = 0.0
         self.object.pose.orientation.w = 1.0
 
+        # object_lists containes position of currently here (object[3] = True) objects
+        object_lists = [(object[0], object[1]) for object in self.object_lists if object[3]]
+
         msg_time = timestamp
         if not self.tf_buffer.can_transform(
                 'map',
@@ -547,17 +581,69 @@ class Detection(Node):
             return
 
         # Check if the detected object is inside any of the known boxes (with a tolerance), if yes, discard it, since objects inside boxes should not be detected
-        if self.is_point_inside_any_box(object_map.pose.position.x, object_map.pose.position.y, tolerance=0.10):
+        if self.is_point_inside_any_box(object_map.pose.position.x, object_map.pose.position.y, tolerance=0.03):
             self.get_logger().debug("Object is inside a box (with tolerance), ignored.")
             return
+        
+        # Assign color to objects read from map file
 
-        for item in self.object_lists:
+        if self.color_unassigned_indices_list:
+            for index in self.color_unassigned_indices_list:
+                item = self.object_lists[index]
+                if np.abs(item[0] - object_map.pose.position.x * 100) < 15 and np.abs(item[1] - object_map.pose.position.y * 100) < 15:
+                    self.object_lists[index][2] = color
+                    self.get_logger().info(f"object {index+1}'s color is assigned as {color}")
+                    del self.color_unassigned_indices_list[index]
+                    return
+                
+        # Extract all objects that need to be redetected, stored as indices in re_object_list.
+        re_object_list = [i for i in range(len(self.object_lists)) if not self.object_lists[i][4]]
+        # self.get_logger().info(f"re_object_list: {re_object_list}")
+        # self.get_logger().info(f"object in map: {object_map.pose.position.x}, {object_map.pose.position.y}, color: {color}")
+        
+        if re_object_list:
+            for index in re_object_list:
+                item = self.object_lists[index]
+                # Color criteria and position criteria
+                if np.abs(item[0] - object_map.pose.position.x * 100) < 15 and np.abs(item[1] - object_map.pose.position.y * 100) < 15 and item[2] == color:
+                    self.object_lists[index][4] = True
+                    self.object_lists[index][3] = True
+                    self.get_logger().info(f"Object {index + 1} redetected at position {object_map.pose.position.x}, {object_map.pose.position.y}")
+                    self.object_lists[index][0] = int(round(object_map.pose.position.x * 100))
+                    self.object_lists[index][1] = int(round(object_map.pose.position.y * 100))
+
+                    new_object_msg = Pose()
+                    new_object_msg.position.x = object_map.pose.position.x
+                    new_object_msg.position.y = object_map.pose.position.y
+                    new_object_msg.position.z = 0.0
+                    new_object_msg.orientation.x = 0.0
+                    new_object_msg.orientation.y = 0.0
+                    new_object_msg.orientation.z = 0.0
+                    new_object_msg.orientation.w = 1.0
+                    self.publish_arrays([new_object_msg], msg_time, None, None)
+
+                    tf = TransformStamped()
+                    tf.header.stamp = timestamp
+                    tf.header.frame_id = 'map'
+                    tf.child_frame_id = f'object_{index + 1}'
+                    tf.transform.translation.x = object_map.pose.position.x
+                    tf.transform.translation.y = object_map.pose.position.y
+                    tf.transform.translation.z = 0.0
+                    tf.transform.rotation.x = 0.0
+                    tf.transform.rotation.y = 0.0
+                    tf.transform.rotation.z = 0.0
+                    tf.transform.rotation.w = 1.0
+                    self.static_broadcaster.sendTransform(tf)
+                    return
+
+        # Normal distance criteria
+        for item in object_lists:
             if np.abs(item[0] - object_map.pose.position.x * 100) < 15 and np.abs(item[1] - object_map.pose.position.y * 100) < 15:
-                self.get_logger().debug(f"repeated object {self.object_lists.index(item)} detection, discarded")
+                # self.get_logger().debug(f"repeated object {self.object_lists.index(item)} detection, discarded")
                 break
         else:
                        
-            self.object_lists.append([int(round(object_map.pose.position.x * 100)), int(round(object_map.pose.position.y * 100)), 0])
+            self.object_lists.append([int(round(object_map.pose.position.x * 100)), int(round(object_map.pose.position.y * 100)), f'{color}', True, True, int(round(object_map.pose.position.x * 100)), int(round(object_map.pose.position.y * 100))])
             new_object_msg = Pose()
             new_object_msg.position.x = object_map.pose.position.x
             new_object_msg.position.y = object_map.pose.position.y
@@ -646,6 +732,8 @@ class Detection(Node):
         
         # Step 3: two edge vs single edge decision based on variance ratio
         ratio = S[1] / S[0] 
+
+        # self.get_logger().info(f"ratio: {ratio}")
 
         if ratio > 0.1:
             # =========================================================
@@ -1070,7 +1158,7 @@ class Detection(Node):
                 for meta_row in self.metadata_rows:
                     writer.writerow(meta_row)
                 for obj in self.object_lists:
-                    writer.writerow(['O'] + obj)
+                    writer.writerow(['O'] + obj[5:7])
                 for box in self.box_lists:
                     writer.writerow(['B'] + box)
             self.get_logger().debug(f'CSV file updated: {self.output_map_path}')

@@ -102,8 +102,6 @@ class TaskPlannerNode(Node):
         # self.approach_goal_pub = self.create_publisher(PoseStamped, "/nav/approach_start", 10)
         self.approach_goal_pub = self.create_publisher(GoalWithType, "/nav/approach_start", 10)
         self.path_blocked_pub = self.create_publisher(Bool, "/nav/path_blocked", 10)
-        self.object_success_pub = self.create_publisher(Point, "/Success", 10)
-        self.object_failure_pub = self.create_publisher(Point, "/Failure", 10)
 
         self.arm_pub = self.create_publisher(String, "/arm/cmd", 10)
 
@@ -124,7 +122,6 @@ class TaskPlannerNode(Node):
         self.create_subscription(PoseArray, "/detected_boxes", self.on_boxes, 10)
         self.create_subscription(PoseStamped, "/nav/approach_finished", self.on_approach_finished, 10)
         self.create_subscription(Bool, "/nav/move_backwards_finished", self.on_move_backwards_finished, 10)
-
 
         # Update ICP state
         self.ICP_pub = self.create_publisher(String, "/localization/start_update_ICP", 10)  # contant can be anything
@@ -256,18 +253,10 @@ class TaskPlannerNode(Node):
     def on_report_back(self, msg: String):
         self.get_logger().info(f"on_report_back: {msg.data}")
 
-        p = Point()
-        p.x = float(self.current_object.x)
-        p.y = float(self.current_object.y)
-        p.z = 0
-
         if msg.data == "pick_success":
-            self.object_success_pub.publish(p)
             self.pick_done = True
 
         elif msg.data == "pick_fail":
-            self.object_failure_pub.publish(p)
-
             self.pick_done = False
             # self.current_object.status == "detected" # TODO: check if this is nessessary
             
@@ -762,8 +751,6 @@ class TaskPlannerNode(Node):
                 # self.enter_state("GENERATE_PATH_TO_BOX")
                 self.state_after_move_backward = "GENERATE_PATH_TO_BOX" 
                 self.enter_state("MOVE_BACKWARD")
-                
-
 
         # elif self.state == "NAV_TO_BOX":
         #     if not self._published_this_state:

@@ -28,6 +28,9 @@ from rclpy.time import Time
 
 from rclpy.executors import MultiThreadedExecutor
 
+from shapely.geometry import Polygon
+from shapely import contains_xy
+
 
 class AStarPlannerNode(Node):
     def __init__(self):
@@ -38,7 +41,7 @@ class AStarPlannerNode(Node):
         # ---------------------------------------
         self.declare_parameter("world_frame", "map")
         self.declare_parameter("workspace_file", "fake_workspace.yaml")
-        self.declare_parameter("grid_resolution", 0.02)
+        self.declare_parameter("grid_resolution", 0.05)
 
         # fallback start if TF fails
         self.declare_parameter("start_x", 0.0)
@@ -48,7 +51,7 @@ class AStarPlannerNode(Node):
         self.declare_parameter("workspace_inflation_m", 0.18)
         self.declare_parameter("object_inflation_m", 0.20)
         self.declare_parameter("box_inflation_m", 0.32)
-        self.declare_parameter("obstacle_inflation_m", 0.20)
+        self.declare_parameter("obstacle_inflation_m", 0.32)
 
         # candidate search
         self.declare_parameter("candidate_search_radius_m", 0.50)
@@ -124,6 +127,7 @@ class AStarPlannerNode(Node):
         self.grid_width = 0
         self.grid_height = 0
         self.load_workspace()
+        self.build_workspace_mask()
 
         # ---------------------------------------
         # ROS
@@ -184,7 +188,33 @@ class AStarPlannerNode(Node):
     # ---------------------------------------
     # Workspace
     # ---------------------------------------
+
+
+    def build_workspace_mask(self):
+        if self.workspace_poly is None:
+            self.base_grid = None
+            return
+
+        w = int(math.ceil((self.max_x - self.min_x) / self.resolution))
+        h = int(math.ceil((self.max_y - self.min_y) / self.resolution))
+
+        self.grid_width = w
+        self.grid_height = h
+
+        poly = Polygon(self.workspace_poly)
+        safe_poly = poly.buffer(-self.workspace_inflation_m)
+
+        xs = self.min_x + (np.arange(w) + 0.5) * self.resolution
+        ys = self.min_y + (np.arange(h) + 0.5) * self.resolution
+        xx, yy = np.meshgrid(xs, ys)
+
+        inside = contains_xy(safe_poly, xx, yy)
+
+        self.base_grid = np.full((h, w), 100, dtype=np.int8)
+        self.base_grid[inside] = 0   
+
     def load_workspace(self):
+
         try:
             with open(self.workspace_file, "r") as f:
                 data = yaml.safe_load(f)
@@ -614,60 +644,85 @@ class AStarPlannerNode(Node):
 
         # self.get_logger().info(f"Saved grid visualization to: {save_path}")
 
+    # def rebuild_grid(self):
+    #     if self.workspace_poly is None:
+    #         self.get_logger().warn("No workspace polygon loaded")
+    #         return None
+    #
+    #     w = int(math.ceil((self.max_x - self.min_x) / self.resolution))
+    #     h = int(math.ceil((self.max_y - self.min_y) / self.resolution))
+    #
+    #     self.grid_width = w
+    #     self.grid_height = h
+    #
+    #     grid = [[0 for _ in range(w)] for _ in range(h)]
+    #
+    #     # Workspace inflation
+    #     for gy in range(h):
+    #         for gx in range(w):
+    #             x, y = self.grid_to_world(gx, gy)
+    #
+    #             outside_workspace = not self.inside_poly(x, y)
+    #             too_close_to_wall = (
+    #                 self.distance_to_polygon_edges(x, y) < self.workspace_inflation_m
+    #             )
+    #
+    #             if outside_workspace or too_close_to_wall:
+    #                 grid[gy][gx] = 100
+
     def rebuild_grid(self):
-        if self.workspace_poly is None:
-            self.get_logger().warn("No workspace polygon loaded")
+        if self.base_grid is None:
+            self.get_logger().warn("No workspace grid loaded")
             return None
 
-        w = int(math.ceil((self.max_x - self.min_x) / self.resolution))
-        h = int(math.ceil((self.max_y - self.min_y) / self.resolution))
+        grid = self.base_grid.copy()
 
-        self.grid_width = w
-        self.grid_height = h
+        h, w = grid.shape
 
-        grid = [[0 for _ in range(w)] for _ in range(h)]
+        # def inflate_positions(positions, inflation_radius_m):
+        #     inflation_cells = int(math.ceil(inflation_radius_m / self.resolution))
+        #
+        #     for (x, y) in positions:
+        #         gx, gy = self.world_to_grid(x, y)
+        #
+        #         for dy in range(-inflation_cells, inflation_cells + 1):
+        #             for dx in range(-inflation_cells, inflation_cells + 1):
+        #                 nx = gx + dx
+        #                 ny = gy + dy
+        #
+        #                 if not (0 <= nx < w and 0 <= ny < h):
+        #                     continue
+        #
+        #                 if dx * dx + dy * dy > inflation_cells * inflation_cells:
+        #                     continue
+        #
+        #                 grid[ny][nx] = 100
 
-        # Workspace inflation
-        for gy in range(h):
-            for gx in range(w):
-                x, y = self.grid_to_world(gx, gy)
+    def inflate_positions(positions, inflation_radius_m):
+        inflation_cells = int(math.ceil(inflation_radius_m / self.resolution))
 
-                outside_workspace = not self.inside_poly(x, y)
-                too_close_to_wall = (
-                    self.distance_to_polygon_edges(x, y) < self.workspace_inflation_m
-                )
+        for (x, y) in positions:
+            gx, gy = self.world_to_grid(x, y)
 
-                if outside_workspace or too_close_to_wall:
-                    grid[gy][gx] = 100
+            x0 = max(0, gx - inflation_cells)
+            x1 = min(w, gx + inflation_cells + 1)
+            y0 = max(0, gy - inflation_cells)
+            y1 = min(h, gy + inflation_cells + 1)
 
-        def inflate_positions(positions, inflation_radius_m):
-            inflation_cells = int(math.ceil(inflation_radius_m / self.resolution))
+            yy, xx = np.ogrid[y0:y1, x0:x1]
+            mask = (xx - gx) ** 2 + (yy - gy) ** 2 <= inflation_cells ** 2
 
-            for (x, y) in positions:
-                gx, gy = self.world_to_grid(x, y)
+            grid[y0:y1, x0:x1][mask] = 100
 
-                for dy in range(-inflation_cells, inflation_cells + 1):
-                    for dx in range(-inflation_cells, inflation_cells + 1):
-                        nx = gx + dx
-                        ny = gy + dy
+            inflate_positions(self.objects, self.object_inflation_m)
+            inflate_positions(self.boxes, self.box_inflation_m)
+            inflate_positions(self.obstacles, self.obstacle_inflation_m)
 
-                        if not (0 <= nx < w and 0 <= ny < h):
-                            continue
+            # No goal clearing at all
+            self.publish_grid(grid, w, h)
+            # self.visualize_grid(grid)
 
-                        if dx * dx + dy * dy > inflation_cells * inflation_cells:
-                            continue
-
-                        grid[ny][nx] = 100
-
-        inflate_positions(self.objects, self.object_inflation_m)
-        inflate_positions(self.boxes, self.box_inflation_m)
-        inflate_positions(self.obstacles, self.obstacle_inflation_m)
-
-        # No goal clearing at all
-        self.publish_grid(grid, w, h)
-        # self.visualize_grid(grid)
-
-        return grid
+            return grid
 
     def publish_grid(self, grid, w, h):
         msg = OccupancyGrid()
@@ -681,7 +736,8 @@ class AStarPlannerNode(Node):
         msg.info.origin.position.y = self.min_y
         msg.info.origin.orientation.w = 1.0
 
-        msg.data = [cell for row in grid for cell in row]
+        # msg.data = [cell for row in grid for cell in row]
+        msg.data = grid.astype(np.int8).ravel().tolist()
         self.grid_pub.publish(msg)
 
     # ---------------------------------------

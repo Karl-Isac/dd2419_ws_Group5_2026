@@ -10,12 +10,12 @@ def generate_launch_description():
         output='screen'
     )
 
-    # arm_control = Node(
-    #     package='learning_tf2_py',
-    #     executable='arm_control',
-    #     name='arm_control',
-    #     output='screen'
-    # )
+    arm_control = Node(
+        package='learning_tf2_py',
+        executable='arm_control',
+        name='arm_control',
+        output='screen'
+    )
 
     task_planner = Node(
         package='task_planner_py',
@@ -94,7 +94,7 @@ def generate_launch_description():
 
     return LaunchDescription([
         arm_safe_republisher,
-        # arm_control,
+        arm_control,
         task_planner,
         odometry,
         planner,

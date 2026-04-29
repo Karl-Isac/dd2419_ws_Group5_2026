@@ -24,10 +24,15 @@ class TankTeleop(Node):
         self.max_speed = 0.8
         self.deadzone = 0.05
 
+        self.get_logger().info("controller started")
+
     def apply_deadzone(self, value):
         return 0.0 if abs(value) < self.deadzone else value
 
     def joy_callback(self, joy_msg):
+
+
+        self.get_logger().info("joy callback")
         msg = DutyCycles()
 
         # Typical Logitech F710 (XInput mode):
