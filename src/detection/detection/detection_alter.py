@@ -97,7 +97,7 @@ class Detection(Node):
 
         self.object_poses = []
         self.box_poses = []
-        self.object_lists = [] # object_list now stores [x, y, color, status 1, status 2], where x and y are position in cm, status 1 tells if the object exists at current position, and status 2 tells whether an object is accepted and no need to redetect.
+        self.object_lists = [] # object_list now stores [x, y, color, status 1, status 2, map_x, map_y], where x and y are position in cm, status 1 tells if the object exists at current position, and status 2 tells whether an object is accepted and no need to redetect, map_x and map_y are coordinates that needs to be written into map file.
         self.box_lists = []
 
         self.color_unassigned_indices_list = [] # Indices of objects read from map file
@@ -137,7 +137,7 @@ class Detection(Node):
                     self.color_unassigned_indices_list.append(self.object_num)
 
                     self.object_poses.append(pose)
-                    self.object_lists.append([x, y, 'unknown', True, True]) # color is 'unknown',status 1 is True which means there is an actual object at position now, status 2 is True, which means don't need to be redetected.
+                    self.object_lists.append([x, y, 'unknown', True, True, x, y]) # color is 'unknown',status 1 is True which means there is an actual object at position now, status 2 is True, which means don't need to be redetected.
                     self.object_num += 1
                     self.known_obj_num += 1
                     
@@ -640,7 +640,7 @@ class Detection(Node):
                 break
         else:
                        
-            self.object_lists.append([int(round(object_map.pose.position.x * 100)), int(round(object_map.pose.position.y * 100)), f'{color}', True, True])
+            self.object_lists.append([int(round(object_map.pose.position.x * 100)), int(round(object_map.pose.position.y * 100)), f'{color}', True, True, int(round(object_map.pose.position.x * 100)), int(round(object_map.pose.position.y * 100))])
             new_object_msg = Pose()
             new_object_msg.position.x = object_map.pose.position.x
             new_object_msg.position.y = object_map.pose.position.y
@@ -1155,7 +1155,7 @@ class Detection(Node):
                 for meta_row in self.metadata_rows:
                     writer.writerow(meta_row)
                 for obj in self.object_lists:
-                    writer.writerow(['O'] + obj[0:2])
+                    writer.writerow(['O'] + obj[5:7])
                 for box in self.box_lists:
                     writer.writerow(['B'] + box)
             self.get_logger().debug(f'CSV file updated: {self.output_map_path}')
