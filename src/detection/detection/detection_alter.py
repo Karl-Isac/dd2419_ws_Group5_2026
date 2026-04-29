@@ -250,7 +250,7 @@ class Detection(Node):
         # Search whole list, matching corresponding object that needs to be redetected, and set its status to False.
         for index in range(len(self.object_lists)):
             object = self.object_lists[index]
-            if msg.x == object[0] and msg.y == object[1] and object[4]:
+            if int(round(msg.x * 100)) == object[0] and int(round(msg.y * 100)) == object[1] and object[4]:
                 object[4] = False # needs to be redetected
                 object[3] = False # no actual object there
                 self.get_logger().info(f"Object {index + 1} needs redetection.")
@@ -260,7 +260,7 @@ class Detection(Node):
         # Delete successfully picked up objects since it will never be used later.
         for index in range(len(self.object_lists)):
             object = self.object_lists[index]
-            if msg.x == object[0] and msg.y == object[1] and object[4]:
+            if int(round(msg.x * 100)) == object[0] and int(round(msg.y * 100)) == object[1] and object[4]:
                 object[3] = False # no actual object there
                 self.get_logger().info(f"Object {index + 1} has picked up successfully")               
                 return
@@ -597,7 +597,7 @@ class Detection(Node):
                     return
                 
         # Extract all objects that need to be redetected, stored as indices in re_object_list.
-        re_object_list = [i for i in range(len(self.object_lists)) if not self.object_lists[i][4]]
+        re_object_list = [i for i in self.object_lists if not self.object_lists[i][4]]
         
         if re_object_list:
             for index in re_object_list:
