@@ -32,6 +32,7 @@ def generate_launch_description():
     )
 
 
+
     planner = Node(
         package='grumpy_navigation_py',
         executable='planner',
@@ -47,10 +48,25 @@ def generate_launch_description():
     )
 
     
-    move_backwards = Node(
+    # move_backwards = Node(
+    #     package='grumpy_navigation_py',
+    #     executable='move_backwards',
+    #     name='move_backwards',
+    #     output='screen'
+    # )
+
+
+    move_backwards_encoders = Node(
         package='grumpy_navigation_py',
-        executable='move_backwards',
-        name='move_backwards',
+        executable='move_backwards_encoders',
+        name='move_backwards_encoders',
+        output='screen'
+    )
+
+    move_backwards_timer= Node(
+        package='grumpy_navigation_py',
+        executable='move_backwards_timer',
+        name='move_backwards_timer',
         output='screen'
     )
 
@@ -84,7 +100,9 @@ def generate_launch_description():
         planner,
         controller,
         # map_to_odom,
-        move_backwards,
+        # move_backwards,
+        # move_backwards_encoders,
+        move_backwards_timer,
         obstacle_detection,
         approach_goal,
     ])

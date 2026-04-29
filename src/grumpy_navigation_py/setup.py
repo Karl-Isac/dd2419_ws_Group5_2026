@@ -43,6 +43,7 @@ setup(
 
             'move_backwards= grumpy_navigation_py.move_backwards_node:main',
             'move_backwards_encoders= grumpy_navigation_py.move_backwards_node_encoders:main',
+            'move_backwards_timer = grumpy_navigation_py.move_backwards_node_timer:main',
 
             'obstacle_detection= grumpy_navigation_py.obstacle_detection_node:main',
             'approach_goal= grumpy_navigation_py.approach_goal_node:main',

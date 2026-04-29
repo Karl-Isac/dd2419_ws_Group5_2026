@@ -105,8 +105,8 @@ class TaskPlannerNode(Node):
 
         self.arm_pub = self.create_publisher(String, "/arm/cmd", 10)
 
-        # self.move_backwards_pub = self.create_publisher(Bool, "/nav/move_backwards_start", 10)
-        self.move_backwards_pub = self.create_publisher(Header, "/nav/move_backwards_start", 10)
+        self.move_backwards_pub = self.create_publisher(Bool, "/nav/move_backwards_start", 10)
+        # self.move_backwards_pub = self.create_publisher(Header, "/nav/move_backwards_start", 10)
 
         # Exploration
         self.exploration_pub = self.create_publisher(String, "/exploration/request_unexplored_point", 10) # content can be anything
@@ -794,13 +794,13 @@ class TaskPlannerNode(Node):
                 self._published_this_state = True
                 self.move_backwards_success = False
 
-                # b = Bool()
-                # b.data = True
-                # self.move_backwards_pub.publish(b)
+                b = Bool()
+                b.data = True
+                self.move_backwards_pub.publish(b)
 
-                msg = Header()
-                msg.stamp = self.get_clock().now().to_msg()
-                self.move_backwards_pub.publish(msg)
+                # msg = Header()
+                # msg.stamp = self.get_clock().now().to_msg()
+                # self.move_backwards_pub.publish(msg)
 
             if self.move_backwards_success:
                 self.move_backwards_success = False
