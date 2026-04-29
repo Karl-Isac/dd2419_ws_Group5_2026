@@ -66,6 +66,8 @@ class Arm_control(Node):
         
         self.init_position = [10,120,50,150,100,120]
         self.joint0grip_value = 108
+        self.extension_error_termination_min = 20
+        self.extension_error_termination_MAX = 50
 
         # Cube target within camera frame
         image_half_width = 320
@@ -232,24 +234,32 @@ class Arm_control(Node):
         self.was_timed_out = True
         self.visual_servoing_ON = False
 
-    def arm_reach_saturated(self):
-        # Check whether the arm is extended/contracted to the limit
+    def arm_fully_extended(self):
+        # Check whether the arm is extended to the limit during visual servoing
         rho = self.rho
         _,saturated_rho = saturate_z_rho(0,rho)
-        return rho != saturated_rho
+        return rho > saturated_rho
+    
+    def arm_fully_contracted(self):
+        # Check whether the arm is contracted to the limit during visual servoing
+        rho = self.rho
+        _,saturated_rho = saturate_z_rho(0,rho)
+        return rho < saturated_rho
 
     def nudge_wheels(self,extension_error):
         # Move the robot (generally) forwards in a quick burst, has a cooldown
         if not self.nudge_on_cooldown:
             if not self.reversing:
-                self.nudge_on_cooldown = True
                 msg = DutyCycles()
-                if extension_error>0:               # Go forwards or backwards depending on the extension error
+                if extension_error>self.extension_error_termination_MAX:               # Go forwards or backwards depending on the extension error
                     msg.duty_cycle_left = 0.1
                     msg.duty_cycle_right = 0.1
-                else:
+                elif extension_error < self.extension_error_termination_min:
                     msg.duty_cycle_left = -0.1
                     msg.duty_cycle_right = -0.1
+                else:
+                    return
+                self.nudge_on_cooldown = True
                 self.wheels_on = True
                 self.wheel_pub.publish(msg)
                 # Put this function on a cooldown
@@ -326,7 +336,9 @@ class Arm_control(Node):
                     extension_error = self.height_target-cy
                     # TODO you might want to finetune the termination and nudge forward condition error values, changes were def made to rotation error implementation
                     # Termination condition:
-                    if (abs(sideways_error)<30) and (abs(rotation_error)<25) and (20<extension_error<50) and not self.wheels_on:    # below 80?
+                    if ((abs(sideways_error)<30) and (abs(rotation_error)<25) 
+                        and (self.extension_error_termination_min < extension_error < self.extension_error_termination_MAX) 
+                        and not self.wheels_on):
                         if self.termination_passed_once:
                             self.get_logger().info(f"Errors (sidew,rot,ext): {sideways_error:3.0f}, {rotation_error:3.0f}, {extension_error:3.0f}")
                             self.termination_passed_once = False
@@ -354,7 +366,8 @@ class Arm_control(Node):
 
                     # Wheel control (in discrete bursts)
                     if (abs(sideways_error)<30) and (abs(rotation_error)<25):   # use the wheels only if the arm is already well positioned sideways and gripper rotation-wise
-                        if self.arm_reach_saturated():
+                        if ((self.arm_fully_extended() and (extension_error > self.extension_error_termination_MAX))
+                            or (self.arm_fully_contracted() and (extension_error < self.extension_error_termination_min))):
                             self.nudge_wheels(extension_error)      # command has an internal cooldown, nudges by a fix amount
 
                     # z-rho control (arm extend/contract + up-down, P)                  

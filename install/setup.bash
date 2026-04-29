@@ -19,7 +19,10 @@ _colcon_prefix_chain_bash_source_script() {
 
 # source chained prefixes
 # setting COLCON_CURRENT_PREFIX avoids determining the prefix in the sourced script
-COLCON_CURRENT_PREFIX="/home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default"
+COLCON_CURRENT_PREFIX="/home/robot/github/dd2419_ws_Group5_2026/.pixi/envs/default"
+_colcon_prefix_chain_bash_source_script "$COLCON_CURRENT_PREFIX/local_setup.bash"
+# setting COLCON_CURRENT_PREFIX avoids determining the prefix in the sourced script
+COLCON_CURRENT_PREFIX="/home/robot/dd2419_ws/install"
 _colcon_prefix_chain_bash_source_script "$COLCON_CURRENT_PREFIX/local_setup.bash"
 
 # source this prefix
