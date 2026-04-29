@@ -597,7 +597,7 @@ class Detection(Node):
                     return
                 
         # Extract all objects that need to be redetected, stored as indices in re_object_list.
-        re_object_list = [i for i in self.object_lists if not self.object_lists[i][4]]
+        re_object_list = [i for i in range(len(self.object_lists)) if not self.object_lists[i][4]]
         
         if re_object_list:
             for index in re_object_list:
