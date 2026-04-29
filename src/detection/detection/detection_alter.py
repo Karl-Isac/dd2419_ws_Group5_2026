@@ -57,10 +57,13 @@ class Detection(Node):
         self.create_subscription(
             PointCloud2, '/realsense/depth/color/points', self.cloud_callback, 10)
         
-        # TODO: Topic name of Objects need to be detected again
+        # TODO: Topic names need to be decided
         self.create_subscription(
-            Point, 'Undefined', self.redetection_callback, 10)
-        
+            Point, 'Failure', self.redetection_callback, 10)
+        self.create_subscription(
+            Point, 'Success', self.success_callback, 10
+        )
+                
         self.tf_buffer = Buffer(cache_time=rclpy.duration.Duration(seconds=10))
         self.tf_listener = TransformListener(self.tf_buffer, self)
 
@@ -94,8 +97,10 @@ class Detection(Node):
 
         self.object_poses = []
         self.box_poses = []
-        self.object_lists = [] # object_list now stores [x, y, color, type, status], where x and y are position in cm, type tells if the object is a known item or detected one, and status tells whether an object is accepted and no need to redetect.
+        self.object_lists = [] # object_list now stores [x, y, color, status 1, status 2], where x and y are position in cm, status 1 tells if the object exists at current position, and status 2 tells whether an object is accepted and no need to redetect.
         self.box_lists = []
+
+        self.color_unassigned_indices_list = [] # Indices of objects read from map file
 
         self.object_num = 0
         self.known_obj_num = 0
@@ -129,8 +134,10 @@ class Detection(Node):
                 pose.orientation.w = q[3]
 
                 if type_id == 'O':
+                    self.color_unassigned_indices_list.append(self.object_num)
+
                     self.object_poses.append(pose)
-                    self.object_lists.append([x, y, 'unknown', 'map', True]) # color is 'unknown' and status is True, which means don't need to be redetected.
+                    self.object_lists.append([x, y, 'unknown', True, True]) # color is 'unknown',status 1 is True which means there is an actual object at position now, status 2 is True, which means don't need to be redetected.
                     self.object_num += 1
                     self.known_obj_num += 1
                     
@@ -146,6 +153,8 @@ class Detection(Node):
                     tf.transform.rotation.z = 0.0
                     tf.transform.rotation.w = 1.0
                     self.static_broadcaster.sendTransform(tf)
+
+                    
 
                 elif type_id == 'B':
                     self.box_poses.append(pose)
@@ -238,6 +247,23 @@ class Detection(Node):
         # self.get_logger().info(f'Published {len(object_poses)} objects and {len(box_poses)} boxes')
 
     def redetection_callback(self, msg: Point):
+        # Search whole list, matching corresponding object that needs to be redetected, and set its status to False.
+        for index in range(len(self.object_lists)):
+            object = self.object_lists[index]
+            if msg.x == object[0] and msg.y == object[1] and object[4]:
+                object[4] = False # needs to be redetected
+                object[3] = False # no actual object there
+                self.get_logger().info(f"Object {index + 1} needs redetection.")
+                return
+    
+    def success_callback(self, msg: Point):
+        # Delete successfully picked up objects since it will never be used later.
+        for index in range(len(self.object_lists)):
+            object = self.object_lists[index]
+            if msg.x == object[0] and msg.y == object[1] and object[4]:
+                object[3] = False # no actual object there
+                self.get_logger().info(f"Object {index + 1} has picked up successfully")               
+                return
 
     def cloud_callback(self, msg: PointCloud2):
         # Spatial and color filtering, reconstructing cloud as [Timestamp, header, fields, candidates, grey_points],
@@ -321,7 +347,6 @@ class Detection(Node):
             candidates = np.empty((0, 6), dtype=np.float32)
             test_points_cube = []
 
-        # Build grey_points list: (z, -x) format for box detection
         # Build grey_points list: (z, -x) format for box detection
         if len(box_indices) > 0:
             grey_points = np.column_stack([z[box_indices], -x[box_indices]]).astype(np.float32)
@@ -524,6 +549,9 @@ class Detection(Node):
         self.object.pose.orientation.z = 0.0
         self.object.pose.orientation.w = 1.0
 
+        # object_lists containes position of currently here (object[3] = True) objects
+        object_lists = [(object[0], object[1]) for object in self.object_lists if object[3]]
+
         msg_time = timestamp
         if not self.tf_buffer.can_transform(
                 'map',
@@ -556,14 +584,63 @@ class Detection(Node):
         if self.is_point_inside_any_box(object_map.pose.position.x, object_map.pose.position.y, tolerance=0.03):
             self.get_logger().debug("Object is inside a box (with tolerance), ignored.")
             return
+        
+        # Assign color to objects read from map file
 
-        for item in self.object_lists:
+        if self.color_unassigned_indices_list:
+            for index in self.color_unassigned_indices_list:
+                item = self.object_lists[index]
+                if np.abs(item[0] - object_map.pose.position.x * 100) < 15 and np.abs(item[1] - object_map.pose.position.y * 100) < 15:
+                    self.object_lists[index][2] = color
+                    self.get_logger().info(f"object {index+1}'s color is assigned as {color}")
+                    del self.color_unassigned_indices_list[index]
+                    return
+                
+        # Extract all objects that need to be redetected, stored as indices in re_object_list.
+        re_object_list = [i for i in self.object_lists if not self.object_lists[i][4]]
+        
+        if re_object_list:
+            for index in re_object_list:
+                item = self.object_lists[index]
+                # Color criteria and position criteria
+                if np.abs(item[0] - object_map.pose.position.x * 100) < 15 and np.abs(item[1] - object_map.pose.position.y * 100) < 15 and item[2] == color:
+                    self.object_lists[index][4] = True
+                    self.get_logger().info(f"Object {index + 1} redetected at position {object_map.pose.position.x}, {object_map.pose.position.y}")
+                    self.object_lists[index][0] = int(round(object_map.pose.position.x * 100))
+                    self.object_lists[index][1] = int(round(object_map.pose.position.y * 100))
+
+                    new_object_msg = Pose()
+                    new_object_msg.position.x = object_map.pose.position.x
+                    new_object_msg.position.y = object_map.pose.position.y
+                    new_object_msg.position.z = 0.0
+                    new_object_msg.orientation.x = 0.0
+                    new_object_msg.orientation.y = 0.0
+                    new_object_msg.orientation.z = 0.0
+                    new_object_msg.orientation.w = 1.0
+                    self.publish_arrays([new_object_msg], msg_time, None, None)
+
+                    tf = TransformStamped()
+                    tf.header.stamp = timestamp
+                    tf.header.frame_id = 'map'
+                    tf.child_frame_id = f'object_{index + 1}'
+                    tf.transform.translation.x = object_map.pose.position.x
+                    tf.transform.translation.y = object_map.pose.position.y
+                    tf.transform.translation.z = 0.0
+                    tf.transform.rotation.x = 0.0
+                    tf.transform.rotation.y = 0.0
+                    tf.transform.rotation.z = 0.0
+                    tf.transform.rotation.w = 1.0
+                    self.static_broadcaster.sendTransform(tf)
+                    return
+
+        # Normal distance criteria
+        for item in object_lists:
             if np.abs(item[0] - object_map.pose.position.x * 100) < 15 and np.abs(item[1] - object_map.pose.position.y * 100) < 15:
                 # self.get_logger().debug(f"repeated object {self.object_lists.index(item)} detection, discarded")
                 break
         else:
                        
-            self.object_lists.append([int(round(object_map.pose.position.x * 100)), int(round(object_map.pose.position.y * 100)), f'{color}', 'detection', True])
+            self.object_lists.append([int(round(object_map.pose.position.x * 100)), int(round(object_map.pose.position.y * 100)), f'{color}', True, True])
             new_object_msg = Pose()
             new_object_msg.position.x = object_map.pose.position.x
             new_object_msg.position.y = object_map.pose.position.y
