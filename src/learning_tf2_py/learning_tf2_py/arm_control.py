@@ -67,7 +67,7 @@ class Arm_control(Node):
         self.init_position = [10,120,50,150,100,120]
         self.joint0grip_value = 108
         self.extension_error_termination_min = 20
-        self.extension_error_termination_MAX = 50
+        self.extension_error_termination_MAX = 35
 
         # Cube target within camera frame
         image_half_width = 320
