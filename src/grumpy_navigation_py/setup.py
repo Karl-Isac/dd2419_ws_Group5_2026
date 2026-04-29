@@ -42,6 +42,8 @@ setup(
             'fake_obstacles = grumpy_navigation_py.fake_obsctacle_node:main',
 
             'move_backwards= grumpy_navigation_py.move_backwards_node:main',
+            'move_backwards_encoders= grumpy_navigation_py.move_backwards_node_encoders:main',
+
             'obstacle_detection= grumpy_navigation_py.obstacle_detection_node:main',
             'approach_goal= grumpy_navigation_py.approach_goal_node:main',
 
