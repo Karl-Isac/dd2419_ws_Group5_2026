@@ -607,8 +607,10 @@ class AStarPlannerNode(Node):
         gx = int((x - self.min_x) / self.resolution)
         gy = int((y - self.min_y) / self.resolution)
 
-        w = int(math.ceil((self.max_x - self.min_x) / self.resolution))
-        h = int(math.ceil((self.max_y - self.min_y) / self.resolution))
+        # w = int(math.ceil((self.max_x - self.min_x) / self.resolution))
+        # h = int(math.ceil((self.max_y - self.min_y) / self.resolution))
+        w = self.grid_width
+        h = self.grid_height
 
         gx = max(0, min(gx, w - 1))
         gy = max(0, min(gy, h - 1))
@@ -644,85 +646,62 @@ class AStarPlannerNode(Node):
 
         # self.get_logger().info(f"Saved grid visualization to: {save_path}")
 
-    # def rebuild_grid(self):
-    #     if self.workspace_poly is None:
-    #         self.get_logger().warn("No workspace polygon loaded")
-    #         return None
-    #
-    #     w = int(math.ceil((self.max_x - self.min_x) / self.resolution))
-    #     h = int(math.ceil((self.max_y - self.min_y) / self.resolution))
-    #
-    #     self.grid_width = w
-    #     self.grid_height = h
-    #
-    #     grid = [[0 for _ in range(w)] for _ in range(h)]
-    #
-    #     # Workspace inflation
-    #     for gy in range(h):
-    #         for gx in range(w):
-    #             x, y = self.grid_to_world(gx, gy)
-    #
-    #             outside_workspace = not self.inside_poly(x, y)
-    #             too_close_to_wall = (
-    #                 self.distance_to_polygon_edges(x, y) < self.workspace_inflation_m
-    #             )
-    #
-    #             if outside_workspace or too_close_to_wall:
-    #                 grid[gy][gx] = 100
-
     def rebuild_grid(self):
         if self.base_grid is None:
             self.get_logger().warn("No workspace grid loaded")
             return None
 
         grid = self.base_grid.copy()
-
         h, w = grid.shape
 
-        # def inflate_positions(positions, inflation_radius_m):
-        #     inflation_cells = int(math.ceil(inflation_radius_m / self.resolution))
-        #
-        #     for (x, y) in positions:
-        #         gx, gy = self.world_to_grid(x, y)
-        #
-        #         for dy in range(-inflation_cells, inflation_cells + 1):
-        #             for dx in range(-inflation_cells, inflation_cells + 1):
-        #                 nx = gx + dx
-        #                 ny = gy + dy
-        #
-        #                 if not (0 <= nx < w and 0 <= ny < h):
-        #                     continue
-        #
-        #                 if dx * dx + dy * dy > inflation_cells * inflation_cells:
-        #                     continue
-        #
-        #                 grid[ny][nx] = 100
+        def inflate_positions(positions, inflation_radius_m):
+            inflation_cells = int(math.ceil(inflation_radius_m / self.resolution))
 
-    def inflate_positions(positions, inflation_radius_m):
-        inflation_cells = int(math.ceil(inflation_radius_m / self.resolution))
+            for (x, y) in positions:
+                gx, gy = self.world_to_grid(x, y)
 
-        for (x, y) in positions:
-            gx, gy = self.world_to_grid(x, y)
+                x0 = max(0, gx - inflation_cells)
+                x1 = min(w, gx + inflation_cells + 1)
+                y0 = max(0, gy - inflation_cells)
+                y1 = min(h, gy + inflation_cells + 1)
 
-            x0 = max(0, gx - inflation_cells)
-            x1 = min(w, gx + inflation_cells + 1)
-            y0 = max(0, gy - inflation_cells)
-            y1 = min(h, gy + inflation_cells + 1)
+                yy, xx = np.ogrid[y0:y1, x0:x1]
+                mask = (xx - gx) ** 2 + (yy - gy) ** 2 <= inflation_cells ** 2
 
-            yy, xx = np.ogrid[y0:y1, x0:x1]
-            mask = (xx - gx) ** 2 + (yy - gy) ** 2 <= inflation_cells ** 2
+                grid[y0:y1, x0:x1][mask] = 100
 
-            grid[y0:y1, x0:x1][mask] = 100
+        inflate_positions(self.objects, self.object_inflation_m)
+        inflate_positions(self.boxes, self.box_inflation_m)
+        inflate_positions(self.obstacles, self.obstacle_inflation_m)
 
-            inflate_positions(self.objects, self.object_inflation_m)
-            inflate_positions(self.boxes, self.box_inflation_m)
-            inflate_positions(self.obstacles, self.obstacle_inflation_m)
+        self.publish_grid(grid, w, h)
+        return grid
 
-            # No goal clearing at all
-            self.publish_grid(grid, w, h)
-            # self.visualize_grid(grid)
+            def inflate_positions(positions, inflation_radius_m):
+                inflation_cells = int(math.ceil(inflation_radius_m / self.resolution))
 
-            return grid
+                for (x, y) in positions:
+                    gx, gy = self.world_to_grid(x, y)
+
+                    x0 = max(0, gx - inflation_cells)
+                    x1 = min(w, gx + inflation_cells + 1)
+                    y0 = max(0, gy - inflation_cells)
+                    y1 = min(h, gy + inflation_cells + 1)
+
+                    yy, xx = np.ogrid[y0:y1, x0:x1]
+                    mask = (xx - gx) ** 2 + (yy - gy) ** 2 <= inflation_cells ** 2
+
+                    grid[y0:y1, x0:x1][mask] = 100
+
+                    inflate_positions(self.objects, self.object_inflation_m)
+                    inflate_positions(self.boxes, self.box_inflation_m)
+                    inflate_positions(self.obstacles, self.obstacle_inflation_m)
+
+                    # No goal clearing at all
+                    self.publish_grid(grid, w, h)
+                    # self.visualize_grid(grid)
+
+                    return grid
 
     def publish_grid(self, grid, w, h):
         msg = OccupancyGrid()
