@@ -59,9 +59,9 @@ class Detection(Node):
         
         # TODO: Topic names need to be decided
         self.create_subscription(
-            Point, 'Failure', self.redetection_callback, 10)
+            Point, '/Failure', self.redetection_callback, 10)
         self.create_subscription(
-            Point, 'Success', self.success_callback, 10
+            Point, '/Success', self.success_callback, 10
         )
                 
         self.tf_buffer = Buffer(cache_time=rclpy.duration.Duration(seconds=10))
