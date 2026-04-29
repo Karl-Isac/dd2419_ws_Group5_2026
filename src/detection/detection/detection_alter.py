@@ -31,7 +31,7 @@ import struct
 
 np.random.seed(42)  # for reproducibility
 
-####################  /home/grumpy/dd2419_ws_Group5_2026/.pixi/envs/default/share/orocos_kdl/cmake/orocos_kdl-config.cmake:13 (include)
+
 ##################################################################################
 # TODO: discuss the unit of the communication (PoseArray): m
 # TODO: One edge situation for box detection is neglected for now
@@ -41,9 +41,6 @@ class Detection(Node):
 
     def __init__(self):
         super().__init__('detection')
-        # Initialize the publisher
-        self._pub = self.create_publisher(
-            PointCloud2, '/realsense/depth/color/ds_points', 10)
         
         # TODO: (Private Test) Test the belief range of point cloud of realsense, initialization
         self.test_pub_box = self.create_publisher(
@@ -61,8 +58,7 @@ class Detection(Node):
         self.create_subscription(
             Point, '/Failure', self.redetection_callback, 10)
         self.create_subscription(
-            Point, '/Success', self.success_callback, 10
-        )
+            Point, '/Success', self.success_callback, 10)
                 
         self.tf_buffer = Buffer(cache_time=rclpy.duration.Duration(seconds=10))
         self.tf_listener = TransformListener(self.tf_buffer, self)
@@ -108,8 +104,8 @@ class Detection(Node):
         self.known_box_num = 0
 
         # Using a deque as a buffer to store incoming point cloud messages for processing
-        self.cloud_queue = deque(maxlen=1000)
-        self.timer = self.create_timer(0.1, self.process_queue)
+        self.cloud_queue = deque(maxlen=100)
+        self.timer = self.create_timer(0.01,self.process_queue)
 
         # Reading map file
         with open(map_path, mode='r', encoding='utf-8') as file:
@@ -200,7 +196,7 @@ class Detection(Node):
         # Reading workspace file to get boundary
         with open(workspace_path, mode='r', encoding='utf-8') as file:
             reader = csv.reader(file)
-            # skip the first 115line (header)
+            # skip the first line (header)
             header = next(reader)
             for row in reader:
                 x = int(row[0])
@@ -359,9 +355,9 @@ class Detection(Node):
         self.cloud_queue.append([Timestamp, header, fields, candidates, grey_points, test_points_box, test_points_cube])
 
         # Publish test point cloud (keep original behavior)
-        if test_points_box:
-            box_cloud = pc2.create_cloud(header, fields, test_points_box)
-            self.test_pub_box.publish(box_cloud)
+        # if test_points_box:
+        #     box_cloud = pc2.create_cloud(header, fields, test_points_box)
+        #     self.test_pub_box.publish(box_cloud)
         
     def process_queue(self):
         if not self.cloud_queue:
@@ -418,13 +414,13 @@ class Detection(Node):
         # if test_points_box:
         #     box_cloud = pc2.create_cloud(header, fields, test_points_box)
         #     self.test_pub_box.publish(box_cloud)
-        if test_points_cube:
-            cube_cloud = pc2.create_cloud(header, fields, test_points_cube)
-            self.test_pub_cube.publish(cube_cloud)
+        # if test_points_cube:
+        #     cube_cloud = pc2.create_cloud(header, fields, test_points_cube)
+        #     self.test_pub_cube.publish(cube_cloud)
         
 
         # DBSCAN for clustering object candidate points, and then color-based classification and centroid calculation for each cluster
-        if candidates.shape[0] >= 8:
+        if candidates.shape[0] >= 10:
             pts_xyz = candidates[:, :3]
 
             # DBSCAN 
@@ -695,17 +691,6 @@ class Detection(Node):
             if abs(local_x) <= half_L and abs(local_y) <= half_W:
                 return True
         return False
-        
-    def publish_2d_cloud(self, points_xz, header):
-        h = std_msgs.msg.Header()
-        h.stamp = header.stamp
-        h.frame_id = 'realsense_camera_link'
-
-        # 2D → 3D
-        pts = [(p[0], p[1], 0.05) for p in points_xz]
-
-        cloud = pc2.create_cloud_xyz32(h, pts)
-        self._pub.publish(cloud)
 
     def estimate_box_from_points(self, points, box_size=(0.24, 0.16), angle_thresh_deg=20): 
         " Estimate box position and yaw from a set of 2D points (x, y) on the ground. "
