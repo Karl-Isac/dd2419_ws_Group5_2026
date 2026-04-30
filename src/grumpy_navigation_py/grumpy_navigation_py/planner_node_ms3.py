@@ -54,7 +54,8 @@ class AStarPlannerNode(Node):
         self.declare_parameter("obstacle_inflation_m", 0.32)
 
         # candidate search
-        self.declare_parameter("candidate_search_radius_m", 0.50)
+        # self.declare_parameter("candidate_search_radius_m", 0.50)
+        self.declare_parameter("candidate_search_radius_m", 0.80)
         self.declare_parameter("max_candidate_cells", 20)
 
         # path blocked checking

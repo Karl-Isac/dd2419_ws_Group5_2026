@@ -261,9 +261,16 @@ class TaskPlannerNode(Node):
         p.y = float(self.current_object.y)
         p.z = 0
 
+        # if msg.data == "pick_success":
+        #     self.object_success_pub.publish(p)
+        #     self.pick_done = True
+
         if msg.data == "pick_success":
             self.object_success_pub.publish(p)
             self.pick_done = True
+
+            if self.current_object is not None:
+                self.current_object.status = "picked"
 
         elif msg.data == "pick_fail":
             self.object_failure_pub.publish(p)
@@ -780,9 +787,19 @@ class TaskPlannerNode(Node):
                 if self.last_planner_status in ("start_occupied", "start_out_of_bounds"):
                     self.state_after_move_backward = "GENERATE_PATH_TO_BOX"
                     self.enter_state("MOVE_BACKWARD")
+                # else:
+                #     self.get_logger().info(f"GENERATE_PATH_TO_BOX: path plannur status message: {self.last_planner_status}")
+                #     self.enter_state("SELECT_OBJECT")
                 else:
-                    self.get_logger().info(f"GENERATE_PATH_TO_BOX: path plannur status message: {self.last_planner_status}")
-                    self.enter_state("SELECT_OBJECT")
+                    self.get_logger().info(
+                        f"GENERATE_PATH_TO_BOX: path planner status message: {self.last_planner_status}"
+                    )
+
+                    if self.carrying_object():
+                        self.enter_state("SELECT_BOX")
+                    else:
+                        self.enter_state("SELECT_OBJECT")
+
 
 
         elif self.state == "EXECUTE_PATH_TO_BOX": 
@@ -847,15 +864,24 @@ class TaskPlannerNode(Node):
                 self._published_this_state = True
                 self.get_logger().info("PICK_OBJECT: published pick")
 
+            # if self.pick_done:
+            #     self.current_object.status = "picked"
+            #     self.get_logger().info(
+            #         f"Marked picked object id={self.current_object.id} "
+            #         f"at ({self.ox:.2f}, {self.oy:.2f})"
+            #     )
+            #     # self.enter_state("GENERATE_PATH_TO_BOX")
+            #     # self.state_after_move_backward = "GENERATE_PATH_TO_BOX" 
+            #     self.state_after_move_backward = "SELECT_BOX" 
+            #     self.enter_state("MOVE_BACKWARD")
+
             if self.pick_done:
-                self.current_object.status = "picked"
                 self.get_logger().info(
                     f"Marked picked object id={self.current_object.id} "
                     f"at ({self.ox:.2f}, {self.oy:.2f})"
                 )
-                # self.enter_state("GENERATE_PATH_TO_BOX")
-                # self.state_after_move_backward = "GENERATE_PATH_TO_BOX" 
-                self.state_after_move_backward = "SELECT_BOX" 
+
+                self.state_after_move_backward = "SELECT_BOX"
                 self.enter_state("MOVE_BACKWARD")
                 
 

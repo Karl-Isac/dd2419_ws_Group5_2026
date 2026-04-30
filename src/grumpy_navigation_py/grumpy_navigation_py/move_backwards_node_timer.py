@@ -11,7 +11,7 @@ class MoveBackwardsTimed(Node):
         super().__init__("move_backwards_timed")
 
         self.declare_parameter("backwards_duty", 0.10)
-        self.declare_parameter("duration", 2.0)  # seconds
+        self.declare_parameter("duration", 3.0)  # seconds
         self.declare_parameter("max_duty", 0.20)
 
         self.moving = False
