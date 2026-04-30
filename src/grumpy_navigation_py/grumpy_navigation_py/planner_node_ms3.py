@@ -806,7 +806,7 @@ class AStarPlannerNode(Node):
                 #     continue
 
                 # require clearance from occupied cells
-                min_clearance_cells = int(math.ceil(0.08 / self.resolution))  # tune 0.08-0.15
+                min_clearance_cells = int(math.ceil(0.15 / self.resolution))  
 
                 too_close = False
                 for ddy in range(-min_clearance_cells, min_clearance_cells + 1):

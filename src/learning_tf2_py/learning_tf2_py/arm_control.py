@@ -130,7 +130,7 @@ class Arm_control(Node):
             self.sideways_integral_term = 0
             # Run visual servoing while the errors don't decrease, or a timeout doesnt trigger
             self.was_timed_out = False
-            main_timeout = 30           # reset if visual servoing isnt complete after this time
+            main_timeout = 45           # reset if visual servoing isnt complete after this time
             self.main_timeout_timer = self.create_timer(main_timeout, self.visual_servo_timeout)
             cant_see_cube_timeout = 3   # if cube cant be seen for this long while visual servoing - reverse the first time, timeout the second time
             self.cant_see_cube_timer = self.create_timer(cant_see_cube_timeout, self.cant_see_cube_timeout_function)
@@ -264,7 +264,7 @@ class Arm_control(Node):
                 self.wheels_on = True
                 self.wheel_pub.publish(msg)
                 # Put this function on a cooldown
-                nudge_cooldown = 3      # sec
+                nudge_cooldown = 5      # sec
                 self.put_nudge_on_cooldown(nudge_cooldown)
                 # Turn off wheels after encoders say it has moved enough
                 self.nudge_counter = 0      # lenght of nudge can be tweaked in the encoder callback
@@ -299,7 +299,7 @@ class Arm_control(Node):
         elif self.nudging:
             self.nudge_counter = self.nudge_counter + abs(msg.delta_encoder_left)
             self.get_logger().info(f"Nudge counter: {self.nudge_counter}")
-            if self.nudge_counter > 50:      # tunable, corresponds to distance travelled when nudging with the wheels
+            if self.nudge_counter > 30:      # tunable, corresponds to distance travelled when nudging with the wheels
                 self.nudging = False
                 self.stop_wheels_ASAP = True
 

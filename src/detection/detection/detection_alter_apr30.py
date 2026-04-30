@@ -446,7 +446,7 @@ class Detection(Node):
                 total = cluster_pts.shape[0]
                 color_counts = {'Red': red_cnt, 'Blue': blue_cnt, 'Green': green_cnt, 'Wood': wood_cnt}
                 max_color = max(color_counts, key=color_counts.get)
-                if color_counts[max_color] / total > 0.35:
+                if color_counts[max_color] / total > 0.25:
                     # centroid (vectorized)
                     sum_x = np.sum(cluster_pts[:, 0])
                     sum_y = np.sum(cluster_pts[:, 1])

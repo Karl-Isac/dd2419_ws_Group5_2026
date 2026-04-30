@@ -64,11 +64,5 @@ def generate_launch_description():
 
     return LaunchDescription([
         exploration_mapper,
-        # exploration_mapper_new,
-        # detection,
-        # detection_apr20,
-        # detection_apr26,
-        # detection_apr27,
-        # detection_apr28,
         detection_apr30,
     ])

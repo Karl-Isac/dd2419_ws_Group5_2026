@@ -416,6 +416,9 @@ class TaskPlannerNode(Node):
 
         self.get_logger().info(f"State -> {new_state}")
 
+    def carrying_object(self):
+        return self.current_object is not None and self.current_object.status == "picked"
+
     def step(self):
         robot = self.lookup_xy(self.base_frame)
         if robot is None:
@@ -522,7 +525,13 @@ class TaskPlannerNode(Node):
                 if self.last_planner_status == "no_path":
                     self.get_logger().warn("Exploration point was not reachable, requesting a new one")
                     self.current_exploration_point = None
-                    self.enter_state("GENERATE_EXPLORATION_POSE")
+                    # self.enter_state("GENERATE_EXPLORATION_POSE")
+
+                    if self.carrying_object():
+                        self.enter_state("SELECT_BOX")
+                    else:
+                        self.enter_state("GENERATE_EXPLORATION_POSE")
+
                 if self.last_planner_status == "start_occupied" or self.last_planner_status == "start_out_of_bounds":
                     self.current_exploration_point = None
                     self.state_after_move_backward = "GENERATE_EXPLORATION_POSE"
@@ -541,7 +550,11 @@ class TaskPlannerNode(Node):
                 if len(self.known_objects) > 0 and len(self.known_boxes) > 0:
                     self.enter_state("SELECT_OBJECT")
                 else:
-                    self.enter_state("GENERATE_EXPLORATION_POSE")
+                    # self.enter_state("GENERATE_EXPLORATION_POSE")
+                    if self.carrying_object():
+                        self.enter_state("SELECT_BOX")
+                    else:
+                        self.enter_state("GENERATE_EXPLORATION_POSE")
                 return
 
             elif self.execute_exploration_path_success is False:
@@ -600,7 +613,11 @@ class TaskPlannerNode(Node):
             ]
 
             if len(available_objects) == 0:
-                self.enter_state("GENERATE_EXPLORATION_POSE")
+                # self.enter_state("GENERATE_EXPLORATION_POSE")
+                if self.carrying_object():
+                    self.enter_state("SELECT_BOX")
+                else:
+                    self.enter_state("GENERATE_EXPLORATION_POSE")
                 return
 
             self.current_object = min(
@@ -619,10 +636,37 @@ class TaskPlannerNode(Node):
             self.enter_state("GENERATE_PATH_TO_OBJECT")
             return
 
+        # elif self.state == "SELECT_BOX":
+        #
+        #     if len(self.known_boxes) == 0:
+        #         self.enter_state("GENERATE_EXPLORATION_POSE")
+        #         return
+        #
+        #     self.current_box = min(
+        #         self.known_boxes,
+        #         key=lambda box: self.distance_sq(rx, ry, box.x, box.y)
+        #     )
+        #
+        #     self.bx = float(self.current_box.x)
+        #     self.by = float(self.current_box.y)
+        #
+        #     self.get_logger().info(
+        #         f"Selected box id={self.current_box.id} "
+        #         f"at ({self.bx:.2f}, {self.by:.2f})"
+        #     )
+        #
+        #     self.enter_state("GENERATE_PATH_TO_BOX")
+        #     return
+
         elif self.state == "SELECT_BOX":
 
+            if self.current_object is None:
+                self.get_logger().warn("SELECT_BOX called without current_object")
+                self.enter_state("SELECT_OBJECT")
+                return
+
             if len(self.known_boxes) == 0:
-                self.enter_state("GENERATE_EXPLORATION_POSE")
+                self.get_logger().warn("Carrying object but no box known yet, waiting for box")
                 return
 
             self.current_box = min(
@@ -642,7 +686,7 @@ class TaskPlannerNode(Node):
             return
 
 
-        if self.current_object is None and self.state not in ("SELECT_OBJECT", "DONE", "DROP_OBJECT", "MOVE_BACKWARD"):
+        if self.current_object is None and self.state not in ("SELECT_OBJECT", "SELECT_BOX", "DONE", "DROP_OBJECT", "MOVE_BACKWARD"):
             return
 
         
