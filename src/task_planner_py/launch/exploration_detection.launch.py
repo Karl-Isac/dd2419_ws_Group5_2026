@@ -47,10 +47,17 @@ def generate_launch_description():
     # )
 
 
-    detection_apr28 = Node(
+    # detection_apr28 = Node(
+    #     package='detection',
+    #     executable='alter_apr28',
+    #     name='detection_apr28',
+    #     output='screen'
+    # )
+
+    detection_apr30 = Node(
         package='detection',
-        executable='alter_apr28',
-        name='detection_apr28',
+        executable='alter_apr30',
+        name='detection_apr30',
         output='screen'
     )
 
@@ -62,5 +69,6 @@ def generate_launch_description():
         # detection_apr20,
         # detection_apr26,
         # detection_apr27,
-        detection_apr28,
+        # detection_apr28,
+        detection_apr30,
     ])

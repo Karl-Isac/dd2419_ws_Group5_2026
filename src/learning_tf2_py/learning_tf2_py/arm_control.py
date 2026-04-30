@@ -153,7 +153,7 @@ class Arm_control(Node):
                 self.get_logger().warn("Inverse kinematics failed for z={}, rho={}, target might be unreachable".format(z,self.rho))
             position = self.init_position[0],self.joint1target,joint2target,joint3target,joint4target,self.joint5target
             self.goto_position(position)
-            time.sleep(2)       # wait for movement down to finish
+            time.sleep(3)       # wait for movement down to finish
             # State 5 - grip
             position = self.joint0grip_value,self.joint1target,joint2target,joint3target,joint4target,self.joint5target
             self.goto_position(position)
@@ -336,7 +336,7 @@ class Arm_control(Node):
                     extension_error = self.height_target-cy
                     # TODO you might want to finetune the termination and nudge forward condition error values, changes were def made to rotation error implementation
                     # Termination condition:
-                    if ((abs(sideways_error)<30) and (abs(rotation_error)<25) 
+                    if ((abs(sideways_error)<30) and (abs(rotation_error)<15) 
                         and (self.extension_error_termination_min < extension_error < self.extension_error_termination_MAX) 
                         and not self.wheels_on):
                         if self.termination_passed_once:
@@ -365,7 +365,7 @@ class Arm_control(Node):
                     self.joint1target = 120 + k_rotation*rotation_target
 
                     # Wheel control (in discrete bursts)
-                    if (abs(sideways_error)<30) and (abs(rotation_error)<25):   # use the wheels only if the arm is already well positioned sideways and gripper rotation-wise
+                    if (abs(sideways_error)<30) and (abs(rotation_error)<15):   # use the wheels only if the arm is already well positioned sideways and gripper rotation-wise
                         if ((self.arm_fully_extended() and (extension_error > self.extension_error_termination_MAX))
                             or (self.arm_fully_contracted() and (extension_error < self.extension_error_termination_min))):
                             self.nudge_wheels(extension_error)      # command has an internal cooldown, nudges by a fix amount

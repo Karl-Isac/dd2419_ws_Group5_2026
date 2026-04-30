@@ -34,6 +34,7 @@ setup(
             'alter_apr26 = detection.detection_alter_apr26:main',
             'alter_apr27 = detection.detection_alter_apr27:main',
             'alter_apr28 = detection.detection_alter_apr28:main',
+            'alter_apr30 = detection.detection_alter_apr30:main',
         ],
     },
 )

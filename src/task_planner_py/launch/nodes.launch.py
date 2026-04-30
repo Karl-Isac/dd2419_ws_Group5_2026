@@ -94,7 +94,7 @@ def generate_launch_description():
 
     return LaunchDescription([
         arm_safe_republisher,
-        # arm_control,
+        arm_control,
         task_planner,
         odometry,
         planner,
