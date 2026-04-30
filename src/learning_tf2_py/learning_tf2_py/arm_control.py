@@ -299,7 +299,7 @@ class Arm_control(Node):
         elif self.nudging:
             self.nudge_counter = self.nudge_counter + abs(msg.delta_encoder_left)
             self.get_logger().info(f"Nudge counter: {self.nudge_counter}")
-            if self.nudge_counter > 50:      # tunable, corresponds to distance travelled when nudging with the wheels
+            if self.nudge_counter > 30:      # tunable, corresponds to distance travelled when nudging with the wheels
                 self.nudging = False
                 self.stop_wheels_ASAP = True
 

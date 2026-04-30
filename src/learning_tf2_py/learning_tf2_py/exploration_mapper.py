@@ -143,7 +143,7 @@ class ExplorationMapper(Node):
 
             # Create a triangle in front of the robot
             FOV = 60                # degrees,  set these based on detection performance
-            detection_range = 0.9   # meters - this is the triangle height, not edge length
+            detection_range = 0.6   # meters - this is the triangle height, not edge length
 
             FOVradians = FOV/180*math.pi
             triangle_side_length = detection_range/math.cos(FOVradians/2)
