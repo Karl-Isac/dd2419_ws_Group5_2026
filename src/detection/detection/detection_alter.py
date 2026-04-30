@@ -78,18 +78,11 @@ class Detection(Node):
 
         # open and load map file and workspace (csv)
         package_path = get_package_share_directory('detection')
-        map_path = os.path.join(package_path, 'config', 'map_1_3.csv')
-        workspace_path = os.path.join(package_path, 'config', 'workspace_1.csv')
+        map_path = os.path.join(package_path, 'config', 'map.csv')
+        workspace_path = os.path.join(package_path, 'config', 'workspace.csv')
+        self.output_path = os.path.join(package_path, 'config', 'solution_template.csv')
         self.metadata_rows = []
         self.boundary = [] # List of intersection of edges of workspace, in format of [[x1, y1], [x2, y2], ...] 
-
-        # location of final map file (csv)
-        self.output_map_path = os.path.join(
-            os.path.expanduser('~/dd2419_ws_Group5_2026/src/detection/config/'),
-            'detection_output.csv'
-        )
-        os.makedirs(os.path.dirname(self.output_map_path), exist_ok=True)
-        self.get_logger().info(f'Output CSV will be written to {self.output_map_path}')
 
         self.object_poses = []
         self.box_poses = []
@@ -1137,16 +1130,12 @@ class Detection(Node):
     
     def write_csv(self):
         try:
-            with open(self.output_map_path, mode='w', encoding='utf-8', newline='') as file:
+            with open(self.output_path, mode='a', encoding='utf-8', newline='') as file:
                 writer = csv.writer(file)
-                writer.writerow(['Type', 'x', 'y', 'angle'])
-                for meta_row in self.metadata_rows:
-                    writer.writerow(meta_row)
                 for obj in self.object_lists:
                     writer.writerow(['O'] + obj[5:7])
                 for box in self.box_lists:
                     writer.writerow(['B'] + box)
-            self.get_logger().debug(f'CSV file updated: {self.output_map_path}')
         except Exception as e:
             self.get_logger().error(f'Failed to write CSV: {e}')
 
