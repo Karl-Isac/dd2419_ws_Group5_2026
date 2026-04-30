@@ -677,32 +677,6 @@ class AStarPlannerNode(Node):
         self.publish_grid(grid, w, h)
         return grid
 
-            def inflate_positions(positions, inflation_radius_m):
-                inflation_cells = int(math.ceil(inflation_radius_m / self.resolution))
-
-                for (x, y) in positions:
-                    gx, gy = self.world_to_grid(x, y)
-
-                    x0 = max(0, gx - inflation_cells)
-                    x1 = min(w, gx + inflation_cells + 1)
-                    y0 = max(0, gy - inflation_cells)
-                    y1 = min(h, gy + inflation_cells + 1)
-
-                    yy, xx = np.ogrid[y0:y1, x0:x1]
-                    mask = (xx - gx) ** 2 + (yy - gy) ** 2 <= inflation_cells ** 2
-
-                    grid[y0:y1, x0:x1][mask] = 100
-
-                    inflate_positions(self.objects, self.object_inflation_m)
-                    inflate_positions(self.boxes, self.box_inflation_m)
-                    inflate_positions(self.obstacles, self.obstacle_inflation_m)
-
-                    # No goal clearing at all
-                    self.publish_grid(grid, w, h)
-                    # self.visualize_grid(grid)
-
-                    return grid
-
     def publish_grid(self, grid, w, h):
         msg = OccupancyGrid()
         msg.header.stamp = self.get_clock().now().to_msg()
