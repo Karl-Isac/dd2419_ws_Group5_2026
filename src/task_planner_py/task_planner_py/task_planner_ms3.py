@@ -550,20 +550,54 @@ class TaskPlannerNode(Node):
                 return
 
 
+#         elif self.state == "SELECT_OBJECT":
+#
+# #             if not self._published_this_state:
+# #                 self._not_published_this_state = True
+# #                 self.get_logger().info("SELECT_OBJECT")
+#
+#             if len(self.known_objects) == 0 or len(self.known_boxes) == 0:
+#                 self.enter_state("GENERATE_EXPLORATION_POSE")
+#                 return
+#
+#             available_objects = [obj for obj in self.known_objects if obj.status == "detected"]
+#             if len(self.known_boxes) == 0:
+#                 self.enter_state("GENERATE_EXPLORATION_POSE")
+#                 return
+#
+#             if len(available_objects) == 0:
+#                 self.enter_state("GENERATE_EXPLORATION_POSE")
+#                 return
+#
+#             self.current_object = min(
+#                 available_objects,
+#                 key=lambda obj: self.distance_sq(rx, ry, obj.x, obj.y)
+#             )
+#
+#             self.current_box = min(
+#                 self.known_boxes,
+#                 key=lambda box: self.distance_sq(rx, ry, box.x, box.y)
+#             )
+#
+#             self.ox = float(self.current_object.x)
+#             self.oy = float(self.current_object.y)
+#             self.bx = float(self.current_box.x)
+#             self.by = float(self.current_box.y)
+#
+#             self.get_logger().info(
+#                 f"Selected object id={self.current_object.id} at ({self.ox:.2f}, {self.oy:.2f}) "
+#                 f"and box id={self.current_box.id} at ({self.bx:.2f}, {self.by:.2f})"
+#             )
+#
+#             self.enter_state("GENERATE_PATH_TO_OBJECT")
+#             return
+
         elif self.state == "SELECT_OBJECT":
 
-#             if not self._published_this_state:
-#                 self._not_published_this_state = True
-#                 self.get_logger().info("SELECT_OBJECT")
-
-            if len(self.known_objects) == 0 or len(self.known_boxes) == 0:
-                self.enter_state("GENERATE_EXPLORATION_POSE")
-                return
-
-            available_objects = [obj for obj in self.known_objects if obj.status == "detected"]
-            if len(self.known_boxes) == 0:
-                self.enter_state("GENERATE_EXPLORATION_POSE")
-                return
+            available_objects = [
+                obj for obj in self.known_objects
+                if obj.status == "detected"
+            ]
 
             if len(available_objects) == 0:
                 self.enter_state("GENERATE_EXPLORATION_POSE")
@@ -574,23 +608,39 @@ class TaskPlannerNode(Node):
                 key=lambda obj: self.distance_sq(rx, ry, obj.x, obj.y)
             )
 
+            self.ox = float(self.current_object.x)
+            self.oy = float(self.current_object.y)
+
+            self.get_logger().info(
+                f"Selected object id={self.current_object.id} "
+                f"at ({self.ox:.2f}, {self.oy:.2f})"
+            )
+
+            self.enter_state("GENERATE_PATH_TO_OBJECT")
+            return
+
+        elif self.state == "SELECT_BOX":
+
+            if len(self.known_boxes) == 0:
+                self.enter_state("GENERATE_EXPLORATION_POSE")
+                return
+
             self.current_box = min(
                 self.known_boxes,
                 key=lambda box: self.distance_sq(rx, ry, box.x, box.y)
             )
 
-            self.ox = float(self.current_object.x)
-            self.oy = float(self.current_object.y)
             self.bx = float(self.current_box.x)
             self.by = float(self.current_box.y)
 
             self.get_logger().info(
-                f"Selected object id={self.current_object.id} at ({self.ox:.2f}, {self.oy:.2f}) "
-                f"and box id={self.current_box.id} at ({self.bx:.2f}, {self.by:.2f})"
+                f"Selected box id={self.current_box.id} "
+                f"at ({self.bx:.2f}, {self.by:.2f})"
             )
 
-            self.enter_state("GENERATE_PATH_TO_OBJECT")
+            self.enter_state("GENERATE_PATH_TO_BOX")
             return
+
 
         if self.current_object is None and self.state not in ("SELECT_OBJECT", "DONE", "DROP_OBJECT", "MOVE_BACKWARD"):
             return
@@ -760,7 +810,8 @@ class TaskPlannerNode(Node):
                     f"at ({self.ox:.2f}, {self.oy:.2f})"
                 )
                 # self.enter_state("GENERATE_PATH_TO_BOX")
-                self.state_after_move_backward = "GENERATE_PATH_TO_BOX" 
+                # self.state_after_move_backward = "GENERATE_PATH_TO_BOX" 
+                self.state_after_move_backward = "SELECT_BOX" 
                 self.enter_state("MOVE_BACKWARD")
                 
 

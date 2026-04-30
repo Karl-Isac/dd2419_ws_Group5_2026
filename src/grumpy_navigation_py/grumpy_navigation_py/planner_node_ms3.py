@@ -50,7 +50,7 @@ class AStarPlannerNode(Node):
         # inflation
         self.declare_parameter("workspace_inflation_m", 0.18)
         self.declare_parameter("object_inflation_m", 0.20)
-        self.declare_parameter("box_inflation_m", 0.32)
+        self.declare_parameter("box_inflation_m", 0.40)
         self.declare_parameter("obstacle_inflation_m", 0.32)
 
         # candidate search

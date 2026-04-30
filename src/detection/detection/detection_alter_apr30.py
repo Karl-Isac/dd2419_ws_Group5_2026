@@ -491,7 +491,7 @@ class Detection(Node):
                     
                     # repetition check
                     for item in self.box_lists:
-                        if np.abs(item[0] - x_str) < 20 and np.abs(item[1] - y_str) < 20:
+                        if np.abs(item[0] - x_str) < 200 and np.abs(item[1] - y_str) < 200:
                             self.get_logger().debug("repeated box detection, discarded")
                             break
                     else:
@@ -629,7 +629,7 @@ class Detection(Node):
 
         # Normal distance criteria
         for item in object_lists:
-            if np.abs(item[0] - object_map.pose.position.x * 100) < 15 and np.abs(item[1] - object_map.pose.position.y * 100) < 15:
+            if np.abs(item[0] - object_map.pose.position.x * 100) < 30 and np.abs(item[1] - object_map.pose.position.y * 100) < 30:
                 # self.get_logger().debug(f"repeated object {self.object_lists.index(item)} detection, discarded")
                 break
         else:

@@ -115,7 +115,7 @@ class ApproachGoalNode(Node):
         # self.get_logger().info(f"publsihing duty: ({left}, {right})")
         msg = DutyCycles()
         msg.duty_cycle_left = float(left)
-        msg.duty_cycle_right = float(right) + 0.01
+        msg.duty_cycle_right = float(right) + 0.007
         self.duty_pub.publish(msg)
 
     def stop(self):
