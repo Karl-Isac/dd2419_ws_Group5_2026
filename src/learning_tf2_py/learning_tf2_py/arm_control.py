@@ -153,10 +153,11 @@ class Arm_control(Node):
                 self.get_logger().warn("Inverse kinematics failed for z={}, rho={}, target might be unreachable".format(z,self.rho))
             position = self.init_position[0],self.joint1target,joint2target,joint3target,joint4target,self.joint5target
             self.goto_position(position)
-            time.sleep(3)       # wait for movement down to finish
+            time.sleep(2)       # wait for movement down to finish
             # State 5 - grip
             position = self.joint0grip_value,self.joint1target,joint2target,joint3target,joint4target,self.joint5target
             self.goto_position(position)
+            time.sleep(2)
             # State 6 - goto initial position but gripper closed, check whether pickup was successful, report back
             position = self.init_position.copy()
             position[0] = self.joint0grip_value
