@@ -29,7 +29,7 @@ class ObstacleDetectionNode(Node):
         self.workspace_package = "grumpy_navigation_py"
 
         self.cluster_distance = 0.08
-        self.min_cluster_size = 4
+        self.min_cluster_size = 2
 
         self.workspace_polygon = self.load_workspace_polygon()
 
