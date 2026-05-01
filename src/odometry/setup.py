@@ -25,6 +25,7 @@ setup(
     entry_points={
         'console_scripts': [
             'odometry = odometry.odometry:main'
+            'comp = odometry.odometry_comlimentary_filter'
         ],
     },
 )
