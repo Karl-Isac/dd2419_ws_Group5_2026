@@ -43,71 +43,57 @@ class Odometry(Node):
             10
         )
 
-        # state
+        # ---------------- state ----------------
         self._x = 0.0
         self._y = 0.0
-        self._yaw = 0.0
+        self._yaw = 0.0   # ⭐唯一状态
 
-        # IMU
-        self._yaw_meas = 0.0
+        # ---------------- IMU ----------------
         self._omega_imu = 0.0
-        self._imu_time = None
-        self._encoder_time = None
-
+        self._yaw_meas = 0.0
         self._IMU_offset = None
-        self._start_offset = 0.0
+
+        # ---------------- time ----------------
+        self._encoder_time = None
 
         # complementary filter gain
         self.alpha = 0.98
 
-        self._got_first = False
-
-    # ---------------- IMU ----------------
+    # =========================================================
+    # IMU callback (measurement only)
+    # =========================================================
     def imu_callback(self, msg: Imu):
 
-        # angular velocity (rad/s)
+        # gyro z
         self._omega_imu = msg.angular_velocity.z
 
-        # timestamp
-        t = msg.header.stamp.sec + msg.header.stamp.nanosec * 1e-9
-
-        if self._imu_time is None:
-            self._imu_time = t
-            return
-
-        dt = t - self._imu_time
-        self._imu_time = t
-
-        # orientation yaw (θ_meas)
+        # orientation yaw
         q = msg.orientation
         _, _, yaw = euler_from_quaternion([q.x, q.y, q.z, q.w])
 
         if self._IMU_offset is None:
             self._IMU_offset = yaw
 
-        self._yaw_meas = -yaw + self._IMU_offset - self._start_offset
+        self._yaw_meas = wrap_angle(yaw - self._IMU_offset)
 
-        # store dt for fusion
-        self._imu_dt = dt
-
-    # ---------------- Encoder + Fusion ----------------
+    # =========================================================
+    # Encoder + Fusion (state update here)
+    # =========================================================
     def encoder_callback(self, msg: Encoders):
 
-        if not self._got_first:
-            self._got_first = True
-            self._encoder_time = msg.header.stamp
-            return
+        t = Time.from_msg(msg.header.stamp)
 
-        # dt
-        t = msg.header.stamp.sec + msg.header.stamp.nanosec * 1e-9
         if self._encoder_time is None:
             self._encoder_time = t
             return
 
-        dt = t - self._encoder_time
+        dt = (t - self._encoder_time).nanoseconds * 1e-9
         self._encoder_time = t
 
-        # wheel kinematics
+        if dt <= 0.0:
+            return
+
+        # ---------------- wheel model ----------------
         ticks_per_rev = 50 * 64
         wheel_radius = 0.04921
 
@@ -117,28 +103,33 @@ class Odometry(Node):
         phi_L = (dL / ticks_per_rev) * 2 * math.pi
         phi_R = (dR / ticks_per_rev) * 2 * math.pi
 
-        D = wheel_radius / 2 * (phi_R + phi_L)
+        D = wheel_radius / 2.0 * (phi_R + phi_L)
 
-        # ---------------- Complementary Filter ----------------
-        omega = self._omega_imu
+        # =========================================================
+        # complementary filter (fusion)
+        # =========================================================
 
-        # prediction (gyro integration)
-        yaw_pred = self._yaw + omega * dt
+        # prediction from gyro
+        yaw_pred = self._yaw + self._omega_imu * dt
 
-        # fusion
-        self._yaw = self.alpha * yaw_pred + (1 - self.alpha) * self._yaw_meas
+        # fusion with IMU absolute yaw
+        self._yaw = self.alpha * yaw_pred + (1.0 - self.alpha) * self._yaw_meas
         self._yaw = wrap_angle(self._yaw)
 
-        # position update (encoder)
+        # =========================================================
+        # position update
+        # =========================================================
         self._x += D * math.cos(self._yaw)
         self._y += D * math.sin(self._yaw)
 
+        # publish
         stamp = msg.header.stamp
+        self.broadcast_transform(stamp, self._x, self._y, -self._yaw)
+        self.publish_path(stamp, self._x, self._y, -self._yaw)
 
-        self.broadcast_transform(stamp, self._x, self._y, self._yaw)
-        self.publish_path(stamp, self._x, self._y, self._yaw)
-
-    # ---------------- TF ----------------
+    # =========================================================
+    # TF
+    # =========================================================
     def broadcast_transform(self, stamp, x, y, yaw):
         t = TransformStamped()
         t.header.stamp = stamp
@@ -157,7 +148,9 @@ class Odometry(Node):
 
         self._tf_broadcaster.sendTransform(t)
 
-    # ---------------- Path ----------------
+    # =========================================================
+    # Path
+    # =========================================================
     def publish_path(self, stamp, x, y, yaw):
         self._path.header.stamp = stamp
         self._path.header.frame_id = 'odom'
