@@ -92,6 +92,19 @@ def generate_launch_description():
     #     arguments=['0.49', '0.5', '0', '0', '0', '0', 'map', 'odom']
     # )
 
+    arm_static_tf = Node(
+        package="tf2_ros",
+        executable="static_transform_publisher",
+        name="arm_static_tf",
+        output="screen",
+        arguments=[
+            "0.0", "-0.05", "0.0",   # x y z: 5 cm to the robot's right
+            "0", "0", "0",          # roll pitch yaw
+            "base_link",
+            "arm_link",
+        ],
+    )
+
     return LaunchDescription([
         arm_safe_republisher,
         arm_control,
@@ -105,4 +118,5 @@ def generate_launch_description():
         move_backwards_timer,
         obstacle_detection,
         approach_goal,
+        arm_static_tf,
     ])
