@@ -152,9 +152,8 @@ class AStarPlannerNode(Node):
         self.marker_pub = self.create_publisher(Marker, "/debug/robot_start", 10)
 
         # Continuous path validity checking
-        # timer_period = 1.0 / max(path_check_rate_hz, 1e-6)
-        # self.create_timer(timer_period, self.check_current_path_collision)
-        self.create_timer(1.0, self.check_current_path_collision)
+        timer_period = 1.0 / max(path_check_rate_hz, 1e-6)
+        self.create_timer(timer_period, self.check_current_path_collision)
 
         self.get_logger().info("Planner ready")
 
@@ -308,7 +307,6 @@ class AStarPlannerNode(Node):
             self.objects.append((p.position.x, p.position.y))
 
         self.current_grid = self.rebuild_grid()
-        self.check_current_path_collision()
 
 
     def on_boxes(self, msg):
@@ -317,20 +315,25 @@ class AStarPlannerNode(Node):
             self.boxes.append((p.position.x, p.position.y))
 
         self.current_grid = self.rebuild_grid()
-        self.check_current_path_collision()
 
+    # def on_obstacle(self, msg):
+    #     # Keeping append behavior here since this topic was already single obstacle style
+    #     x = msg.pose.position.x
+    #     y = msg.pose.position.y
+    #     self.obstacles.append((x, y))
+    #     self.current_grid = self.rebuild_grid()
 
     def on_obstacles(self, msg):
         
         # self.get_logger().info("on_obstacles")
 
+        # overwrite, not append (important!)
         self.obstacles = [
             (p.position.x, p.position.y)
             for p in msg.poses
         ]
 
         self.current_grid = self.rebuild_grid()
-        self.check_current_path_collision()
 
     def on_goal(self, msg):
 
@@ -864,13 +867,20 @@ class AStarPlannerNode(Node):
         if not self.current_path_cells:
             return
 
-        grid = self.current_grid
+        # Optionally refresh the grid here so dynamic updates are always checked
+        grid = self.rebuild_grid()
+        if grid is None:
+            return
+
+        self.current_grid = grid
 
         blocked = False
 
-        start_idx = self.find_closest_path_index_to_robot(Time())
+        # for gx, gy in self.current_path_cells:
+       
+        time = Time()
+        start_idx = self.find_closest_path_index_to_robot(time)
         future_cells = self.current_path_cells[start_idx:]
-
         for gx, gy in future_cells:
             if not self.cell_in_bounds(gx, gy, grid):
                 blocked = True
@@ -880,17 +890,19 @@ class AStarPlannerNode(Node):
                 blocked = True
                 break
 
-        if blocked:
+        if blocked and not self.current_path_blocked:
             self.current_path_blocked = True
+            self.get_logger().warn("Current path is now blocked")
             self.publish_path_blocked(True)
-        else:
+
+        elif not blocked and self.current_path_blocked:
             self.current_path_blocked = False
             self.publish_path_blocked(False)
 
-        def publish_path_blocked(self, blocked):
-            msg = Bool()
-            msg.data = blocked
-            self.path_blocked_pub.publish(msg)
+    def publish_path_blocked(self, blocked):
+        msg = Bool()
+        msg.data = blocked
+        self.path_blocked_pub.publish(msg)
 
     # ---------------------------------------
     # Path publishing
