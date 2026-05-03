@@ -43,41 +43,64 @@ class Odometry(Node):
             10
         )
 
-        # ---------------- state ----------------
+        # ================= STATE =================
         self._x = 0.0
         self._y = 0.0
-        self._yaw = 0.0   # ⭐唯一状态
 
-        # ---------------- IMU ----------------
-        self._omega_imu = 0.0
-        self._yaw_meas = 0.0
-        self._IMU_offset = None
+        # fused yaw（最终用这个）
+        self._yaw = 0.0
 
-        # ---------------- time ----------------
+        # ================= IMU =================
+        self._imu_last_time = None
+        self._gyro_z = 0.0
+        self._gyro_bias = 0.0
+        self._bias_buffer = []
+
+        self._yaw_imu = 0.0   # IMU积分yaw
+
+        # ================= ENCODER =================
         self._encoder_time = None
+        self._yaw_enc = 0.0
 
-        # complementary filter gain
-        self.alpha = 0.98
+        # ================= TUNING =================
+        self.alpha = 0.01   # encoder → IMU correction gain (关键参数)
 
     # =========================================================
-    # IMU callback (measurement only)
+    # IMU callback (gyro integration + bias estimation)
     # =========================================================
     def imu_callback(self, msg: Imu):
 
-        # gyro z
-        self._omega_imu = msg.angular_velocity.z
+        t = msg.header.stamp.sec + msg.header.stamp.nanosec * 1e-9
 
-        # orientation yaw
-        q = msg.orientation
-        _, _, yaw = euler_from_quaternion([q.x, q.y, q.z, q.w])
+        gyro_z = msg.angular_velocity.z
 
-        if self._IMU_offset is None:
-            self._IMU_offset = yaw
+        # -------- bias estimation (startup only) --------
+        if len(self._bias_buffer) < 300:
+            self._bias_buffer.append(gyro_z)
+            if len(self._bias_buffer) == 300:
+                self._gyro_bias = sum(self._bias_buffer) / len(self._bias_buffer)
+                self.get_logger().warn(f"[IMU] bias = {self._gyro_bias:.6f}")
+            return
 
-        self._yaw_meas = wrap_angle(yaw - self._IMU_offset)
+        gyro = gyro_z - self._gyro_bias
+
+        # -------- time integration --------
+        if self._imu_last_time is None:
+            self._imu_last_time = t
+            return
+
+        dt = t - self._imu_last_time
+        self._imu_last_time = t
+
+        if dt <= 0.0 or dt > 0.1:
+            return
+
+        # -------- IMU integration --------
+        self._yaw_imu += gyro * dt
+        self._yaw_imu = wrap_angle(self._yaw_imu)
 
     # =========================================================
-    # Encoder + Fusion (state update here)
+    # Encoder callback (slow but drift-free reference)
     # =========================================================
     def encoder_callback(self, msg: Encoders):
 
@@ -93,9 +116,10 @@ class Odometry(Node):
         if dt <= 0.0:
             return
 
-        # ---------------- wheel model ----------------
+        # ================= wheel params =================
         ticks_per_rev = 50 * 64
         wheel_radius = 0.04921
+        wheel_base = 0.315  
 
         dL = msg.delta_encoder_left
         dR = msg.delta_encoder_right
@@ -103,29 +127,34 @@ class Odometry(Node):
         phi_L = (dL / ticks_per_rev) * 2 * math.pi
         phi_R = (dR / ticks_per_rev) * 2 * math.pi
 
+        # -------- forward + yaw from encoder --------
         D = wheel_radius / 2.0 * (phi_R + phi_L)
+        dtheta_enc = (wheel_radius / wheel_base) * (phi_R - phi_L)
+
+        # update encoder yaw
+        self._yaw_enc += dtheta_enc
+        self._yaw_enc = wrap_angle(self._yaw_enc)
 
         # =========================================================
-        # complementary filter (fusion)
+        # 🔥 KEY: encoder → IMU correction (drift suppression)
         # =========================================================
+        error = wrap_angle(self._yaw_enc - self._yaw_imu)
 
-        # prediction from gyro
-        yaw_pred = self._yaw + self._omega_imu * dt
-
-        # fusion with IMU absolute yaw
-        self._yaw = self.alpha * yaw_pred + (1.0 - self.alpha) * self._yaw_meas
-        self._yaw = wrap_angle(self._yaw)
+        self._yaw_imu += self.alpha * error
+        self._yaw_imu = wrap_angle(self._yaw_imu)
 
         # =========================================================
+        # final fused yaw
+        # =========================================================
+        self._yaw = self._yaw_imu
+
         # position update
-        # =========================================================
         self._x += D * math.cos(self._yaw)
         self._y += D * math.sin(self._yaw)
 
         # publish
-        stamp = msg.header.stamp
-        self.broadcast_transform(stamp, self._x, self._y, -self._yaw)
-        self.publish_path(stamp, self._x, self._y, -self._yaw)
+        self.broadcast_transform(msg.header.stamp, self._x, self._y, -self._yaw)
+        self.publish_path(msg.header.stamp, self._x, self._y, -self._yaw)
 
     # =========================================================
     # TF

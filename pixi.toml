@@ -44,6 +44,7 @@ echo "Finished"
 [tasks.uninstall_udev_rules]
 cmd = '''
 echo "Removing udev rules" &&
+
 sudo rm /etc/udev/rules.d/99-robp.rules &&
 echo "Restarting udev" &&
 sudo service udev reload &&
@@ -80,6 +81,7 @@ ros-jazzy-robp-interfaces = { path = "src/robp_interfaces" }
 ros-jazzy-robp-launch = { path = "src/robp_launch" }
 
 # Boot camp
+
 ros-jazzy-learning-tf2-py = { path = "src/learning_tf2_py" }
 ros-jazzy-odometry = { path = "src/odometry" }
 ros-jazzy-display-markers = { path = "src/display_markers" }
@@ -119,5 +121,4 @@ platformio = ">=6.1.18,<7"
 RMW_IMPLEMENTATION = "rmw_cyclonedds_cpp"
 ROS_AUTOMATIC_DISCOVERY_RANGE = "SUBNET"  # LOCALHOST, SUBNET
 ROS_DOMAIN_ID = "5"                       # Change to group number
-ROS_LOCALHOST_ONLY = "0"
 
