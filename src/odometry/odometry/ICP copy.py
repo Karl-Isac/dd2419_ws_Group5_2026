@@ -7,19 +7,23 @@ from pathlib import Path
 
 import numpy as np
 import rclpy.time
-from tf2_ros import TransformBroadcaster
 from sensor_msgs.msg import LaserScan
 from std_msgs.msg import String
 from geometry_msgs.msg import TransformStamped
 
 import tf_transformations
-import tf2_ros
+from tf2_ros import TransformBroadcaster, Buffer, TransformListener
 #from sklearn.neighbors import NearestNeighbors        maybe remove if not used, but for now we keep it since it's needed for ICP
-from simpleicp import SimpleICP, PointCloud
+#from simpleicp import SimpleICP, PointCloud.           rip
+import open3d as o3d
 
 
 base_dir = Path(__file__).resolve().parent.parent.parent.parent.parent.parent.parent.parent
 KNOWN_PATH = base_dir / 'Workspace/map_1_1.csv'
+
+'''
+This ICP collects all lidar scans, and when found a good correction changes odom, with can make the readings to spread out.
+'''
 
 
 # ---------------- ICP ----------------
@@ -33,37 +37,6 @@ def scan_to_points(scan):
             points.append([r * np.cos(a), r * np.sin(a)])
 
     return np.array(points)
-
-
-#def icp(source, target, max_iter=20):
-#    T = np.eye(3)
-#
-#    for _ in range(max_iter):
-#        nbrs = NearestNeighbors(n_neighbors=1).fit(target)
-#        _, indices = nbrs.kneighbors(source)
-#        matched = target[indices[:, 0]]
-#
-#        mu_s = np.mean(source, axis=0)
-#        mu_t = np.mean(matched, axis=0)
-#
-#        S = source - mu_s
-#        M = matched - mu_t
-#
-#        W = M.T @ S
-#        U, _, VT = np.linalg.svd(W)
-#        R = U @ VT
-#        t = mu_t - R @ mu_s
-#
-#        source = (R @ source.T).T + t
-#
-#        T_step = np.eye(3)
-#        T_step[:2, :2] = R
-#        T_step[:2, 2] = t
-#
-#        T = T_step @ T
-#
-#    return T
-
 
 # ---------------- NODE ----------------
 
@@ -80,6 +53,9 @@ class ICPMapper(Node):
 
         self.tf_broadcaster = TransformBroadcaster(self)
         self.timer = self.create_timer(0.1, self.publish_tf)
+        
+        self.tf_buffer = Buffer()
+        self.tf_listener = TransformListener(self.tf_buffer, self)
 
         # -------- load start pose --------
         with open(KNOWN_PATH, newline='', encoding='utf-8-sig') as csvfile:
@@ -107,7 +83,7 @@ class ICPMapper(Node):
         self.last_scan = None
         self.map_points = None
         self.last_stamp = None
-        self.last_odom_pose = None
+        ##self.last_odom_pose = self.T_map_odom
 
         self.publish_tf()
 
@@ -122,6 +98,26 @@ class ICPMapper(Node):
             self.start_mapping()
         elif msg.data == "correct":
             self.correct_pose()
+            
+    def get_odom_to_base(self):
+        try:
+            t = self.tf_buffer.lookup_transform(
+                "odom",          # target frame
+                "base_link",     # source frame
+                rclpy.time.Time()  # latest available
+            )
+
+            x = t.transform.translation.x
+            y = t.transform.translation.y
+
+            q = t.transform.rotation
+            _, _, yaw = tf_transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])
+
+            return x, y, yaw
+
+        except Exception as e:
+            self.get_logger().warn(f"TF lookup failed: {e}")
+            return None
 
     # ---------------- mapping ----------------
 
@@ -135,117 +131,86 @@ class ICPMapper(Node):
 
     # ---------------- ICP correction ----------------
 
-#    def correct_pose(self):
-#        if self.map_points is None or self.last_scan is None:
-#            return
-#
-#        source = self.last_scan.copy()
-#        target = self.map_points.copy()
-#
-#        simpleicp = SimpleICP(source, target)
-#        T_icp = simpleicp.get_transformation()
-#
-#        # ---------------- STABILITY CHECK ----------------
-#
-#        dx = T_icp[0, 2]
-#        dy = T_icp[1, 2]
-#        trans_err = np.sqrt(dx * dx + dy * dy)
-#        
-#        # ---------------- APPLY UPDATE ----------------
-#
-#        T_total = T_icp
-#        maybe_T_map_odom = T_total @ self.T_map_odom
-#        good = True
-#
-#        # reject large jumps (no tuning knobs beyond fixed sanity limit)
-#        if trans_err > 0.3:
-#            self.get_logger().warn("ICP rejected (too large motion)")
-#            good = False
-#
-#    
-#        # consistency check: ICP should not fully contradict odometry direction
-#        if self.last_odom_pose is not None:
-#            odom_dx = self.last_odom_pose[0]
-#            odom_dy = self.last_odom_pose[1]
-#
-#            dot = odom_dx * dx + odom_dy * dy
-#            if dot < 0:
-#                self.get_logger().warn("ICP disagrees with odometry → ignored")
-#                good = False
-#
-#        if good:
-#            self.T_map_odom = maybe_T_map_odom
-#            self.get_logger().info(f"ICP accepted: Δx={dx:.2f}m, Δy={dy:.2f}m, error={trans_err:.2f}m")
-#        # ---------------- update map ----------------
-#
-#        R = T_total[:2, :2]
-#        t = T_total[:2, 2]
-#
-#        transformed_scan = (R @ self.last_scan.T).T + t
-#
-#        if self.map_points is None:
-#            self.map_points = transformed_scan
-#        else:
-#            self.map_points = np.vstack((self.map_points, transformed_scan))
-#
-#        self.get_logger().info(f"Map size: {len(self.map_points)}")
-
     def correct_pose(self):
         if self.map_points is None or self.last_scan is None:
             return
 
-        # ---------------- prepare point clouds ----------------
-        pc_fix = PointCloud(to_3d(self.map_points), columns=["x", "y", "z"])
-        pc_mov = PointCloud(to_3d(self.last_scan), columns=["x", "y", "z"])
-        
-        self.get_logger().info(f"Map size: {len(pc_fix)}, Scan size: {len(pc_mov)}")
+        # ---------------- convert to Open3D point clouds ----------------
+        pc_fix = o3d.geometry.PointCloud()
+        pc_fix.points = o3d.utility.Vector3dVector(to_3d(self.map_points))
 
-        icp = SimpleICP()
-        icp.add_point_clouds(pc_fix, pc_mov)
+        pc_mov = o3d.geometry.PointCloud()
+        pc_mov.points = o3d.utility.Vector3dVector(to_3d(self.last_scan))
+
+        self.get_logger().info(
+            f"Map size: {len(self.map_points)}, Scan size: {len(self.last_scan)}"
+        )
+        
+        x, y, _ = self.get_odom_to_base() or (0, 0, 0)
+        delta_len = np.sqrt(x**2 + y**2)
+        max_angle_error = np.radians(10)
+        delta_alpha = delta_len*np.tan(max_angle_error)
+        print(f"x: {x:.2f}, y: {y:.2f}, delta_alpha: {delta_alpha:.2f}")
 
         # ---------------- run ICP ----------------
         icp_success = True
         try:
-            H, X_mov_transformed, _, _ = icp.run(max_overlap_distance=1.0, max_iterations=10)
-            #H, X_mov_transformed, _ = icp.run(max_overlap_distance=0.5, max_iterations=50)
+            reg = o3d.pipelines.registration.registration_icp(
+                pc_mov,
+                pc_fix,
+                max_correspondence_distance=max(0.5, delta_alpha * 1.2),
+                init=se2_to_se3(self.T_map_odom),
+                estimation_method=o3d.pipelines.registration.TransformationEstimationPointToPoint()
+            )
+
+            H = reg.transformation  # 4x4 SE(3)
+
         except Exception as e:
             self.get_logger().warn(f"ICP failed: {e}")
             icp_success = False
             H = np.eye(4)
-            X_mov_transformed = to_3d(self.last_scan)
 
-        # H is 3x3 homogeneous transform
+        # ---------------- convert SE3 → SE2 ----------------
         T_icp_se2 = se3_to_se2(H)
 
         # ---------------- extract motion ----------------
         dx = T_icp_se2[0, 2]
         dy = T_icp_se2[1, 2]
-        trans_err = np.sqrt(dx ** 2 + dy ** 2)
+        trans_err = np.sqrt(dx**2 + dy**2)
+        dtheta = np.arctan2(T_icp_se2[1, 0], T_icp_se2[0, 0])
 
         # ---------------- apply update ----------------
         maybe_T_map_odom = T_icp_se2 @ self.T_map_odom
         good = icp_success
 
         # reject large jumps
-        if trans_err > 0.3:
-            self.get_logger().warn("ICP rejected (too large motion)")
+        if trans_err > 0.5:
+            self.get_logger().warn(f"ICP rejected (too large motion): {trans_err:.2f}m")
+            good = False
+            
+        if abs(dtheta) > max_angle_error:
+            self.get_logger().warn(f"ICP rejected (too large rotation: {dtheta:.2f} rad)")
             good = False
 
         # consistency with odometry
-        if self.last_odom_pose is not None:
-            odom_dx = self.last_odom_pose[0]
-            odom_dy = self.last_odom_pose[1]
-
-            dot = odom_dx * dx + odom_dy * dy
-            if dot < 0:
-                self.get_logger().warn("ICP disagrees with odometry → ignored")
-                good = False
+        ##if self.last_odom_pose is not None:
+        ##    odom_dx, odom_dy = self.last_odom_pose
+        ##    if (odom_dx * dx + odom_dy * dy) < 0:
+        ##        self.get_logger().warn("ICP disagrees with odometry → ignored")
+        ##        good = False
 
         if good:
             self.T_map_odom = maybe_T_map_odom
+            self.get_logger().info(
+                f"ICP accepted: Δx={dx:.2f}, Δy={dy:.2f}, err={trans_err:.2f}"
+            )
 
         # ---------------- update map ----------------
-        transformed_scan = np.array(X_mov_transformed)[:, :2]
+        # transform scan using estimated transform
+        R = T_icp_se2[:2, :2]
+        t = T_icp_se2[:2, 2]
+
+        transformed_scan = (R @ self.last_scan.T).T + t
 
         if self.map_points is None:
             self.map_points = transformed_scan
@@ -286,14 +251,14 @@ class ICPMapper(Node):
 
 
 # ---------------- main ----------------
-#def to_3d(points):
-#    return np.hstack((points, np.zeros((points.shape[0], 1))))
 def to_3d(points):
-    return np.array(
-        np.hstack((points, np.zeros((points.shape[0], 1)))),
-        dtype=np.float64,
-        copy=True
-    )
+    return np.hstack((points, np.zeros((points.shape[0], 1))))
+#def to_3d(points):
+#    return np.array(
+#        np.hstack((points, np.zeros((points.shape[0], 1)))),
+#        dtype=np.float64,
+#        copy=True
+#    )
 
 def se3_to_se2(H):
     """
@@ -316,6 +281,22 @@ def se3_to_se2(H):
     T[1, 2] = H[1, 3]
 
     return T
+
+def se2_to_se3(T):
+    """
+    Convert SE(2) (3x3) → SE(3) (4x4)
+    """
+
+    H = np.eye(4)
+
+    # rotation (embed in XY plane)
+    H[0:2, 0:2] = T[0:2, 0:2]
+
+    # translation
+    H[0, 3] = T[0, 2]
+    H[1, 3] = T[1, 2]
+
+    return H
 
 def main(args=None):
     rclpy.init(args=args)

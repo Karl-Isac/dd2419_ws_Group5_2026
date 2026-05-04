@@ -20,7 +20,7 @@ base_dir = Path(__file__).resolve().parent.parent.parent.parent.parent.parent.pa
 KNOWN_PATH = base_dir / 'Workspace/map_1_1.csv'
 
 '''
-This ICP corrects lidar-points when a good ICP match is found, and uses the corrected map for the next ICP, which makes it more robust to drift. (hopefully)
+This ICP adds lidar scans when told to, and correct those that find a good match
 '''
 
 
@@ -83,51 +83,19 @@ class ICPMapper(Node):
         # -------- state --------
         self.last_scan = None
         self.map_points = None
-        self.pre_map_points = None
         self.last_stamp = None
         self.last_angular_velocity = 0
+        self.last_odom_pose = self.T_map_odom.copy()
 
         self.publish_tf()
 
     # ---------------- callbacks ----------------
 
-    #def scan_cb(self, msg):
-    #    self.last_scan = scan_to_points(msg)
-    #    self.last_stamp = msg.header.stamp
-    #    if self.last_angular_velocity < 0.1: # only update when robot is not rotating fast, otherwise ICP will fail
-    #        self.pre_map_points = np.vstack((self.pre_map_points, self.last_scan)) if self.pre_map_points is not None else self.last_scan
-    #    if self.map_points is not None and len(self.map_points) > 20000:
-    #        self.voxel_downsample()
-    
     def scan_cb(self, msg):
-        scan = scan_to_points(msg)
-
-        pose = self.get_odom_to_base()
-        if pose is None:
-            return
-
-        x, y, yaw = pose
-
-        # --- build rotation ---
-        R = np.array([
-            [np.cos(yaw), -np.sin(yaw)],
-            [np.sin(yaw),  np.cos(yaw)]
-        ])
-
-        t = np.array([x, y])
-
-        # --- transform scan into odom frame ---
-        scan_odom = (R @ scan.T).T + t
-
-        self.last_scan = scan_odom
+        self.last_scan = scan_to_points(msg)
         self.last_stamp = msg.header.stamp
-
-        # accumulate only stable scans
-        if abs(self.last_angular_velocity) < 0.1:
-            if self.pre_map_points is None:
-                self.pre_map_points = scan_odom
-            else:
-                self.pre_map_points = np.vstack((self.pre_map_points, scan_odom))
+        if self.last_angular_velocity < 0.1: # only update when robot is not rotating fast, otherwise ICP will fail
+            self.map_points = np.vstack((self.map_points, self.last_scan)) if self.map_points is not None else self.last_scan
         if self.map_points is not None and len(self.map_points) > 20000:
             self.voxel_downsample()
 
@@ -139,8 +107,6 @@ class ICPMapper(Node):
             self.start_mapping()
         elif msg.data == "correct":
             self.correct_pose()
-        elif msg.data == "export":
-            self.export_map_to_csv()
             
     def get_odom_to_base(self):
         try:
@@ -168,8 +134,9 @@ class ICPMapper(Node):
         if self.last_scan is None:
             self.get_logger().warn("No scan yet")
             return
-        self.map_points = np.vstack((self.map_points, self.last_scan)) if self.map_points is not None else self.last_scan
-        self.get_logger().info("Map initialized or updated")
+
+        self.map_points = self.last_scan.copy()
+        self.get_logger().info("Map initialized")
 
     # ---------------- ICP correction ----------------
 
@@ -227,7 +194,7 @@ class ICPMapper(Node):
         good = icp_success
 
         # reject large jumps
-        if trans_err > 0.3:
+        if trans_err > 1.0:
             self.get_logger().warn(f"ICP rejected (too large motion): {trans_err:.2f}m")
             good = False
             
@@ -237,18 +204,6 @@ class ICPMapper(Node):
 
         if good:
             self.T_map_odom = maybe_T_map_odom
-             # ---------------- update map ----------------
-            # transform scan using estimated transform
-            R = T_icp_se2[:2, :2]
-            t = T_icp_se2[:2, 2]
-            
-            if self.pre_map_points is not None:
-                transformed_scan = (R @ self.pre_map_points.T).T + t
-
-            if self.map_points is None:
-                self.map_points = transformed_scan # type: ignore
-            else:
-                self.map_points = np.vstack((self.map_points, transformed_scan)) # type: ignore
             self.get_logger().info(
                 f"ICP accepted: Δx={dx:.2f}, Δy={dy:.2f}, err={trans_err:.2f}"
             )
@@ -309,17 +264,6 @@ class ICPMapper(Node):
         t.transform.rotation.w = q[3]
 
         self.tf_broadcaster.sendTransform(t)
-        
-    def export_map_to_csv(self, filename="map_points.csv"):
-        if self.map_points is None or len(self.map_points) == 0:
-            self.get_logger().warn("No map points to export")
-            return
-
-        try:
-            np.savetxt(filename, self.map_points, delimiter=",", header="x,y", comments="")
-            self.get_logger().info(f"Map exported to {filename} ({len(self.map_points)} points)")
-        except Exception as e:
-            self.get_logger().error(f"Failed to export map: {e}")
 
 
 # ---------------- main ----------------
