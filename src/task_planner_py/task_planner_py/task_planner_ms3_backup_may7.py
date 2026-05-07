@@ -40,12 +40,6 @@ class TaskPlannerNode(Node):
         self.world_frame = self.get_parameter("world_frame").value
         self.base_frame = self.get_parameter("base_frame").value
 
-        # robot start pos
-        self.start_position = None
-        self.sx = None
-        self.sy = None
-
-
         # Local IDs generated from latest detections
         self.next_object_id = 0
         self.next_box_id = 0
@@ -89,9 +83,6 @@ class TaskPlannerNode(Node):
         self.state_after_move_backward = None
 
         self.last_planner_status = None
-
-        self.generate_path_start_success = None
-        self.execute_path_start_success = None
 
         # Planner state
         # self.state = "SELECT_OBJECT"
@@ -221,9 +212,6 @@ class TaskPlannerNode(Node):
             self.generate_exploration_path_success = success
             self.generate_exploration_path_failed = not success
 
-        elif self.state == "GENERATE_PATH_TO_START":
-            self.generate_path_start_success = success
-
         if success:
             self.path_to_goal = msg.path
         else:
@@ -315,8 +303,7 @@ class TaskPlannerNode(Node):
             self.execute_path_box_success = nav_reached
         elif self.state == "EXECUTE_EXPLORATION_PATH":
             self.execute_exploration_path_success = nav_reached
-        elif self.state == "EXECUTE_PATH_TO_START":
-            self.execute_path_start_success = nav_reached
+
 
 
 
@@ -445,12 +432,6 @@ class TaskPlannerNode(Node):
             return
 
         rx, ry = robot
-
-        if self.start_position is None:
-            self.start_position = (rx, ry)
-            self.sx = rx
-            self.sy = ry
-            self.get_logger().info(f"Saved start position: ({self.sx:.2f}, {self.sy:.2f})")
 
         # Preempt exploration as soon as we know at least one object and one box
         exploration_states = (
@@ -712,20 +693,7 @@ class TaskPlannerNode(Node):
             return
 
 
-
-
-        # if self.current_object is None and self.state not in ("SELECT_OBJECT", "SELECT_BOX", "DONE", "DROP_OBJECT", "MOVE_BACKWARD"):
-        #     return
-
-        if self.current_object is None and self.state not in (
-            "SELECT_OBJECT",
-            "SELECT_BOX",
-            "DONE",
-            "DROP_OBJECT",
-            "MOVE_BACKWARD",
-            "GENERATE_PATH_TO_START",
-            "EXECUTE_PATH_TO_START",
-        ):
+        if self.current_object is None and self.state not in ("SELECT_OBJECT", "SELECT_BOX", "DONE", "DROP_OBJECT", "MOVE_BACKWARD"):
             return
 
         
@@ -798,63 +766,6 @@ class TaskPlannerNode(Node):
             if self.approach_success:
                 self.approach_success = False
                 self.enter_state("PICK_OBJECT")
-
-        elif self.state == "GENERATE_PATH_TO_START":
-            if self.start_position is None:
-                self.get_logger().warn("No saved start position, going directly to SELECT_BOX")
-                self.enter_state("SELECT_BOX")
-                return
-
-            if not self._published_this_state:
-                self.publish_goal_to_path_planner(
-                    self.sx,
-                    self.sy,
-                    goal_type="start_position"
-                )
-                self._published_this_state = True
-                self.generate_path_start_success = None
-                self.get_logger().info("GENERATE_PATH_TO_START: published start position goal")
-
-            if self.generate_path_start_success is True:
-                self.enter_state("EXECUTE_PATH_TO_START")
-                return
-
-            if self.generate_path_start_success is False:
-                if self.last_planner_status in ("start_occupied", "start_out_of_bounds"):
-                    self.state_after_move_backward = "GENERATE_PATH_TO_START"
-                    self.enter_state("MOVE_BACKWARD")
-                    return
-
-                if self.last_planner_status == "no_path":
-                    self.get_logger().warn("No path to start position, continuing to SELECT_BOX")
-                    self.enter_state("SELECT_BOX")
-                    return
-
-                self.get_logger().warn(
-                    f"GENERATE_PATH_TO_START failed: status={self.last_planner_status}"
-                )
-                self.enter_state("SELECT_BOX")
-                return
-
-
-        elif self.state == "EXECUTE_PATH_TO_START":
-            if not self._published_this_state:
-                self.publish_path_to_controller(
-                    path=self.path_to_goal,
-                    goal_type="start_position"
-                )
-                self._published_this_state = True
-                self.execute_path_start_success = None
-                self.get_logger().info("EXECUTE_PATH_TO_START: published path to controller")
-
-            if self.execute_path_start_success is True:
-                self.enter_state("SELECT_BOX")
-                return
-
-            if self.execute_path_start_success is False:
-                self.get_logger().warn("Path to start blocked/cancelled, replanning start path")
-                self.enter_state("GENERATE_PATH_TO_START")
-                return
 
 
         elif self.state == "GENERATE_PATH_TO_BOX": 
@@ -970,8 +881,7 @@ class TaskPlannerNode(Node):
                     f"at ({self.ox:.2f}, {self.oy:.2f})"
                 )
 
-                # self.state_after_move_backward = "SELECT_BOX"
-                self.state_after_move_backward = "GENERATE_PATH_TO_START"
+                self.state_after_move_backward = "SELECT_BOX"
                 self.enter_state("MOVE_BACKWARD")
                 
 
