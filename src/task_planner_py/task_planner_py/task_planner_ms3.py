@@ -386,6 +386,8 @@ class TaskPlannerNode(Node):
             goal.type = GoalWithType.BOX
         elif goal_type == "exploration_point":
             goal.type = GoalWithType.EXPLORATION_POINT
+        elif goal_type == "start_position":
+            goal.type = GoalWithType.EXPLORATION_POINT
         else:
             self.get_logger().error(f"Invalid goal_type: {goal_type}")
             return
@@ -410,6 +412,8 @@ class TaskPlannerNode(Node):
             path_with_type.type = 1 
         elif goal_type == "exploration_point":
             path_with_type.type = 2
+        elif goal_type == "start_position":
+            path_with_type.type = PathWithType.EXPLORATION_POINT
 
         self.path_to_controller_pub.publish(path_with_type)
         self.path_to_controller_pub_viz.publish(path)
@@ -433,6 +437,8 @@ class TaskPlannerNode(Node):
             self.execute_path_object_success = None
         elif new_state == "EXECUTE_PATH_TO_BOX":
             self.execute_path_box_success = None
+        elif new_state == "EXECUTE_PATH_TO_START":
+            self.execute_path_start_success = None
 
         self.get_logger().info(f"State -> {new_state}")
 
