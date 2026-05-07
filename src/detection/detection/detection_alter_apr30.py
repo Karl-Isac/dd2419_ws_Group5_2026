@@ -121,6 +121,7 @@ class Detection(Node):
                 pose.orientation.y = q[1]
                 pose.orientation.z = q[2]
                 pose.orientation.w = q[3]
+                
 
                 if type_id == 'O':
                     self.color_unassigned_indices_list.append(self.object_num)
@@ -177,7 +178,7 @@ class Detection(Node):
                     starting.transform.rotation.z = pose.orientation.z
                     starting.transform.rotation.w = pose.orientation.w
 
-                    self.static_broadcaster.sendTransform(starting)
+                    # self.static_broadcaster.sendTransform(starting)
 
                     self.metadata_rows.append(row)
                 else:

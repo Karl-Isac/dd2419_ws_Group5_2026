@@ -142,7 +142,7 @@ class TaskPlannerNode(Node):
         self.state_after_update_icp = None
         self.update_ICP_done = False
         self.update_ICP_start_time = None
-        self.update_ICP_timeout = 0.1  # seconds
+        self.update_ICP_timeout = 1.0  # seconds
 
         dt = 1.0 / float(self.get_parameter("rate_hz").value)
         self.step_timer = self.create_timer(dt, self.step)
@@ -458,6 +458,8 @@ class TaskPlannerNode(Node):
             self.sy = ry
             self.get_logger().info(f"Saved start position: ({self.sx:.2f}, {self.sy:.2f})")
 
+            self.ICP_pub.publish(String(data="start"))
+
         # Preempt exploration as soon as we know at least one object and one box
         exploration_states = (
             "GENERATE_EXPLORATION_POSE",
@@ -493,7 +495,7 @@ class TaskPlannerNode(Node):
 
             # self.get_logger().info("UPDATE_ICP")
             if not self._published_this_state:
-                self.ICP_pub.publish(String(data="update"))
+                self.ICP_pub.publish(String(data="correct"))
                 self._published_this_state = True
             if self.update_ICP_done:
                 self.enter_state(self.state_after_update_icp)
@@ -854,7 +856,8 @@ class TaskPlannerNode(Node):
                 self.get_logger().info("EXECUTE_PATH_TO_START: published path to controller")
 
             if self.execute_path_start_success is True:
-                self.enter_state("SELECT_BOX")
+                # self.enter_state("SELECT_BOX")
+                self.start_update_icp("SELECT_BOX")
                 return
 
             if self.execute_path_start_success is False:

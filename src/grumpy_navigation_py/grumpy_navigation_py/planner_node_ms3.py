@@ -887,10 +887,10 @@ class AStarPlannerNode(Node):
             self.current_path_blocked = False
             self.publish_path_blocked(False)
 
-        def publish_path_blocked(self, blocked):
-            msg = Bool()
-            msg.data = blocked
-            self.path_blocked_pub.publish(msg)
+    def publish_path_blocked(self, blocked):
+        msg = Bool()
+        msg.data = blocked
+        self.path_blocked_pub.publish(msg)
 
     # ---------------------------------------
     # Path publishing

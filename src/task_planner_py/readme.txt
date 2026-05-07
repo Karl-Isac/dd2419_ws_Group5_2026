@@ -24,6 +24,7 @@ Then run commands in this order, order is important:
 
 pixi run phidgets
 ros2 launch task_planner_py background.launch.py
+ros2 launch task_planner_py lidar.launch.py
 ros2 launch task_planner_py nodes.launch.py
 ros2 launch task_planner_py exploration_detection.launch.py
 

@@ -30,6 +30,7 @@ setup(
             'odometry_fixed = odometry.odometry_fixed:main',
             'odometry_fixed_no_imu = odometry.odometry_fixed_no_imu:main',
             'odometry_dev_mag_3_fixed = odometry.odometry_dev_mag_3_fixed:main',
+            'ICP = odometry.ICP:main',
         ],
     },
 )

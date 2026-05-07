@@ -27,8 +27,8 @@ class ApproachGoalNode(Node):
 
         # Frames / timing
         self.declare_parameter("world_frame", "map")
-        self.declare_parameter("arm_frame", "arm_link")
-        # self.declare_parameter("base_frame", "base_link")
+        # self.declare_parameter("arm_frame", "arm_link")
+        self.declare_parameter("base_frame", "base_link")
         self.declare_parameter("rate_hz", 20.0)
 
         # Turning behavior
@@ -44,7 +44,7 @@ class ApproachGoalNode(Node):
 
         self.world_frame = self.get_parameter("world_frame").value
         self.base_frame = self.get_parameter("base_frame").value
-        self.arm_frame = self.get_parameter("arm_frame").value
+        # self.arm_frame = self.get_parameter("arm_frame").value
 
         self.tf_buffer = tf2_ros.Buffer()
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, self)
@@ -102,8 +102,8 @@ class ApproachGoalNode(Node):
         try:
             tf = self.tf_buffer.lookup_transform(
                 self.world_frame,
-                # self.base_frame,
-                selarm_framee,
+                self.base_frame,
+                # selarm_framee,
                 rclpy.time.Time()
             )
         except Exception as e:
