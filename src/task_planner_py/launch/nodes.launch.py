@@ -17,10 +17,17 @@ def generate_launch_description():
         output='screen'
     )
 
-    task_planner = Node(
+    # task_planner = Node(
+    #     package='task_planner_py',
+    #     executable='task_planner',
+    #     name='task_planner',
+    #     output='screen'
+    # )
+
+    task_planner_only_start_ICP = Node(
         package='task_planner_py',
-        executable='task_planner',
-        name='task_planner',
+        executable='task_planner_only_start_ICP',
+        name='task_planner_only_start_ICP',
         output='screen'
     )
 
@@ -138,7 +145,8 @@ def generate_launch_description():
     return LaunchDescription([
         arm_safe_republisher,
         arm_control,
-        task_planner,
+        # task_planner,
+        task_planner_only_start_ICP,
         odometry,
         planner,
         controller,

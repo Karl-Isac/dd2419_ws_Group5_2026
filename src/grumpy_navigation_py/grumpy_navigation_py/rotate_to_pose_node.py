@@ -5,8 +5,9 @@ import rclpy
 from rclpy.node import Node
 import tf2_ros
 
-from geometry_msgs.msg import PoseStamped, Twist
+from geometry_msgs.msg import PoseStamped
 from std_msgs.msg import Bool
+from robp_interfaces.msg import DutyCycles
 
 
 class RotateToPoseNode(Node):
@@ -15,19 +16,14 @@ class RotateToPoseNode(Node):
 
         self.declare_parameter("world_frame", "map")
         self.declare_parameter("base_frame", "base_link")
-        self.declare_parameter("cmd_vel_topic", "/cmd_vel")
-        self.declare_parameter("yaw_tolerance", 0.05)      # rad
-        self.declare_parameter("kp", 1.5)
-        self.declare_parameter("max_angular_speed", 0.6)
+        self.declare_parameter("yaw_tolerance", 0.05)
+        self.declare_parameter("duty_cycle_speed", 0.1)
         self.declare_parameter("control_rate_hz", 20.0)
 
         self.world_frame = self.get_parameter("world_frame").value
         self.base_frame = self.get_parameter("base_frame").value
-        self.cmd_vel_topic = self.get_parameter("cmd_vel_topic").value
-
         self.yaw_tolerance = float(self.get_parameter("yaw_tolerance").value)
-        self.kp = float(self.get_parameter("kp").value)
-        self.max_angular_speed = float(self.get_parameter("max_angular_speed").value)
+        self.duty_cycle_speed = float(self.get_parameter("duty_cycle_speed").value)
 
         self.target_yaw = None
         self.active = False
@@ -35,7 +31,12 @@ class RotateToPoseNode(Node):
         self.tf_buffer = tf2_ros.Buffer()
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, self)
 
-        self.cmd_pub = self.create_publisher(Twist, self.cmd_vel_topic, 10)
+        self.cmd_pub = self.create_publisher(
+            DutyCycles,
+            "/phidgets/motor/duty_cycles",
+            10
+        )
+
         self.finished_pub = self.create_publisher(Bool, "/nav/rotate_finished", 10)
 
         self.create_subscription(
@@ -81,7 +82,10 @@ class RotateToPoseNode(Node):
         return self.yaw_from_quat(tf.transform.rotation)
 
     def stop_robot(self):
-        self.cmd_pub.publish(Twist())
+        msg = DutyCycles()
+        msg.duty_cycle_left = 0.0
+        msg.duty_cycle_right = 0.0
+        self.cmd_pub.publish(msg)
 
     def control_loop(self):
         if not self.active or self.target_yaw is None:
@@ -101,12 +105,18 @@ class RotateToPoseNode(Node):
             self.get_logger().info("Rotation finished")
             return
 
-        cmd = Twist()
-        wz = self.kp * error
-        wz = max(-self.max_angular_speed, min(self.max_angular_speed, wz))
-        cmd.angular.z = wz
+        speed = self.duty_cycle_speed
 
-        self.cmd_pub.publish(cmd)
+        msg = DutyCycles()
+
+        if error > 0.0:
+            msg.duty_cycle_left = -speed
+            msg.duty_cycle_right = speed
+        else:
+            msg.duty_cycle_left = speed
+            msg.duty_cycle_right = -speed
+
+        self.cmd_pub.publish(msg)
 
 
 def main():
