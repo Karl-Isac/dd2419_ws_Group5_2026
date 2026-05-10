@@ -17,7 +17,7 @@ class TrackedObject:
         self.id = obj_id
         self.x = x
         self.y = y
-        self.status = "detected"   # detected / picked / placed / failed
+        self.status = "detected"
 
 
 class TrackedBox:
@@ -41,6 +41,7 @@ class TaskPlannerNode(Node):
         self.start_position = None
         self.sx = None
         self.sy = None
+        self.start_yaw = None
 
         self.next_object_id = 0
         self.next_box_id = 0
@@ -62,7 +63,7 @@ class TaskPlannerNode(Node):
 
         self.generate_exploration_pose_success = False
         self.generate_exploration_path_success = False
-        self.execute_exploration_path_success = False
+        self.execute_exploration_path_success = None
         self.generate_exploration_path_failed = False
 
         self.generate_path_object_success = None
@@ -76,16 +77,19 @@ class TaskPlannerNode(Node):
 
         self.approach_success = False
         self.move_backwards_success = False
-        self.state_after_move_backward = None
+        self.rotate_success = False
 
+        self.state_after_move_backward = None
         self.last_planner_status = None
 
-        self.state = "WAIT_FOR_START_ICP"
+        self.state = "GENERATE_EXPLORATION_POSE"
         self.pick_done = False
         self.place_done = False
         self._published_this_state = False
 
         self.path_to_goal = None
+
+        self.started = False
 
         self.goal_pub = self.create_publisher(GoalWithType, "/nav/goal", 10)
         self.path_to_controller_pub = self.create_publisher(PathWithType, "/nav/path_to_controller", 10)
@@ -98,6 +102,9 @@ class TaskPlannerNode(Node):
         self.arm_pub = self.create_publisher(String, "/arm/cmd", 10)
         self.move_backwards_pub = self.create_publisher(Bool, "/nav/move_backwards_start", 10)
 
+        # New rotate-to-start-yaw interface
+        self.rotate_start_pub = self.create_publisher(PoseStamped, "/nav/rotate_to_pose", 10)
+
         self.exploration_pub = self.create_publisher(String, "/exploration/request_unexplored_point", 10)
 
         self.create_subscription(Point, "/exploration/return_unexplored_point", self.on_exploration_point, 10)
@@ -108,9 +115,12 @@ class TaskPlannerNode(Node):
         self.create_subscription(PoseArray, "/detected_boxes", self.on_boxes, 10)
         self.create_subscription(PoseStamped, "/nav/approach_finished", self.on_approach_finished, 10)
         self.create_subscription(Bool, "/nav/move_backwards_finished", self.on_move_backwards_finished, 10)
+        self.create_subscription(Bool, "/nav/rotate_finished", self.on_rotate_finished, 10)
 
         self.ICP_pub = self.create_publisher(String, "/localization/start_update_ICP", 10)
         self.create_subscription(String, "/localization/finished_update_ICP", self.on_finished_update_ICP, 10)
+
+        self.create_subscription(Bool, "/task_planner/start", self.on_start, 10)
 
         self.state_after_update_icp = None
         self.update_ICP_done = False
@@ -123,12 +133,21 @@ class TaskPlannerNode(Node):
 
         self.get_logger().info("TaskPlannerNode up.")
 
+    def on_start(self, msg: Bool):
+        if msg.data:
+            self.started = True
+            self.get_logger().info("Task planner started")
+
     def cancel_controller(self):
         self.path_blocked_pub.publish(Bool(data=True))
 
     def on_move_backwards_finished(self, msg):
         if msg.data:
             self.move_backwards_success = True
+
+    def on_rotate_finished(self, msg):
+        if msg.data:
+            self.rotate_success = True
 
     def on_approach_finished(self, msg):
         self.approach_success = True
@@ -153,14 +172,11 @@ class TaskPlannerNode(Node):
 
         if self.state == "GENERATE_PATH_TO_OBJECT":
             self.generate_path_object_success = success
-
         elif self.state == "GENERATE_PATH_TO_BOX":
             self.generate_path_box_success = success
-
         elif self.state == "GENERATE_EXPLORATION_PATH":
             self.generate_exploration_path_success = success
             self.generate_exploration_path_failed = not success
-
         elif self.state == "GENERATE_PATH_TO_START":
             self.generate_path_start_success = success
 
@@ -214,9 +230,6 @@ class TaskPlannerNode(Node):
             self.object_failure_pub.publish(p)
             self.pick_done = False
             self.current_object.status = "failed"
-            self.get_logger().warn(
-                f"Arm failed to pickup object id={self.current_object.id}"
-            )
             self.current_object = None
             self.enter_state("SELECT_OBJECT")
 
@@ -233,17 +246,20 @@ class TaskPlannerNode(Node):
 
         if self.state == "EXECUTE_PATH_TO_OBJECT":
             self.execute_path_object_success = nav_reached
-
         elif self.state == "EXECUTE_PATH_TO_BOX":
             self.execute_path_box_success = nav_reached
-
         elif self.state == "EXECUTE_EXPLORATION_PATH":
             self.execute_exploration_path_success = nav_reached
-
         elif self.state == "EXECUTE_PATH_TO_START":
             self.execute_path_start_success = nav_reached
 
-    def lookup_xy(self, target_frame: str):
+    def yaw_from_quat(self, q):
+        return math.atan2(
+            2.0 * (q.w * q.z + q.x * q.y),
+            1.0 - 2.0 * (q.y * q.y + q.z * q.z)
+        )
+
+    def lookup_pose_2d(self, target_frame: str):
         try:
             tf = self.tf_buffer.lookup_transform(
                 self.world_frame,
@@ -254,7 +270,10 @@ class TaskPlannerNode(Node):
             return None
 
         t = tf.transform.translation
-        return float(t.x), float(t.y)
+        q = tf.transform.rotation
+        yaw = self.yaw_from_quat(q)
+
+        return float(t.x), float(t.y), yaw
 
     def publish_goal_to_path_planner(self, x: float, y: float, goal_type: str):
         p = PoseStamped()
@@ -290,13 +309,13 @@ class TaskPlannerNode(Node):
         path_with_type.path = path
 
         if goal_type == "object":
-            path_with_type.type = PathWithType.OBJECT
+            path_with_type.type = 0
         elif goal_type == "box":
-            path_with_type.type = PathWithType.BOX
+            path_with_type.type = 1
         elif goal_type == "exploration_point":
-            path_with_type.type = PathWithType.EXPLORATION_POINT
+            path_with_type.type = 2
         elif goal_type == "start_position":
-            path_with_type.type = PathWithType.EXPLORATION_POINT
+            path_with_type.type = 2
         else:
             self.get_logger().error(f"Invalid path goal_type: {goal_type}")
             return
@@ -322,6 +341,8 @@ class TaskPlannerNode(Node):
             self.approach_success = False
         elif new_state == "APPROACH_BOX":
             self.approach_success = False
+        elif new_state == "ROTATE_TO_START_YAW":
+            self.rotate_success = False
 
         self.get_logger().info(f"State -> {new_state}")
 
@@ -329,19 +350,25 @@ class TaskPlannerNode(Node):
         return self.current_object is not None and self.current_object.status == "picked"
 
     def step(self):
-        robot = self.lookup_xy(self.base_frame)
+        if not self.started:
+            return
+
+        robot = self.lookup_pose_2d(self.base_frame)
         if robot is None:
             return
 
-        rx, ry = robot
+        rx, ry, ryaw = robot
 
         if self.start_position is None:
-            self.start_position = (rx, ry)
+            self.start_position = (rx, ry, ryaw)
             self.sx = rx
             self.sy = ry
+            self.start_yaw = ryaw
+
             self.get_logger().info(
-                f"Saved start position: ({self.sx:.2f}, {self.sy:.2f})"
+                f"Saved start pose: ({self.sx:.2f}, {self.sy:.2f}, yaw={self.start_yaw:.2f})"
             )
+
             self.start_update_icp("start", "GENERATE_EXPLORATION_POSE")
             return
 
@@ -415,6 +442,7 @@ class TaskPlannerNode(Node):
                     self.current_exploration_point.y,
                     goal_type="exploration_point"
                 )
+
                 self._published_this_state = True
                 self.generate_exploration_path_success = False
                 self.generate_exploration_path_failed = False
@@ -425,9 +453,6 @@ class TaskPlannerNode(Node):
 
             if self.generate_exploration_path_failed:
                 if self.last_planner_status == "no_path":
-                    self.get_logger().warn(
-                        "Exploration point not reachable, requesting new one"
-                    )
                     self.current_exploration_point = None
 
                     if self.carrying_object():
@@ -462,9 +487,6 @@ class TaskPlannerNode(Node):
                 return
 
             if self.execute_exploration_path_success is False:
-                self.get_logger().warn(
-                    "Exploration path blocked/cancelled, replanning"
-                )
                 self.enter_state("GENERATE_EXPLORATION_PATH")
                 return
 
@@ -499,7 +521,6 @@ class TaskPlannerNode(Node):
 
         elif self.state == "SELECT_BOX":
             if self.current_object is None:
-                self.get_logger().warn("SELECT_BOX called without current_object")
                 self.enter_state("SELECT_OBJECT")
                 return
 
@@ -531,6 +552,7 @@ class TaskPlannerNode(Node):
             "MOVE_BACKWARD",
             "GENERATE_PATH_TO_START",
             "EXECUTE_PATH_TO_START",
+            "ROTATE_TO_START_YAW",
         ):
             return
 
@@ -553,9 +575,6 @@ class TaskPlannerNode(Node):
                     self.state_after_move_backward = "GENERATE_PATH_TO_OBJECT"
                     self.enter_state("MOVE_BACKWARD")
                 else:
-                    self.get_logger().warn(
-                        f"Path to object failed: {self.last_planner_status}"
-                    )
                     self.enter_state("SELECT_OBJECT")
                 return
 
@@ -573,9 +592,6 @@ class TaskPlannerNode(Node):
                 return
 
             if self.execute_path_object_success is False:
-                self.get_logger().warn(
-                    "Object path blocked/cancelled, replanning same object"
-                )
                 self.enter_state("GENERATE_PATH_TO_OBJECT")
                 return
 
@@ -608,9 +624,6 @@ class TaskPlannerNode(Node):
                 self._published_this_state = True
 
             if self.pick_done:
-                self.get_logger().info(
-                    f"Picked object id={self.current_object.id}"
-                )
                 self.state_after_move_backward = "GENERATE_PATH_TO_START"
                 self.enter_state("MOVE_BACKWARD")
                 return
@@ -639,9 +652,6 @@ class TaskPlannerNode(Node):
                     self.enter_state("MOVE_BACKWARD")
                     return
 
-                self.get_logger().warn(
-                    f"Path to start failed: {self.last_planner_status}"
-                )
                 self.enter_state("SELECT_BOX")
                 return
 
@@ -655,14 +665,41 @@ class TaskPlannerNode(Node):
                 self.execute_path_start_success = None
 
             if self.execute_path_start_success is True:
-                self.start_update_icp("correct", "SELECT_BOX")
+                self.start_update_icp("correct", "ROTATE_TO_START_YAW")
                 return
 
             if self.execute_path_start_success is False:
-                self.get_logger().warn(
-                    "Path to start blocked/cancelled, replanning"
-                )
                 self.enter_state("GENERATE_PATH_TO_START")
+                return
+
+        elif self.state == "ROTATE_TO_START_YAW":
+            if self.start_yaw is None:
+                self.get_logger().warn("No start yaw saved, continuing to SELECT_BOX")
+                self.enter_state("SELECT_BOX")
+                return
+
+            if not self._published_this_state:
+                self.rotate_success = False
+
+                pose = PoseStamped()
+                pose.header.frame_id = self.world_frame
+                pose.header.stamp = self.get_clock().now().to_msg()
+                pose.pose.position.x = self.sx
+                pose.pose.position.y = self.sy
+                pose.pose.position.z = 0.0
+                pose.pose.orientation.z = math.sin(self.start_yaw / 2.0)
+                pose.pose.orientation.w = math.cos(self.start_yaw / 2.0)
+
+                self.rotate_start_pub.publish(pose)
+                self._published_this_state = True
+
+                self.get_logger().info(
+                    f"ROTATE_TO_START_YAW: target yaw={self.start_yaw:.2f}"
+                )
+
+            if self.rotate_success:
+                self.rotate_success = False
+                self.enter_state("SELECT_BOX")
                 return
 
         elif self.state == "GENERATE_PATH_TO_BOX":
@@ -684,9 +721,6 @@ class TaskPlannerNode(Node):
                     self.state_after_move_backward = "GENERATE_PATH_TO_BOX"
                     self.enter_state("MOVE_BACKWARD")
                 else:
-                    self.get_logger().warn(
-                        f"Path to box failed: {self.last_planner_status}"
-                    )
                     if self.carrying_object():
                         self.enter_state("SELECT_BOX")
                     else:
@@ -707,9 +741,6 @@ class TaskPlannerNode(Node):
                 return
 
             if self.execute_path_box_success is False:
-                self.get_logger().warn(
-                    "Box path blocked/cancelled, replanning same box"
-                )
                 self.enter_state("GENERATE_PATH_TO_BOX")
                 return
 

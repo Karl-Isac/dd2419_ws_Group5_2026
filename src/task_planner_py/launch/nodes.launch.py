@@ -105,6 +105,36 @@ def generate_launch_description():
     #     ],
     # )
 
+
+    ICP = Node(
+        package='odometry',
+        executable='ICP',
+        name='ICP',
+        output='screen'
+    )
+
+
+    rotate_to_pose = Node(
+        package='grumpy_navigation_py',
+        executable='rotate_to_pose',
+        name='rotate_to_pose',
+        output='screen'
+    )
+
+    # exploration_mapper = Node(
+    #     package='learning_tf2_py',
+    #     executable='exploration_mapper',
+    #     name='exploration_mapper',
+    #     output='screen'
+    # )
+    #
+    # detection_apr30 = Node(
+    #     package='detection',
+    #     executable='alter_apr30',
+    #     name='detection_apr30',
+    #     output='screen'
+    # )
+
     return LaunchDescription([
         arm_safe_republisher,
         arm_control,
@@ -119,4 +149,10 @@ def generate_launch_description():
         obstacle_detection,
         approach_goal,
         # arm_static_tf,
+        ICP,
+        # exploration_mapper,
+        # detection_apr30,
+        rotate_to_pose,
     ])
+
+

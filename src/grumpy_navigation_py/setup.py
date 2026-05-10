@@ -48,6 +48,8 @@ setup(
             'obstacle_detection= grumpy_navigation_py.obstacle_detection_node:main',
             'approach_goal= grumpy_navigation_py.approach_goal_node:main',
 
+            'rotate_to_pose = grumpy_navigation_py.rotate_to_pose_node:main',
+
 
         ],
     },
