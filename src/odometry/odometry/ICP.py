@@ -18,24 +18,8 @@ import open3d as o3d
 from ament_index_python.packages import get_package_share_directory
 import os
 
-
-# base_dir = Path(__file__).resolve().parent.parent.parent.parent.parent.parent.parent.parent
-# KNOWN_PATH = base_dir / 'Workspace/map_1_1.csv'
-
-# package_path = get_package_share_directory('src')
-# KNOWN_PATH = os.path.join(package_path, 'detection', 'config', 'map.csv')
-
-
-# package_path = get_package_share_directory('build')
-# KNOWN_PATH = os.path.join(package_path, 'detection', 'config', 'map.csv')
-
 package_path = get_package_share_directory('detection')
-KNOWN_PATH = os.path.join(package_path, 'config', 'map.csv')
-
-'''
-This ICP corrects lidar-points when a good ICP match is found, and uses the corrected map for the next ICP, which makes it more robust to drift. (hopefully)
-'''
-
+KNOWN_PATH = os.path.join(package_path, 'config', 'map_1_1.csv')
 
 # ---------------- ICP ----------------
 
@@ -45,7 +29,7 @@ def scan_to_points(scan):
 
     for r, a in zip(scan.ranges, angles):
         if np.isfinite(r):
-            points.append([r * np.cos(a*np.pi/180), r * np.sin(a*np.pi/180)])
+            points.append([r * np.cos(a), r * np.sin(a)])
 
     return np.array(points)
 
@@ -99,29 +83,25 @@ class ICPMapper(Node):
         self.last_scan = None
         self.pre_localization_scan = None
         self.map_points = None
+        self.pc_fix_map = o3d.geometry.PointCloud()
         self.pre_map_points = None
         self.last_stamp = None
+        self.last_odom = self.T_map_odom
         self.last_angular_velocity = 0
         
+        self.make_images = False
         self.temp_incrementer = 0
+        self.temp_incrementer2 = 0
 
         self.publish_tf()
 
     # ---------------- callbacks ----------------
-
-    #def scan_cb(self, msg):
-    #    self.last_scan = scan_to_points(msg)
-    #    self.last_stamp = msg.header.stamp
-    #    if self.last_angular_velocity < 0.1: # only update when robot is not rotating fast, otherwise ICP will fail
-    #        self.pre_map_points = np.vstack((self.pre_map_points, self.last_scan)) if self.pre_map_points is not None else self.last_scan
-    #    if self.map_points is not None and len(self.map_points) > 20000:
-    #        self.voxel_downsample()
     
     def scan_cb(self, msg):
         if abs(self.last_angular_velocity) > 0.1:
             return
         
-        self.raw_scan = scan_to_points(msg)
+        self.raw_scan = scan_to_points(msg) # lidar_link frame
         self.last_stamp = msg.header.stamp
 
     def fix_scan(self):
@@ -132,8 +112,8 @@ class ICPMapper(Node):
 
         # --- build rotation ---
         R = np.array([
-            [np.cos(yaw*np.pi/180), -np.sin(yaw*np.pi/180)],
-            [np.sin(yaw*np.pi/180),  np.cos(yaw*np.pi/180)]
+            [np.cos(yaw), -np.sin(yaw)],
+            [np.sin(yaw),  np.cos(yaw)]
         ])
 
         t = np.array([x, y])
@@ -163,7 +143,7 @@ class ICPMapper(Node):
         try:
             t = self.tf_buffer.lookup_transform(
                 "odom",          # target frame
-                "base_link",     # source frame
+                "lidar_link",     # source frame
                 rclpy.time.Time()  # latest available
             )
 
@@ -182,11 +162,40 @@ class ICPMapper(Node):
     # ---------------- mapping ----------------
 
     def start_mapping(self):
-        self.fix_scan()
-        if self.last_scan is None:
-            self.get_logger().warn("No scan yet")
+        #self.fix_scan() # Put in map-frame instead
+        if self.raw_scan is None:
             return
-        self.map_points = np.vstack((self.map_points, self.last_scan)) if self.map_points is not None else self.last_scan
+        
+        try:
+            t = self.tf_buffer.lookup_transform(
+                "map",          # target frame
+                "lidar_link",     # source frame
+                rclpy.time.Time()  # latest available
+            )
+
+            x = t.transform.translation.x
+            y = t.transform.translation.y
+
+            q = t.transform.rotation
+            _, _, yaw = tf_transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])
+
+        except Exception as e:
+            self.get_logger().warn(f"TF lookup failed: {e}")
+            return None
+
+        R = np.array([
+            [np.cos(yaw), -np.sin(yaw)],
+            [np.sin(yaw),  np.cos(yaw)]
+        ])
+
+        t = np.array([x, y])
+
+        # --- transform scan into map frame ---
+        scan_map = (R @ self.raw_scan.T).T + t
+        
+        self.map_points = np.vstack((self.map_points, scan_map)) if self.map_points is not None else scan_map
+        self.pc_fix_map.points = o3d.utility.Vector3dVector(to_3d(self.map_points))
+        
         self.get_logger().info("Map initialized or updated")
 
     # ---------------- ICP correction ----------------
@@ -196,39 +205,18 @@ class ICPMapper(Node):
         if self.map_points is None or self.last_scan is None:
             return
 
-        points_to_map = None
         if self.pre_localization_scan is not None:
             self.get_logger().info("Using pre-localization scan for ICP")
-            points_to_map = self.pre_localization_scan
+            pc_fix = o3d.geometry.PointCloud()
+            pc_fix.points = o3d.utility.Vector3dVector(to_3d(self.pre_localization_scan))
             self.pre_localization_scan = None
         else:
-            self.get_logger().info("Using last scan for ICP")
-            points_to_map = self.map_points
+            pc_fix = self.pc_fix_map
             
         # ---------------- convert to Open3D point clouds ----------------
-        pc_fix = o3d.geometry.PointCloud()
-        pc_fix.points = o3d.utility.Vector3dVector(to_3d(points_to_map))
 
-#------------------------------test------------------------------
-        R_map = self.T_map_odom[:2, :2]
-        t_map = self.T_map_odom[:2, 2]
-
-        scan_in_map = (R_map @ self.last_scan.T).T + t_map
-
-#------------------------------test------------------------------
         pc_mov = o3d.geometry.PointCloud()
-        pc_mov.points = o3d.utility.Vector3dVector(to_3d(scan_in_map))
-
-        self.get_logger().info(
-            f"Map size: {len(points_to_map)}, Scan size: {len(scan_in_map)}"
-        )
-        
-        x, y, _ = self.get_odom_to_base() or (0, 0, 0)
-        delta_len = np.sqrt(x**2 + y**2)
-        
-        max_angle_error = np.radians(15)
-        
-        delta_alpha = delta_len*np.tan(max_angle_error)
+        pc_mov.points = o3d.utility.Vector3dVector(to_3d(self.last_scan))
 
         # ---------------- run ICP ----------------
         icp_success = True
@@ -236,9 +224,8 @@ class ICPMapper(Node):
             reg = o3d.pipelines.registration.registration_icp(
                 pc_mov,
                 pc_fix,
-                max_correspondence_distance=max(0.3, delta_alpha * 1.2),
-                init=np.eye(4), # no initial guess, since we are already in the map frame
-                #init=se2_to_se3(self.T_map_odom),
+                max_correspondence_distance=0.6, # Sorry for magic number, but this seem good
+                init=np.eye(4),
                 estimation_method=o3d.pipelines.registration.TransformationEstimationPointToPoint()
             )
 
@@ -248,68 +235,51 @@ class ICPMapper(Node):
             self.get_logger().warn(f"ICP failed: {e}")
             return
         
-        if reg.fitness < 0.8:
+        if reg.fitness < 0.9:
             self.get_logger().warn(f"ICP rejected (low fitness: {reg.fitness:.2f})")
+            
+            if self.make_images:
+                self.temp_incrementer2 += 1
+                if self.temp_incrementer2%5 == 0:
+                    self.export_map_to_csv(filename=f"bad_scan_points_{self.temp_incrementer2/5}.csv", points=self.last_scan)
+            #Above is for debugging, to see what kind of scans are rejected by ICP, and if there is a pattern to it (e.g. too few points, or points in a certain area)     
             return
-        self.temp_incrementer += 1
-        self.export_map_to_csv(filename=f"scan_points_{self.temp_incrementer}.csv", points=self.last_scan) # export the map used for ICP, for visualization and debugging
+        # Also for debugging vvvvv
+        elif self.make_images:
+            self.temp_incrementer += 1
+            self.export_map_to_csv(filename=f"scan_points_{self.temp_incrementer}.csv", points=self.last_scan) # export the map used for ICP, for visualization and debugging
 
         # ---------------- convert SE3 → SE2 ----------------
         T_icp_se2 = se3_to_se2(H)
 
         # ---------------- extract motion ----------------
-        dx = T_icp_se2[0, 2]
-        dy = T_icp_se2[1, 2]
+        delta_T = np.linalg.inv(self.T_map_odom) @ T_icp_se2
+        dx = delta_T[0, 2]
+        dy = delta_T[1, 2]
+
         trans_err = np.sqrt(dx**2 + dy**2)
-        dtheta = np.arctan2(T_icp_se2[1, 0], T_icp_se2[0, 0])
+
+        dtheta = np.arctan2(
+            delta_T[1, 0],
+            delta_T[0, 0]
+        )
 
         # ---------------- apply update ----------------
-        correction = np.linalg.inv(T_icp_se2) ##
-
-        maybe_T_map_odom = correction @ self.T_map_odom
-        #maybe_T_map_odom = T_icp_se2 @ self.T_map_odom
-
-        ## reject large jumps
-        #if trans_err > max(0.3, delta_len):
-        #    self.get_logger().warn(f"ICP rejected (too large motion): {trans_err:.2f}m")
-        #    icp_success = False
-        #    
-        #if abs(dtheta) > max_angle_error:
-        #    self.get_logger().warn(f"ICP rejected (too large rotation: {dtheta:.2f} rad)")
-        #    icp_success = False
+        # reject large jumps, adjust thresholds as needed
+        if trans_err > 0.5:
+            self.get_logger().warn(f"ICP rejected (too large motion): {trans_err:.2f}m")
+            icp_success = False
+            
+        if abs(dtheta) > np.radians(20):
+            self.get_logger().warn(f"ICP rejected (too large rotation: {dtheta:.2f} rad)")
+            icp_success = False
 
         if icp_success:
-            self.T_map_odom = maybe_T_map_odom
+            self.T_map_odom = T_icp_se2
             self.get_logger().info(
-                f"ICP accepted: Δx={dx:.2f}, Δy={dy:.2f}, err={trans_err:.2f}"
-            )
+                f"ICP accepted: Δx={dx:.2f}, Δy={dy:.2f}, err={trans_err:.2f}, Δθ={dtheta:.2f} rad, fitness={reg.fitness:.2f}")
         
-#    def voxel_downsample(self, voxel_size=0.05):
-#        """
-#        Downsample 2D points using a voxel grid.
-#
-#        voxel_size: size of each grid cell in meters
-#        """
-#        # compute voxel indices
-#        if self.map_points is None or len(self.map_points) == 0:
-#            return
-#
-#        points = self.map_points
-#
-#        # compute voxel indices
-#        voxel_indices = np.floor(points / voxel_size).astype(np.int32)
-#
-#        # keep first point per voxel
-#        voxel_dict = {}
-#
-#        for i, idx in enumerate(voxel_indices):
-#            key = (idx[0], idx[1])
-#            if key not in voxel_dict:
-#                voxel_dict[key] = points[i]
-#
-#        self.map_points = np.array(list(voxel_dict.values()))
-#
-#    # ---------------- TF ----------------
+    # ---------------- TF ----------------
 
     def publish_tf(self):
         t = TransformStamped()
@@ -337,7 +307,6 @@ class ICPMapper(Node):
         t.transform.rotation.z = q[2]
         t.transform.rotation.w = q[3]
 
-        # self.get_logger().info(f"{t}")
         self.tf_broadcaster.sendTransform(t)
         
     def export_map_to_csv(self, filename="map_points.csv", points=None):
@@ -371,8 +340,8 @@ def se3_to_se2(H):
     # --- build SE2 rotation ---
     T = np.eye(3)
     T[:2, :2] = [
-        [np.cos(yaw*np.pi/180), -np.sin(yaw*np.pi/180)],
-        [np.sin(yaw*np.pi/180),  np.cos(yaw*np.pi/180)]
+        [np.cos(yaw), -np.sin(yaw)],
+        [np.sin(yaw),  np.cos(yaw)]
     ]
 
     # --- extract translation (ignore z) ---
