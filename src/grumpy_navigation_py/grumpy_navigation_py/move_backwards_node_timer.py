@@ -72,7 +72,7 @@ class MoveBackwardsTimed(Node):
 
         msg = DutyCycles()
         msg.duty_cycle_left = max(min(left, max_duty), -max_duty)
-        msg.duty_cycle_right = max(min(right, max_duty), -max_duty)
+        msg.duty_cycle_right = max(min(right, max_duty), -max_duty) - 0.008
         self.cmd_pub.publish(msg)
 
 

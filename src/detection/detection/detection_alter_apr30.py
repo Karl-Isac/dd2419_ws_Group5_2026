@@ -630,7 +630,7 @@ class Detection(Node):
 
         # Normal distance criteria
         for item in object_lists:
-            if np.abs(item[0] - object_map.pose.position.x * 100) < 30 and np.abs(item[1] - object_map.pose.position.y * 100) < 30:
+            if np.abs(item[0] - object_map.pose.position.x * 100) < 23 and np.abs(item[1] - object_map.pose.position.y * 100) < 23:
                 # self.get_logger().debug(f"repeated object {self.object_lists.index(item)} detection, discarded")
                 break
         else:
