@@ -28,7 +28,7 @@ ros2 launch task_planner_py lidar.launch.py
 ros2 launch task_planner_py nodes.launch.py
 ros2 launch task_planner_py exploration_detection.launch.py
 
-Run this after everything is started
+Run this after everything is started:
 ros2 topic pub --once /task_planner/start std_msgs/msg/Bool "{data: true}"
 
 

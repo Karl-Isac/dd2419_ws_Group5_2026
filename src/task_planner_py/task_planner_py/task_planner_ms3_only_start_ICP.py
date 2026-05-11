@@ -662,7 +662,8 @@ class TaskPlannerNode(Node):
                 self.execute_path_start_success = None
 
             if self.execute_path_start_success is True:
-                self.start_update_icp("correct", "ROTATE_TO_START_YAW")
+                # self.start_update_icp("correct", "ROTATE_TO_START_YAW")
+                self.enter_state("ROTATE_TO_START_YAW")
                 return
 
             if self.execute_path_start_success is False:
@@ -696,7 +697,8 @@ class TaskPlannerNode(Node):
 
             if self.rotate_success:
                 self.rotate_success = False
-                self.enter_state("SELECT_BOX")
+                # self.enter_state("SELECT_BOX")
+                self.start_update_icp("correct", "SELECT_BOX")
                 return
 
         elif self.state == "GENERATE_PATH_TO_BOX":
