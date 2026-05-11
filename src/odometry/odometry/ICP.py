@@ -19,7 +19,7 @@ from ament_index_python.packages import get_package_share_directory
 import os
 
 package_path = get_package_share_directory('detection')
-KNOWN_PATH = os.path.join(package_path, 'config', 'map_1_1.csv')
+KNOWN_PATH = os.path.join(package_path, 'config', 'map.csv')
 
 # ---------------- ICP ----------------
 

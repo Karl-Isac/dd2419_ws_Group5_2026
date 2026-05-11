@@ -46,7 +46,7 @@ setup(
             'move_backwards_timer = grumpy_navigation_py.move_backwards_node_timer:main',
 
             'obstacle_detection= grumpy_navigation_py.obstacle_detection_node:main',
-            'approach_goal= grumpy_navigation_py.approach_goal_node:main',
+            'approach_goal= grumpy_navigation_py.approach_goal_node_2:main',
 
             'rotate_to_pose = grumpy_navigation_py.rotate_to_pose_node:main',
 

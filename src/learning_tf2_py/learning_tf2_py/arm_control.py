@@ -217,7 +217,7 @@ class Arm_control(Node):
             self.put_nudge_on_cooldown(5)  # put forward nudges on cooldown for a while
             msg = DutyCycles()
             msg.duty_cycle_left = -0.1
-            msg.duty_cycle_right = -0.1
+            msg.duty_cycle_right = -0.1 - 0.008
             self.wheels_on = True
             self.wheel_pub.publish(msg)
             # Wait until encoders say you backed up enough
@@ -254,10 +254,10 @@ class Arm_control(Node):
                 msg = DutyCycles()
                 if extension_error>self.extension_error_termination_MAX:               # Go forwards or backwards depending on the extension error
                     msg.duty_cycle_left = 0.1
-                    msg.duty_cycle_right = 0.1
+                    msg.duty_cycle_right = 0.1 + 0.008
                 elif extension_error < self.extension_error_termination_min:
-                    msg.duty_cycle_left = -0.1
-                    msg.duty_cycle_right = -0.1
+                    msg.duty_cycle_left = -0.1 
+                    msg.duty_cycle_right = -0.1 - 0.008
                 else:
                     return
                 self.nudge_on_cooldown = True

@@ -103,6 +103,9 @@ class TaskPlannerNode(Node):
         self.rotate_start_pub = self.create_publisher(PoseStamped, "/nav/rotate_to_pose", 10)
 
         self.exploration_pub = self.create_publisher(String, "/exploration/request_unexplored_point", 10)
+        
+        # not nessesary maybe:
+        # self.stop_detection_during_pickup_pub = self.create_publisher(Bool, "/pickup", 10)
 
         self.create_subscription(Point, "/exploration/return_unexplored_point", self.on_exploration_point, 10)
         self.create_subscription(Bool, "/nav/reached", self.on_reached, 10)

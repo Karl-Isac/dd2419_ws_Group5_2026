@@ -27,36 +27,23 @@ class ApproachGoalNode(Node):
 
         # Frames / timing
         self.declare_parameter("world_frame", "map")
-        # self.declare_parameter("arm_frame", "arm_link")
         self.declare_parameter("base_frame", "base_link")
         self.declare_parameter("rate_hz", 20.0)
 
         # Turning behavior
-        self.declare_parameter("angle_tolerance", 0.05)   # rad
+        self.declare_parameter("angle_tolerance", 0.10)
         self.declare_parameter("turn_duty", 0.10)
 
         # Forward behavior
-        # self.declare_parameter("forward_distance", 0.07)  # meters
-        # self.declare_parameter("stop_distance", 0.19)
         self.declare_parameter("stop_distance_object", 0.19)
-        self.declare_parameter("stop_distance_box", 0.22)
+        self.declare_parameter("stop_distance_box", 0.27)
         self.declare_parameter("forward_duty", 0.10)
 
         self.world_frame = self.get_parameter("world_frame").value
         self.base_frame = self.get_parameter("base_frame").value
-        # self.arm_frame = self.get_parameter("arm_frame").value
 
         self.tf_buffer = tf2_ros.Buffer()
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, self)
-
-        # self.create_subscription(
-        #     PoseStamped,
-        #     "/nav/approach_start",
-        #     self.on_approach_start,
-        #     10,
-        # )
-
-        self.right_duty_correction = 0.008
 
         self.create_subscription(
             GoalWithType,
@@ -70,6 +57,7 @@ class ApproachGoalNode(Node):
             "/nav/approach_finished",
             10,
         )
+
         self.duty_pub = self.create_publisher(
             DutyCycles,
             "/phidgets/motor/duty_cycles",
@@ -77,7 +65,7 @@ class ApproachGoalNode(Node):
         )
 
         # State
-        self.state = "IDLE"   # IDLE / TURNING / FORWARD
+        self.state = "IDLE"   # IDLE / TURNING / FORWARD / FINAL_TURNING
         self.target_pose = None
         self.target_type = None
         self.forward_start_xy = None
@@ -105,8 +93,7 @@ class ApproachGoalNode(Node):
             tf = self.tf_buffer.lookup_transform(
                 self.world_frame,
                 self.base_frame,
-                # selarm_framee,
-                rclpy.time.Time()
+                rclpy.time.Time(),
             )
         except Exception as e:
             self.get_logger().warn(f"TF lookup failed: {e}")
@@ -117,10 +104,9 @@ class ApproachGoalNode(Node):
         return float(t.x), float(t.y), float(yaw)
 
     def publish_duty(self, left: float, right: float):
-        # self.get_logger().info(f"publsihing duty: ({left}, {right})")
         msg = DutyCycles()
         msg.duty_cycle_left = float(left)
-        msg.duty_cycle_right = float(right) 
+        msg.duty_cycle_right = float(right) + 0.007
         self.duty_pub.publish(msg)
 
     def stop(self):
@@ -165,10 +151,10 @@ class ApproachGoalNode(Node):
 
             if yaw_error > 0.0:
                 left = -turn_duty
-                right = +turn_duty 
+                right = +turn_duty
             else:
                 left = +turn_duty
-                right = -turn_duty 
+                right = -turn_duty
 
             self.publish_duty(left, right)
             return
@@ -177,17 +163,7 @@ class ApproachGoalNode(Node):
             if self.forward_start_xy is None:
                 self.forward_start_xy = (x, y)
 
-            # sx, sy = self.forward_start_xy
-            # traveled = math.hypot(x - sx, y - sy)
-            #
-            # forward_distance = float(self.get_parameter("forward_distance").value)
-            # forward_duty = float(self.get_parameter("forward_duty").value)
-            #
-            # if traveled >= forward_distance:
-
             dist_to_target = math.hypot(tx - x, ty - y)
-
-            # stop_distance = float(self.get_parameter("stop_distance").value)
 
             if self.target_type == GoalWithType.OBJECT:
                 stop_distance = float(self.get_parameter("stop_distance_object").value)
@@ -195,13 +171,32 @@ class ApproachGoalNode(Node):
                 stop_distance = float(self.get_parameter("stop_distance_box").value)
             else:
                 self.get_logger().warn(
-                    f"Approach got unsupported target_type={self.target_type}; using object stop distance"
+                    f"Approach got unsupported target_type={self.target_type}; "
+                    "using object stop distance"
                 )
                 stop_distance = float(self.get_parameter("stop_distance_object").value)
 
             forward_duty = float(self.get_parameter("forward_duty").value)
 
             if dist_to_target <= stop_distance:
+                self.stop()
+                self.state = "FINAL_TURNING"
+                self.get_logger().info(
+                    "Forward motion finished, doing final turn toward target"
+                )
+                return
+
+            self.publish_duty(forward_duty, forward_duty)
+            return
+
+        if self.state == "FINAL_TURNING":
+            desired_yaw = math.atan2(ty - y, tx - x)
+            yaw_error = wrap_pi(desired_yaw - yaw)
+
+            angle_tolerance = float(self.get_parameter("angle_tolerance").value)
+            turn_duty = float(self.get_parameter("turn_duty").value)
+
+            if abs(yaw_error) <= angle_tolerance:
                 self.stop()
                 self.publish_finished()
                 self.state = "IDLE"
@@ -211,7 +206,15 @@ class ApproachGoalNode(Node):
                 self.get_logger().info("Approach finished")
                 return
 
-            self.publish_duty(forward_duty, forward_duty + self.right_duty_correction)
+            if yaw_error > 0.0:
+                left = -turn_duty
+                right = +turn_duty
+            else:
+                left = +turn_duty
+                right = -turn_duty
+
+            self.publish_duty(left, right)
+            return
 
 
 def main():

@@ -17,6 +17,7 @@ from tf2_ros.buffer import Buffer
 from tf2_ros.static_transform_broadcaster import StaticTransformBroadcaster
 from tf_transformations import quaternion_from_euler, euler_from_quaternion
 from geometry_msgs.msg import TransformStamped, Point, Vector3Stamped, PoseArray, Pose
+from std_msgs.msg import String
 from visualization_msgs.msg import Marker, MarkerArray
 
 from sensor_msgs.msg import PointCloud2
@@ -59,6 +60,10 @@ class Detection(Node):
             Point, '/Failure', self.redetection_callback, 10)
         self.create_subscription(
             Point, '/Success', self.success_callback, 10)
+        self.create_subscription(
+            String,'/arm/cmd', self.detection_off_callback, 10)
+
+        self.is_detection_on = True
                 
         self.tf_buffer = Buffer(cache_time=rclpy.duration.Duration(seconds=10))
         self.tf_listener = TransformListener(self.tf_buffer, self)
@@ -236,8 +241,13 @@ class Detection(Node):
 
         # self.get_logger().info(f'Published {len(object_poses)} objects and {len(box_poses)} boxes')
 
+    def detection_off_callback(self, msg: String):
+        if msg.data == 'pick':
+            self.is_detection_on = False
+
     def redetection_callback(self, msg: Point):
         # Search whole list, matching corresponding object that needs to be redetected, and set its status to False.
+        self.is_detection_on = True
         for index in range(len(self.object_lists)):
             object = self.object_lists[index]
             if int(round(msg.x * 100)) == object[0] and int(round(msg.y * 100)) == object[1] and object[4]:
@@ -248,6 +258,7 @@ class Detection(Node):
     
     def success_callback(self, msg: Point):
         # Delete successfully picked up objects since it will never be used later.
+        self.is_detection_on = True
         for index in range(len(self.object_lists)):
             object = self.object_lists[index]
             if int(round(msg.x * 100)) == object[0] and int(round(msg.y * 100)) == object[1] and object[4]:
@@ -271,6 +282,9 @@ class Detection(Node):
             return
         # if self.counter % num != 0:
         #     return
+
+        if not self.is_detection_on:
+            return
 
         # Initialization
         candidates = []
@@ -390,7 +404,6 @@ class Detection(Node):
             # try:
             #     self.tf_buffer.lookup_transform('map', 'base_link', Time(seconds=1000, nanoseconds=1000))
             # except TransformException as e:
-            #     # 错误消息格式类似：
             #     # "Lookup would require extrapolation into the past.  
             #     #  Requested time 100.000000 but the earliest data is at time 105.000000"
             #     import re
@@ -437,10 +450,8 @@ class Detection(Node):
                 b = cluster_pts[:, 5]
                 h, s, v = self._rgb_to_hsv_vectorized(r, g, b)
 
-                # red_cnt   = np.sum(self._is_red_vectorized(h, s, v))
-                red_cnt = 0
-                # blue_cnt  = np.sum(self._is_blue_vectorized(h, s, v))
-                blue_cnt = 0
+                red_cnt   = np.sum(self._is_red_vectorized(h, s, v))
+                blue_cnt  = np.sum(self._is_blue_vectorized(h, s, v))
                 green_cnt = np.sum(self._is_green_vectorized(h, s, v))
                 wood_cnt  = 0   # or use vectorized wood detection if needed
 
@@ -573,7 +584,7 @@ class Detection(Node):
             return
 
         # Check if the detected object is inside any of the known boxes (with a tolerance), if yes, discard it, since objects inside boxes should not be detected
-        if self.is_point_inside_any_box(object_map.pose.position.x, object_map.pose.position.y, tolerance=0.03):
+        if self.is_point_inside_any_box(object_map.pose.position.x, object_map.pose.position.y, tolerance=0.10):
             self.get_logger().debug("Object is inside a box (with tolerance), ignored.")
             return
         
@@ -866,10 +877,6 @@ class Detection(Node):
             # compute angles to x-axis
             angle_dir1_x = np.arctan2(dir1[1], dir1[0])
             angle_dir2_x = np.arctan2(dir2[1], dir2[0])
-
-            self.get_logger().debug(
-                f'dir1 与 x 轴夹角: {angle_dir1_x:.2f} rad, dir2 与 x 轴夹角: {angle_dir2_x:.2f} rad'
-            )
 
             # choose normal direction (pointing roughly +x)
             normal = dir2 if np.dot(dir2, x_axis) > 0 else -dir2
